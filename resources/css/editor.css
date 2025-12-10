@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+a:not(button) {
+  @apply text-blue-600 hover:underline;
+}
+
+ol {
+  @apply !list-decimal;
+}
