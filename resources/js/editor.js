@@ -1,8 +1,8 @@
 import domReady from '@wordpress/dom-ready';
 import { registerBlockType } from "@wordpress/blocks";
+import * as heroVideoBlock from "./editor/hero-video.block";
 import * as modalBlock from "./editor/modal.block";
 import * as latestSeedsBlock from "./editor/latest-seeds.block";
-
 domReady(() => {
   /**
    * Register blocks with their configurations
@@ -23,4 +23,21 @@ domReady(() => {
       save: block.save,
     });
   });
+});
+
+const blocks = {
+  'cruise-swiper': () => import('./blocks/cruise-carousel').then(m => m.initCruiseCarousel),
+};
+
+Object.entries(blocks).forEach(([selector, loader]) => {
+  if (document.querySelector(`.${selector}`)) {
+    loader().then(initFn => initFn());
+  }
+
+  if (window.acf) {
+    loader().then(initFn => {
+      window.acf.addAction(`render_block_preview/type=${selector}`, initFn);
+      window.acf.addAction('ready', initFn);
+    });
+  }
 });

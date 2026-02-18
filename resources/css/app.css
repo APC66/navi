@@ -1,9 +1,17 @@
-@import "tailwindcss" theme(static);
-@source "../views/";
-@source "../../app/";
+@import "tailwindcss";
+@import "./variables.css";
+@source "../views";
+@source "../../app";
 
-@layer base {
-  .e-content a {
-    @apply text-blue-600 hover:underline;
+@layer utilities {
+  .container {
+    @apply mx-auto w-full;
+    max-width: min(100%, var(--container-2xl));
+    padding-inline: var(--container-padding);
   }
+}
+
+
+.rpi-header{
+  @apply hidden;
 }

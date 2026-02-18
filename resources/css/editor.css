@@ -1,9 +1,26 @@
 @import "tailwindcss";
+@import "./variables.css";
 
-a:not(button) {
-  @apply text-blue-600 hover:underline;
+
+@layer base {
+  .wp-block-post-title{
+    color: black !important;
+  }
+
+  .editor-styles-wrapper .wp-block {
+    max-width: none;
+  }
+
+  .shadow-button {
+    box-shadow: var(--wp--preset--box-shadow--button);
+  }
+
+  *{
+    color: inherit;
+  }
+
 }
 
-ol {
-  @apply !list-decimal;
+.block-editor__container img{
+  height:100%;
 }

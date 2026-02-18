@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\ServiceProvider;
 
 class AssetsServiceProvider extends ServiceProvider
 {
@@ -59,6 +59,14 @@ class AssetsServiceProvider extends ServiceProvider
             echo Vite::withEntryPoints([
                 'resources/js/editor.js',
             ])->toHtml();
+
+
+            wp_enqueue_style(
+                'google-fonts',
+                'https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Murecho:wght@100..900&display=swap',
+                [],
+                null
+            );
         });
 
         /**
@@ -76,16 +84,17 @@ class AssetsServiceProvider extends ServiceProvider
          * Remove default theme.json styles and use custom theme.json file path.
          *
          * @link   https://developer.wordpress.org/block-editor/reference-guides/filters/global-styles-filters/
+         *
          * @return void
          */
         add_filter('wp_theme_json_data_default', function (\WP_Theme_JSON_Data $themeJson): \WP_Theme_JSON_Data {
             $themeJsonFile = public_path('/build/assets/theme.json');
-            if (!file_exists($themeJsonFile)) {
+            if (! file_exists($themeJsonFile)) {
                 return $themeJson;
             }
 
             $decodedData = wp_json_file_decode($themeJsonFile, ['associative' => true]);
-            if (!is_array($decodedData) || empty($decodedData)) {
+            if (! is_array($decodedData) || empty($decodedData)) {
                 return $themeJson;
             }
 

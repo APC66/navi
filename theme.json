@@ -1,5 +1,4 @@
 {
-  "__preprocessed__": "This file is used to build the theme.json file in the `public/build/assets` directory. The built artifact includes Tailwind's colors, fonts, and font sizes.",
   "$schema": "https://schemas.wp.org/trunk/theme.json",
   "version": 3,
   "settings": {
@@ -15,34 +14,201 @@
       "defaultPalette": false,
       "duotone": [],
       "text": true,
-      "background": true
+      "background": true,
+      "palette": [
+        {
+          "slug": "primary-100",
+          "color": "#BFCAE6",
+          "name": "Primary 100"
+        },
+        {
+          "slug": "primary-200",
+          "color": "#9AA7CB",
+          "name": "Primary 200"
+        },
+        {
+          "slug": "primary-400",
+          "color": "#5B6C9F",
+          "name": "Primary 400"
+        },
+        {
+          "slug": "primary-600",
+          "color": "#1C3787",
+          "name": "Primary 600"
+        },
+        {
+          "slug": "primary-800",
+          "color": "#101F4D",
+          "name": "Primary 800"
+        },
+        {
+          "slug": "primary-900",
+          "color": "#0A173D",
+          "name": "Primary 900"
+        },
+        {
+          "slug": "primary-1000",
+          "color": "#070E22",
+          "name": "Primary 1000"
+        },
+        {
+          "slug": "secondary",
+          "color": "#FFD21F",
+          "name": "Secondary"
+        },
+        {
+          "slug": "secondary-hover",
+          "color": "#ECBA16",
+          "name": "Secondary Hover"
+        },
+        {
+          "slug": "secondary-600",
+          "color": "#FFE785",
+          "name": "Secondary 600"
+        },
+        {
+          "slug": "secondary-800",
+          "color": "#FFDC4C",
+          "name": "Secondary 800"
+        },
+        {
+          "slug": "tertiary-800",
+          "color": "#58A4B0",
+          "name": "Tertiary 800"
+        },
+        {
+          "slug": "error",
+          "color": "#C33149",
+          "name": "Error"
+        },
+        {
+          "slug": "off-white",
+          "color": "#FBF8F0",
+          "name": "Blanc Cassé"
+        }
+      ],
+      "gradients": [
+        {
+          "slug": "logo",
+          "gradient": "linear-gradient(to bottom, #101F4D, #BFCAE6)",
+          "name": "Logo Gradient"
+        }
+      ]
     },
     "custom": {
       "spacing": {},
       "typography": {
         "font-size": {},
         "line-height": {}
+      },
+      "borderRadius": {
+        "card": "20px"
       }
     },
     "layout": {
-      "contentSize": "64rem"
+      "contentSize": "1440px"
     },
     "spacing": {
       "padding": true,
-      "units": ["px", "%", "em", "rem", "vw", "vh"]
+      "units": ["px", "%", "em", "rem", "vw", "vh"],
+      "spacingSizes": [
+        {
+          "slug": "xs",
+          "size": "4px",
+          "name": "XS (4px)"
+        },
+        {
+          "slug": "s",
+          "size": "8px",
+          "name": "S (8px)"
+        },
+        {
+          "slug": "m",
+          "size": "16px",
+          "name": "M (16px)"
+        },
+        {
+          "slug": "l",
+          "size": "24px",
+          "name": "L (24px)"
+        },
+        {
+          "slug": "xl",
+          "size": "32px",
+          "name": "XL (32px)"
+        }
+      ]
     },
     "typography": {
       "defaultFontSizes": false,
       "customFontSize": false,
-      "dropCap": null
+      "fontSizes": [],
+      "dropCap": null,
+      "fontFamilies": [
+        {
+          "fontFamily": "\"Merriweather Sans\", sans-serif",
+          "slug": "merriweather",
+          "name": "Merriweather Sans"
+        },
+        {
+          "fontFamily": "\"Murecho\", sans-serif",
+          "slug": "murecho",
+          "name": "Murecho"
+        },
+        {
+          "fontFamily": "\"Elms Sans\", sans-serif",
+          "slug": "elms",
+          "name": "Elms Sans"
+        }
+      ]
     }
   },
   "styles": {
+    "color": {
+      "text": "#FFFFFF"
+    },
     "spacing": {
-      "blockGap": "1.5rem",
-      "padding": {
-        "left": "1.5rem",
-        "right": "1.5rem"
+      "blockGap": "1.5rem"
+    },
+    "typography": {
+      "fontFamily": "var(--wp--preset--font-family--murecho)"
+    },
+    "elements": {
+      "h1": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
+      },
+      "h2": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
+      },
+      "h3": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
+      },
+      "h4": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
+      },
+      "h5": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
+      },
+      "h6": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--merriweather)",
+          "letterSpacing": "0.03em"
+        }
       }
     }
   }

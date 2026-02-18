@@ -7,24 +7,26 @@
         @php(wp_head())
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('utils.styles')
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Elms+Sans&family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Murecho:wght@100..900&display=swap" rel="stylesheet">
+
     </head>
 
     <body @php(body_class())>
         @php(wp_body_open())
 
-        <div id="app">
-            <a class="sr-only focus:not-sr-only" href="#main">
-                {{ __('Skip to content', 'radicle') }}
-            </a>
-
+        <div id="app" class="">
             @include('sections.header')
 
-            <main id="main" class="max-w-5xl mx-auto">
+            <main id="main" class="{{$containerClasses}}">
                 <div class="{{ $containerInnerClasses }}">
                     @yield('content')
                 </div>
             </main>
 
+            @include('sections.reviews')
             @include('sections.footer')
         </div>
 

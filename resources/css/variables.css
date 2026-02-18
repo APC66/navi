@@ -1,0 +1,36 @@
+@theme {
+  --color-primary-50: var(--wp--preset--color--primary-50);
+  --color-primary-100: var(--wp--preset--color--primary-100);
+  --color-primary-200: var(--wp--preset--color--primary-200);
+  --color-primary-400: var(--wp--preset--color--primary-400);
+  --color-primary-600: var(--wp--preset--color--primary-600);
+  --color-primary-800: var(--wp--preset--color--primary-800);
+  --color-primary-900: var(--wp--preset--color--primary-900);
+  --color-primary-1000: var(--wp--preset--color--primary-1000);
+
+  --color-secondary: var(--wp--preset--color--secondary);
+  --color-secondary-hover: var(--wp--preset--color--secondary-hover);
+  --color-secondary-600: var(--wp--preset--color--secondary-600);
+  --color-secondary-800: var(--wp--preset--color--secondary-800);
+
+  --color-tertiary-800: var(--wp--preset--color--tertiary-800);
+  --color-error: var(--wp--preset--color--error);
+  --color-off-white: var(--wp--preset--color--off-white);
+
+  --font-merriweather: var(--wp--preset--font-family--merriweather);
+  --font-murecho: var(--wp--preset--font-family--murecho);
+  --font-elms: var(--wp--preset--font-family--elms);
+
+  --radius-card: 3rem;
+
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1440px;
+
+  --container-padding: 1.5rem;
+
+  --shadow-button: 0px 4px 4px 0px #070E2242, 0px 7px 7px 0px #070E223B, 0px 15px 9px 0px #070E2221, 0px 42px 12px 0px #070E2200;
+  --shadow-image-card: -5px 9px 22px 0px #070E2224, -21px 34px 40px 0px #070E221F, -47px 78px 54px 0px #070E2212, -83px 138px 138px 0px #070E2205, -130px 216px 216px 0px #070E2200;
+}

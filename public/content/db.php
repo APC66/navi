@@ -1,0 +1,1 @@
+/Users/julien/Sites/navi/public/content/plugins/query-monitor/wp-content/db.php

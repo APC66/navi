@@ -1,4 +1,4 @@
-<div class="e-content space-y-4">
+<div class="e-content">
     @php(the_content())
 </div>
 
