@@ -22,12 +22,14 @@ class SingleCruisePage extends Field
             ->addGroup('image_text_overlap')
             ->addPartial(ImageTextOverlapField::class)
             ->endGroup()
-            ->addWysiwyg('content', [
+            ->addTab('content_tab', ['label' => 'Contenu de la page'])
+            ->addWysiwyg('desc_content', [
                 'label' => 'Contenu de la page',
                 'instructions' => 'Ajouter le contenu de la page ici.',
                 'required' => true,
                 'media_upload' => true,
             ])
+            ->addTab('gallery_tab', ['label' => 'Galerie d\'images'])
             ->addGallery('gallery', [
                 'label' => 'Galerie d\'images',
                 'instructions' => 'Ajouter des images pour la galerie de la page.',
@@ -35,6 +37,7 @@ class SingleCruisePage extends Field
                 'preview_size' => 'medium',
                 'library' => 'all',
             ])
+            ->addTab('videos_tab', ['label' => 'Vidéos'])
             ->addRepeater('videos', [
                 'label' => 'Vidéos',
                 'instructions' => 'Ajouter des vidéos pour la page.',
@@ -57,13 +60,33 @@ class SingleCruisePage extends Field
                 'required' => false,
             ])
             ->endRepeater()
+            ->addTab('carte', ['label' => 'Carte'])
             ->addImage('map_image', [
                 'label' => 'Image de la carte',
                 'instructions' => 'Ajouter une image pour la section de la carte.',
                 'required' => false,
                 'preview_size' => 'medium',
                 'library' => 'all',
-            ]);
+            ])
+            ->addTab('sup_tab', ['label' => 'Onglet supplémentaire'])
+            ->addRepeater('additional_tabs', [
+                'label' => 'Onglets supplémentaires',
+                'instructions' => 'Ajouter des onglets supplémentaires pour la page.',
+                'required' => false,
+                'collapsed' => 'tab_title',
+            ])
+            ->addText('tab_title', [
+                'label' => 'Titre de l\'onglet',
+                'instructions' => 'Ajouter un titre pour l\'onglet.',
+                'required' => true,
+            ])
+            ->addWysiwyg('tab_content', [
+                'label' => 'Contenu de l\'onglet',
+                'instructions' => 'Ajouter le contenu pour l\'onglet.',
+                'required' => true,
+                'media_upload' => true,
+            ])
+        ->endRepeater();
 
         return $fields->build();
     }

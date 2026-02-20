@@ -1,5 +1,6 @@
 # Application
 public/content/plugins/*
+public/content/plugins
 !public/content/plugins/.gitkeep
 public/content/mu-plugins/*/
 !public/content/mu-plugins/editor/
@@ -42,3 +43,4 @@ yarn-error.log
 .phpunit.cache
 test-results
 .npmrc
+navi_prod-2026-02-18-c53fc1d.sql

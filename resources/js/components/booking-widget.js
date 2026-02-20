@@ -38,19 +38,62 @@ const bookingWidgetData = (cruiseId, nonce) => ({
     let startOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
     const days = [];
-    for (let i = 0; i < startOffset; i++) {
-      days.push({ empty: true });
+
+    // Date d'aujourd'hui à minuit (pour bloquer les dates passées)
+    const todayTimestamp = new Date();
+    todayTimestamp.setHours(0, 0, 0, 0);
+
+    // Jours du mois précédent pour combler la première semaine
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startOffset - 1; i >= 0; i--) {
+      days.push({ empty: true, day: prevMonthLastDay - i });
     }
 
+    // Jours du mois en cours
     for (let i = 1; i <= lastDay.getDate(); i++) {
       const currentDay = new Date(year, month, i);
+      const isPast = currentDay.getTime() < todayTimestamp.getTime();
+
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
 
-      // Recherche de l'événement (Sailing) pour ce jour
-      // On cherche n'importe quel statut qui est renvoyé par l'API
-      const sailing = this.sailings.find(s => s.start && s.start.startsWith(dateStr));
+      // Sécurisation de la recherche de date (gère 'YYYY-MM-DDTHH:mm:ss' et 'YYYY-MM-DD HH:mm:ss')
+      const sailing = this.sailings.find(s => {
+        if (!s.start) return false;
+        const startDay = s.start.includes('T') ? s.start.split('T')[0] : s.start.split(' ')[0];
+        return startDay === dateStr;
+      });
 
-      const isPast = currentDay < new Date().setHours(0,0,0,0);
+      let status = null;
+      let statusLabel = '';
+      let isSelectable = false;
+      let available = 0;
+
+      // Définition rigoureuse de l'état selon la maquette
+      if (sailing && !isPast) {
+        available = parseInt(sailing.extendedProps.available);
+        if (isNaN(available)) available = 999; // Fallback de sécurité
+
+        let apiStatus = sailing.extendedProps.status || 'Actif';
+
+        if (apiStatus === 'Annulé') {
+          status = 'Annulé';
+          statusLabel = 'Annulé';
+        } else if (apiStatus === 'Reporté') {
+          status = 'Reporté';
+          statusLabel = 'Reporté';
+        } else if (apiStatus === 'Complet' || available <= 0) {
+          status = 'Complet';
+          statusLabel = 'Complet';
+        } else if (available > 0 && available <= 5) {
+          status = 'Limité';
+          statusLabel = 'Limité'; // Rendu modifiable visuellement
+          isSelectable = true; // On peut toujours cliquer
+        } else {
+          status = 'Dispo';
+          statusLabel = 'Dispo.';
+          isSelectable = true;
+        }
+      }
 
       days.push({
         empty: false,
@@ -58,17 +101,52 @@ const bookingWidgetData = (cruiseId, nonce) => ({
         date: dateStr,
         sailing: sailing,
         isPast: isPast,
-
-        // Propriétés étendues pour l'affichage
-        available: sailing ? sailing.extendedProps.available : 0,
-        status: sailing ? sailing.extendedProps.status : null, // 'Annulé', 'Reporté', 'Actif'
-        isSelectable: sailing ? sailing.extendedProps.is_selectable : false, // Vient de l'API
-
+        available: available,
+        status: status,
+        statusLabel: statusLabel,
+        isSelectable: isSelectable,
         isSelected: sailing && this.selectedSailingId == sailing.id
       });
     }
 
+    // Jours du mois suivant pour compléter la grille
+    const totalCells = days.length;
+    const remainingCells = (Math.ceil(totalCells / 7) * 7) - totalCells;
+    for(let i = 1; i <= remainingCells; i++) {
+      days.push({ empty: true, day: i });
+    }
+
     return days;
+  },
+
+  // Gère les classes CSS dynamiques
+  getDayClasses(dayObj) {
+    let classes = [];
+
+    if (dayObj.empty || !dayObj.sailing || dayObj.isPast) {
+      classes.push('border-[#E5E8EF] bg-[#E5E8EF] text-primary-400');
+    } else {
+      switch(dayObj.status) {
+        case 'Dispo': classes.push('border-[#C5F8A5] bg-[#C5F8A5] text-primary-1000 cursor-pointer'); break;
+        case 'Limité': classes.push('border-[#FFA632] bg-[#FFA632] t text-primary-1000 cursor-pointer'); break;
+        case 'Complet': classes.push('border-[#C33149] bg-[#C33149] text-white cursor-not-allowed'); break;
+        case 'Reporté': classes.push('border-[#FBF166] bg-[#FBF166] text-primary-1000 cursor-not-allowed'); break;
+        case 'Annulé': classes.push('border-[#60386B] bg-[#60386B] text-white cursor-not-allowed'); break;
+      }
+    }
+
+    if (dayObj.isSelected) {
+      classes.push('border-primary-400 cale-105 z-10 shadow-lg');
+    }
+
+    return classes.join(' ');
+  },
+
+  // Gère le clic sur une date
+  handleDayClick(dayObj) {
+    if (!dayObj.empty && dayObj.sailing && !dayObj.isPast && dayObj.isSelectable) {
+      this.selectDate(dayObj.sailing.id);
+    }
   },
 
   changeMonth(step) {
@@ -80,10 +158,11 @@ const bookingWidgetData = (cruiseId, nonce) => ({
   selectDate(sailingId) {
     if (!sailingId) return;
 
-    // Vérification de sécurité : est-ce que ce sailing est sélectionnable ?
     const sailing = this.sailings.find(s => s.id == sailingId);
-    if (!sailing || !sailing.extendedProps.is_selectable) {
-      return; //
+
+    // Vérification de sécurité pour empêcher la sélection d'une date impossible
+    if (!sailing || sailing.extendedProps.status === 'Annulé' || sailing.extendedProps.status === 'Reporté' || parseInt(sailing.extendedProps.available) <= 0) {
+      return;
     }
 
     this.selectedSailingId = sailingId;
@@ -125,27 +204,40 @@ const bookingWidgetData = (cruiseId, nonce) => ({
     const fares = this.currentSailing.extendedProps.fares || [];
     fares.forEach(fare => {
       const count = this.passengers[fare.id] || 0;
-      total += count * fare.price;
+      total += count * parseFloat(fare.price);
     });
 
     const options = this.currentSailing.extendedProps.options || [];
     options.forEach(opt => {
       const count = this.selectedOptions[opt.id] || 0;
-      total += count * opt.price;
+      total += count * parseFloat(opt.price);
     });
 
     return total;
   },
 
-  formatDate(dateStr) {
+  // Format attendu : "MER. 25 FÉVRIER À 07:00"
+  formatHeaderDate(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    const days = ['DIM.', 'LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.'];
+    const months = ['JANVIER', 'FÉVRIER', 'MARS', 'AVRIL', 'MAI', 'JUIN', 'JUILLET', 'AOÛT', 'SEPTEMBRE', 'OCTOBRE', 'NOVEMBRE', 'DÉCEMBRE'];
+
+    const dayName = days[date.getDay()];
+    const dayNum = String(date.getDate()).padStart(2, '0');
+    const monthName = months[date.getMonth()];
+    const time = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ':');
+
+    return `${dayName} ${dayNum} ${monthName} À ${time}`;
   },
 
+  // Format attendu : "92.00 €" ou "Gratuit"
   formatPrice(amount) {
-    if (amount === undefined || amount === null) return '0,00 €';
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+    if (amount === undefined || amount === null) return '0.00 €';
+    const numAmount = parseFloat(amount);
+    if (numAmount === 0) return 'Gratuit';
+    // Utilisation de toFixed pour forcer le point décimal comme sur la maquette
+    return numAmount.toFixed(2) + ' €';
   },
 
   addToCart() {
