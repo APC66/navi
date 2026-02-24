@@ -2,25 +2,25 @@
 export default {
   styles: {
     blocks: {
-      "core/button": {
+      'core/button': {
         border: {
-          radius: "0"
+          radius: '0',
         },
         variations: {
           outline: {
             border: {
-              width: "1px"
-            }
-          }
-        }
-      }
+              width: '1px',
+            },
+          },
+        },
+      },
     },
     elements: {
       button: {
         border: {
-          radius: "0"
-        }
-      }
-    }
-  }
-};
+          radius: '0',
+        },
+      },
+    },
+  },
+}

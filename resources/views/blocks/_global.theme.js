@@ -1,99 +1,93 @@
 // Global element styles for typography
 export default {
   blocks: {
-    "core/paragraph": {
+    'core/paragraph': {
       spacing: {
         margin: {
-          bottom: "1rem",
+          bottom: '1rem',
         },
       },
     },
-    "core/list": {
+    'core/list': {
       spacing: {
         margin: {
-          bottom: "1rem",
+          bottom: '1rem',
         },
         padding: {
-          left: "1.5rem",
+          left: '1.5rem',
         },
       },
-      css: "list-style-type: disc;",
+      css: 'list-style-type: disc;',
     },
   },
   elements: {
     h1: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     h2: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     h3: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     h4: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     h5: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     h6: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
-      spacing: {
-      },
+      spacing: {},
     },
     heading: {
       typography: {
-        lineHeight: "1.25",
+        lineHeight: '1.25',
       },
     },
     p: {
       spacing: {
         margin: {
-          bottom: "1rem",
+          bottom: '1rem',
         },
       },
     },
     ol: {
       spacing: {
         margin: {
-          bottom: "1rem",
+          bottom: '1rem',
         },
         padding: {
-          left: "1.5rem",
+          left: '1.5rem',
         },
       },
     },
     ul: {
       spacing: {
         margin: {
-          bottom: "1rem",
+          bottom: '1rem',
         },
         padding: {
-          left: "1.5rem",
+          left: '1.5rem',
         },
       },
     },
   },
-};
+}

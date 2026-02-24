@@ -1,7 +1,7 @@
 <x-modal title="{{ $heading }}">
-    <x-slot:button>
-        {{ $buttonText }}
-    </x-slot:button>
+  <x-slot:button>
+    {{ $buttonText }}
+  </x-slot>
 
-    {!! $blockContent !!}
+  {!! $blockContent !!}
 </x-modal>

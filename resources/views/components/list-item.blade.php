@@ -1,22 +1,20 @@
 @props([
-    'spacing' => 'normal',
+  'spacing' => 'normal',
 ])
 
 @php
-    $spacingClasses = match ($spacing) {
-        'tight' => 'mb-1',
-        'normal' => 'mb-2',
-        'loose' => 'mb-4',
-        default => 'mb-2'
-    };
+  $spacingClasses = match ($spacing) {
+    'tight' => 'mb-1',
+    'normal' => 'mb-2',
+    'loose' => 'mb-4',
+    default => 'mb-2',
+  };
 
-    $classes = [
-        $spacingClasses
-    ];
+  $classes = [$spacingClasses];
 @endphp
 
 <li
-    {{ $attributes->class(Arr::toCssClasses($classes)) }}
+  {{ $attributes->class(Arr::toCssClasses($classes)) }}
 >
-    {{ $slot }}
+  {{ $slot }}
 </li>

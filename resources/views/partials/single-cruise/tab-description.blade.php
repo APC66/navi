@@ -1,3 +1,3 @@
 <div class="contentText">
-    {!! $description !!}
+  {!! $description !!}
 </div>
