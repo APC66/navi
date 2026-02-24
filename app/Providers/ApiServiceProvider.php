@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\CancellationController;
-use App\Http\Controllers\Api\SeedController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SeedController;
 use App\Http\Controllers\CartController;
 use Illuminate\Support\ServiceProvider;
 use ReflectionMethod;

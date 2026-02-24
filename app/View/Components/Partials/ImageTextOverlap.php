@@ -7,20 +7,24 @@ use Roots\Acorn\View\Component;
 class ImageTextOverlap extends Component
 {
     public $imageFront;
+
     public $imageBack;
+
     public $title;
+
     public $content;
+
     public $invert; // Pour mettre l'image à droite si besoin
 
     /**
      * Create a new component instance.
      *
-     * @param string|int $imageFront ID ou URL de l'image principale
-     * @param string|int $imageBack ID ou URL de l'image de fond (décalée)
-     * @param string $title Titre
-     * @param string $content Contenu WYSIWYG
-     * @param bool $invert Inverser la disposition (Image à droite)
-     * @param array $group Données ACF (pour usage futur en bloc)
+     * @param  string|int  $imageFront  ID ou URL de l'image principale
+     * @param  string|int  $imageBack  ID ou URL de l'image de fond (décalée)
+     * @param  string  $title  Titre
+     * @param  string  $content  Contenu WYSIWYG
+     * @param  bool  $invert  Inverser la disposition (Image à droite)
+     * @param  array  $group  Données ACF (pour usage futur en bloc)
      * @return void
      */
     public function __construct(
@@ -32,7 +36,7 @@ class ImageTextOverlap extends Component
         $group = []
     ) {
         // Hydratation via le groupe ACF si présent (pour le futur bloc)
-        if (!empty($group)) {
+        if (! empty($group)) {
             $imageFront = $imageFront ?: ($group['image_front'] ?? null);
             $imageBack = $imageBack ?: ($group['image_back'] ?? null);
             $title = $title ?: ($group['title'] ?? '');

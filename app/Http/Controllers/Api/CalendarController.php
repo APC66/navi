@@ -25,7 +25,7 @@ class CalendarController
 
         $args = [
             'post_status' => $post_statuses,
-            'meta_query'  => ['relation' => 'AND'],
+            'meta_query' => ['relation' => 'AND'],
         ];
 
         $start = $request->get_param('start');
@@ -41,18 +41,18 @@ class CalendarController
             }
 
             $args['meta_query'][] = [
-                'key'     => 'sailing_config_departure_date',
-                'value'   => [$startFormatted, $endFormatted],
+                'key' => 'sailing_config_departure_date',
+                'value' => [$startFormatted, $endFormatted],
                 'compare' => 'BETWEEN',
-                'type'    => 'DATETIME'
+                'type' => 'DATETIME',
             ];
         }
 
         if ($request->get_param('cruise_id')) {
             $args['meta_query'][] = [
-                'key'   => 'sailing_config_parent_cruise',
+                'key' => 'sailing_config_parent_cruise',
                 'value' => $request->get_param('cruise_id'),
-                'compare' => '='
+                'compare' => '=',
             ];
         }
 
@@ -75,41 +75,47 @@ class CalendarController
 
             // --- RÉCUPÉRATION DONNÉES COMMERCIALES ---
             $fares = $sailing->fares ?: [];
-            $formattedFares = array_map(function($f) {
+            $formattedFares = array_map(function ($f) {
                 $termId = $f['passenger_type'] ?? 0;
                 $termName = 'Standard';
                 if ($termId) {
                     $term = get_term($termId, 'passenger_type');
-                    if ($term && !is_wp_error($term)) $termName = $term->name;
+                    if ($term && ! is_wp_error($term)) {
+                        $termName = $term->name;
+                    }
                 }
+
                 return [
                     'id' => $termId,
                     'name' => $termName,
-                    'price' => (float) ($f['price'] ?? 0)
+                    'price' => (float) ($f['price'] ?? 0),
                 ];
             }, $fares);
 
             $options = $sailing->options ?: [];
-            $formattedOptions = array_map(function($o) {
+            $formattedOptions = array_map(function ($o) {
                 $termId = $o['option_type'] ?? 0;
                 $termName = 'Option';
                 if ($termId) {
                     $term = get_term($termId, 'extra_option_type');
-                    if ($term && !is_wp_error($term)) $termName = $term->name;
+                    if ($term && ! is_wp_error($term)) {
+                        $termName = $term->name;
+                    }
                 }
+
                 return [
                     'id' => $termId,
                     'name' => $termName,
                     'price' => (float) ($o['price'] ?? 0),
-                    'has_quota' => !empty($o['has_quota']),
-                    'quota' => (int) ($o['quota'] ?? 0)
+                    'has_quota' => ! empty($o['has_quota']),
+                    'quota' => (int) ($o['quota'] ?? 0),
                 ];
             }, $options);
 
             // --- LOGIQUE VISUELLE (Front-end / Affichage) ---
             // On se base sur la taxonomie 'sailing_status' pour déterminer l'aspect et la sélection.
             $status_terms = wp_get_post_terms($sailing->ID, 'sailing_status', ['fields' => 'names']);
-            $status_label = !empty($status_terms) ? $status_terms[0] : 'Actif';
+            $status_label = ! empty($status_terms) ? $status_terms[0] : 'Actif';
 
             $color = '#3788d8'; // Bleu (Actif)
             $classNames = [];
@@ -118,7 +124,7 @@ class CalendarController
             // 1. Statut "Annulé" (Taxonomie)
             if ($status_label === 'Annulé') {
                 $color = '#718096'; // Gris
-                $title = $is_admin ? '❌ ANNULÉ - ' . $title : 'Annulé';
+                $title = $is_admin ? '❌ ANNULÉ - '.$title : 'Annulé';
                 $remaining = 0; // Visuellement 0
                 $classNames[] = 'evt-cancelled';
                 $isSelectable = false; // Bloque le clic en front
@@ -126,7 +132,7 @@ class CalendarController
             // 2. Statut "Reporté" (Taxonomie)
             elseif ($status_label === 'Reporté') {
                 $color = '#d69e2e'; // Orange
-                $title = $is_admin ? '⚠️ REPORTÉ - ' . $title : 'Reporté';
+                $title = $is_admin ? '⚠️ REPORTÉ - '.$title : 'Reporté';
                 $remaining = 0;
                 $classNames[] = 'evt-postponed';
                 $isSelectable = false;
@@ -134,7 +140,7 @@ class CalendarController
             // 3. Statut "Complet" (Taxonomie explicite OU Calculé)
             elseif ($status_label === 'Complet' || $remaining <= 0) {
                 $color = '#dc2626'; // Rouge
-                $title = $is_admin ? $title . ' (Complet)' : 'Complet';
+                $title = $is_admin ? $title.' (Complet)' : 'Complet';
                 $remaining = 0;
                 $classNames[] = 'evt-full';
                 $isSelectable = false;
@@ -147,24 +153,24 @@ class CalendarController
             }
 
             $event = [
-                'id'              => $sailing->ID,
-                'title'           => $is_admin ? "$title [$remaining/$quota]" : 'Disponible',
-                'start'           => $start,
-                'end'             => $end,
-                'allDay'          => false,
+                'id' => $sailing->ID,
+                'title' => $is_admin ? "$title [$remaining/$quota]" : 'Disponible',
+                'start' => $start,
+                'end' => $end,
+                'allDay' => false,
                 'backgroundColor' => $color,
-                'borderColor'     => $color,
-                'classNames'      => $classNames,
-                'extendedProps'   => [
-                    'quota'     => $quota,
-                    'booked'    => $booked,
+                'borderColor' => $color,
+                'classNames' => $classNames,
+                'extendedProps' => [
+                    'quota' => $quota,
+                    'booked' => $booked,
                     'available' => $remaining,
                     'cruise_id' => $sailing->parent_cruise_id,
-                    'status'    => $status_label, // Info pour le front
-                    'fares'     => $formattedFares,
-                    'options'   => $formattedOptions,
-                    'is_selectable' => $isSelectable // Info critique pour le widget JS
-                ]
+                    'status' => $status_label, // Info pour le front
+                    'fares' => $formattedFares,
+                    'options' => $formattedOptions,
+                    'is_selectable' => $isSelectable, // Info critique pour le widget JS
+                ],
             ];
 
             if ($is_admin) {

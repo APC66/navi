@@ -17,7 +17,7 @@ it('recent seeds method returns collection with limit', function () {
 });
 
 it('seed model has expected methods', function () {
-    $seed = new Seed();
+    $seed = new Seed;
 
     expect(method_exists($seed, 'categories'))->toBeTrue()
         ->and(method_exists($seed, 'nextSeed'))->toBeTrue()

@@ -7,20 +7,24 @@ use Roots\Acorn\View\Component;
 class PageHeader extends Component
 {
     public $image;
+
     public $title;
+
     public $highlight;
+
     public $highlightColor;
+
     public $subtitle;
 
     /**
      * Create a new component instance.
      *
-     * @param string|null $image
-     * @param string $title
-     * @param string $highlight
-     * @param string $highlightColor
-     * @param string $subtitle
-     * @param array $group (Optionnel) Groupe ACF contenant les champs
+     * @param  string|null  $image
+     * @param  string  $title
+     * @param  string  $highlight
+     * @param  string  $highlightColor
+     * @param  string  $subtitle
+     * @param  array  $group  (Optionnel) Groupe ACF contenant les champs
      * @return void
      */
     public function __construct(
@@ -31,7 +35,7 @@ class PageHeader extends Component
         $subtitle = '',
         $group = []
     ) {
-        if (!empty($group)) {
+        if (! empty($group)) {
             $image = $image ?: ($group['header_image'] ?? null);
             $title = $title ?: ($group['header_title'] ?: get_the_title());
             $highlight = $highlight ?: ($group['header_highlight'] ?? '');

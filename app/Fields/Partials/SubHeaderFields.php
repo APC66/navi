@@ -20,7 +20,7 @@ class SubHeaderFields extends Partial
             ->addText('subtitle', [
                 'label' => 'Sous-titre (Majuscules)',
                 'placeholder' => '',
-                'instructions' => 'S\'affiche en gras et en majuscules au-dessus du texte.'
+                'instructions' => 'S\'affiche en gras et en majuscules au-dessus du texte.',
             ])
 
             ->addWysiwyg('content', [
@@ -28,7 +28,7 @@ class SubHeaderFields extends Partial
                 'media_upload' => 0,
                 'toolbar' => 'basic',
                 'rows' => 4,
-                'instructions' => 'Le paragraphe descriptif.'
+                'instructions' => 'Le paragraphe descriptif.',
             ])
 
             ->addSelect('align', [
@@ -40,7 +40,7 @@ class SubHeaderFields extends Partial
                 ],
                 'default_value' => 'text-center',
                 'ui' => 0,
-                'wrapper' => ['width' => '50']
+                'wrapper' => ['width' => '50'],
             ]);
 
         return $subheader;

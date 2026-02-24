@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Post extends Model
 {
     public const CREATED_AT = 'post_date';
+
     public const UPDATED_AT = 'post_modified';
 
     protected $table = 'posts';
+
     protected $primaryKey = 'ID';
 
     protected $fillable = [
@@ -76,6 +78,7 @@ class Post extends Model
     public function getMeta(string $key, $default = null)
     {
         $meta = $this->meta()->where('meta_key', $key)->first();
+
         return $meta ? $meta->meta_value : $default;
     }
 
@@ -116,12 +119,14 @@ class Post extends Model
     public function categories(): array
     {
         $terms = get_the_terms($this->ID, 'category');
+
         return is_array($terms) ? $terms : [];
     }
 
     public function tags(): array
     {
         $terms = get_the_terms($this->ID, 'post_tag');
+
         return is_array($terms) ? $terms : [];
     }
 }

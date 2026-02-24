@@ -14,9 +14,7 @@ class SingleCruisePage extends Field
     public function fields(): array
     {
         $fields = Builder::make('single_cruise_page');
-
-        $fields
-            ->setLocation('post_type', '==', 'cruise');
+        $fields->setLocation('post_type', '==', 'cruise');
 
         $fields
             ->addGroup('image_text_overlap')
@@ -86,7 +84,7 @@ class SingleCruisePage extends Field
                 'required' => true,
                 'media_upload' => true,
             ])
-        ->endRepeater();
+            ->endRepeater();
 
         return $fields->build();
     }

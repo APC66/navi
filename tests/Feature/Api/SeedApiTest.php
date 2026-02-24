@@ -5,7 +5,7 @@ use App\Models\Seed;
 beforeEach(function () {
     // Set up REST server for API tests
     global $wp_rest_server;
-    $this->server = $wp_rest_server = new WP_REST_Server();
+    $this->server = $wp_rest_server = new WP_REST_Server;
 
     // Manually register our API routes for testing
     $apiProvider = new \App\Providers\ApiServiceProvider(app());

@@ -7,11 +7,17 @@ use Roots\Acorn\View\Component;
 class SectionHeader extends Component
 {
     public string $suffix;
+
     public string $highlight;
+
     public bool $highlightBreak; // Nouveau paramètre
+
     public string $highlightColor;
+
     public string $align;
+
     public string $tag;
+
     public string $sizeClass;
 
     public function __construct(
@@ -24,7 +30,7 @@ class SectionHeader extends Component
         $size = 'L',
         $group = []
     ) {
-        if (!empty($group)) {
+        if (! empty($group)) {
             $suffix = $suffix ?: ($group['suffix'] ?? '');
             $highlight = $highlight ?: ($group['highlight'] ?? '');
             $highlightBreak = $highlightBreak ?: ($group['highlight_break'] ?? false);
@@ -41,7 +47,7 @@ class SectionHeader extends Component
         $this->highlightColor = $highlightColor;
         $this->align = $align;
 
-        $this->sizeClass = match($size) {
+        $this->sizeClass = match ($size) {
             'S' => 'text-2xl md:text-3xl',
             'M' => 'text-3xl md:text-4xl',
             'XL' => 'text-5xl md:text-6xl',

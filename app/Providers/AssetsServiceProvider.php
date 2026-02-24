@@ -60,7 +60,6 @@ class AssetsServiceProvider extends ServiceProvider
                 'resources/js/editor.js',
             ])->toHtml();
 
-
             wp_enqueue_style(
                 'google-fonts',
                 'https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Murecho:wght@100..900&display=swap',

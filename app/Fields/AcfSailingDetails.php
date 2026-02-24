@@ -114,7 +114,7 @@ class AcfSailingDetails extends Field
             ->addTrueFalse('has_quota', ['label' => 'Stock ?', 'ui' => 1, 'wrapper' => ['width' => '33']])
             ->addNumber('quota', [
                 'label' => 'Stock',
-                'conditional_logic' => [[['field' => 'has_quota', 'operator' => '==', 'value' => '1']]]
+                'conditional_logic' => [[['field' => 'has_quota', 'operator' => '==', 'value' => '1']]],
             ])
             ->endRepeater()
 

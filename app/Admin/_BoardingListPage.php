@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use App\Models\Sailing;
 use WC_Coupon;
+
 use function Roots\view;
 
 class BoardingListPage
@@ -35,7 +36,8 @@ class BoardingListPage
 
         // --- VUE ÉDITION ---
         if ($action === 'edit' && isset($_GET['order_id'])) {
-            $this->renderEdit((int)$_GET['order_id']);
+            $this->renderEdit((int) $_GET['order_id']);
+
             return;
         }
 
@@ -49,7 +51,7 @@ class BoardingListPage
     private function renderEdit($orderId)
     {
         $order = wc_get_order($orderId);
-        if (!$order) {
+        if (! $order) {
             wp_die('Commande introuvable.', 'Erreur', ['response' => 404]);
         }
 
@@ -77,12 +79,12 @@ class BoardingListPage
                 [
                     'key' => 'sailing_config_departure_date',
                     'value' => date('Y-m-d H:i:s'),
-                    'compare' => '>='
-                ]
+                    'compare' => '>=',
+                ],
             ],
             'orderby' => 'meta_value',
             'meta_key' => 'sailing_config_departure_date',
-            'order' => 'ASC'
+            'order' => 'ASC',
         ]);
 
         echo view('admin.boarding-edit', [
@@ -91,7 +93,7 @@ class BoardingListPage
             'bookingData' => $bookingData,
             'currentSailing' => $currentSailing,
             'futureSailings' => $futureSailings,
-            'cancelUrl' => admin_url('admin.php?page=navi-boarding-list&sailing_id=' . $currentSailingId)
+            'cancelUrl' => admin_url('admin.php?page=navi-boarding-list&sailing_id='.$currentSailingId),
         ])->render();
     }
 
@@ -123,7 +125,7 @@ class BoardingListPage
             'futureSailings' => $futureSailings,
             'selectedSailingId' => $selectedSailingId,
             'currentSailing' => $sailing,
-            'passengers' => $passengersList
+            'passengers' => $passengersList,
         ])->render();
     }
 
@@ -135,24 +137,25 @@ class BoardingListPage
         // 1. Gestion de la sauvegarde du formulaire d'ÉDITION (CRUD)
         if (isset($_POST['action']) && $_POST['action'] === 'update_reservation') {
             $this->processReservationUpdate();
+
             return;
         }
 
         // 2. Gestion des actions de masse (Liste)
-        if ((!isset($_POST['action']) && !isset($_POST['single_action'])) || !isset($_POST['_wpnonce'])) {
+        if ((! isset($_POST['action']) && ! isset($_POST['single_action'])) || ! isset($_POST['_wpnonce'])) {
             return;
         }
 
-        if (!wp_verify_nonce($_POST['_wpnonce'], 'navi_bulk_action')) {
+        if (! wp_verify_nonce($_POST['_wpnonce'], 'navi_bulk_action')) {
             return;
         }
 
         $action = $_POST['single_action'] ?: ($_POST['action'] != '-1' ? $_POST['action'] : $_POST['action2']);
 
         $orderIds = [];
-        if (!empty($_POST['single_order_id'])) {
+        if (! empty($_POST['single_order_id'])) {
             $orderIds[] = $_POST['single_order_id'];
-        } elseif (!empty($_POST['order_ids'])) {
+        } elseif (! empty($_POST['order_ids'])) {
             $orderIds = $_POST['order_ids'];
         }
 
@@ -172,7 +175,7 @@ class BoardingListPage
 
                 if ($newSailingId) {
                     $count = $this->processReschedule($orderIds, $sailingId, $newSailingId, $priceAdjustment, $paxToRemove);
-                    $message = $count . ' commandes reprogrammées.';
+                    $message = $count.' commandes reprogrammées.';
                 } else {
                     $message = 'ID manquant.';
                     $type = 'error';
@@ -181,12 +184,12 @@ class BoardingListPage
 
             case 'refund':
                 $count = $this->processRefund($orderIds);
-                $message = $count . ' commandes remboursées.';
+                $message = $count.' commandes remboursées.';
                 break;
 
             case 'credit':
                 $count = $this->processCreditNote($orderIds);
-                $message = $count . ' avoirs générés.';
+                $message = $count.' avoirs générés.';
                 break;
         }
 
@@ -201,7 +204,9 @@ class BoardingListPage
      */
     private function processReservationUpdate()
     {
-        if (!check_admin_referer('update_reservation_action', '_wpnonce')) return;
+        if (! check_admin_referer('update_reservation_action', '_wpnonce')) {
+            return;
+        }
 
         $orderId = (int) $_POST['order_id'];
         $itemId = (int) $_POST['item_id'];
@@ -214,7 +219,9 @@ class BoardingListPage
         $order = wc_get_order($orderId);
         $item = $order->get_item($itemId);
 
-        if (!$order || !$item) wp_die('Erreur de commande');
+        if (! $order || ! $item) {
+            wp_die('Erreur de commande');
+        }
 
         // Récupération des données existantes
         $rawData = $item->get_meta('_booking_data_raw');
@@ -240,7 +247,7 @@ class BoardingListPage
         foreach ($newPassengers as $typeId => $qty) {
             if ($qty > 0) {
                 $term = get_term($typeId, 'passenger_type');
-                $name = !is_wp_error($term) ? $term->name : 'Passager';
+                $name = ! is_wp_error($term) ? $term->name : 'Passager';
                 $details[] = "$qty x $name";
             }
         }
@@ -267,7 +274,8 @@ class BoardingListPage
                     $item->update_meta_data('Date de départ', $dt->format('d/m/Y à H:i'));
                     $data['sailing_id'] = $targetSailingId;
                     $data['date'] = $newSailing->start;
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                }
             }
 
             // On libère tout l'ancien quota
@@ -292,7 +300,7 @@ class BoardingListPage
         $order->save();
 
         // Redirection vers la liste
-        wp_redirect(admin_url('admin.php?page=navi-boarding-list&sailing_id=' . $targetSailingId . '&message=Réservation mise à jour'));
+        wp_redirect(admin_url('admin.php?page=navi-boarding-list&sailing_id='.$targetSailingId.'&message=Réservation mise à jour'));
         exit;
     }
 
@@ -302,12 +310,16 @@ class BoardingListPage
     private function processReschedule($orderIds, $oldSailingId, $newSailingId, $priceAdjustment = 0, $paxToRemove = 0)
     {
         $newSailing = Sailing::find($newSailingId);
-        if (!$newSailing) return 0;
+        if (! $newSailing) {
+            return 0;
+        }
         $processedCount = 0;
 
         foreach ($orderIds as $orderId) {
             $order = wc_get_order($orderId);
-            if (!$order) continue;
+            if (! $order) {
+                continue;
+            }
             $orderProcessed = false;
 
             foreach ($order->get_items() as $item) {
@@ -322,7 +334,9 @@ class BoardingListPage
                     if ($paxToRemove > 0 && isset($data['passengers'])) {
                         $remainingToRemove = $paxToRemove;
                         foreach ($data['passengers'] as $type => $qty) {
-                            if ($remainingToRemove <= 0) break;
+                            if ($remainingToRemove <= 0) {
+                                break;
+                            }
                             $canRemove = min($qty, $remainingToRemove);
                             $data['passengers'][$type] = $qty - $canRemove;
                             $remainingToRemove -= $canRemove;
@@ -339,7 +353,8 @@ class BoardingListPage
                                 $data['date'] = $newSailing->start;
                                 $item->update_meta_data('_booking_data_raw', json_encode($data));
                             }
-                        } catch (\Exception $e) {}
+                        } catch (\Exception $e) {
+                        }
                     }
                     $item->save();
 
@@ -351,13 +366,15 @@ class BoardingListPage
 
             if ($orderProcessed) {
                 $note = "🔄 REPROGRAMMATION (Admin) : Client déplacé du départ #$oldSailingId au #$newSailingId.";
-                if ($paxToRemove > 0) $note .= "\n⚠️ MODIFICATION : $paxToRemove passager(s) supprimé(s).";
+                if ($paxToRemove > 0) {
+                    $note .= "\n⚠️ MODIFICATION : $paxToRemove passager(s) supprimé(s).";
+                }
                 if ($priceAdjustment > 0) {
                     $note .= "\n💰 AJUSTEMENT : Supplément de {$priceAdjustment}€ dû.";
                     $order->update_meta_data('_balance_due', $priceAdjustment);
                 } elseif ($priceAdjustment < 0) {
                     $refundAmount = abs($priceAdjustment);
-                    $code = $this->createCouponForOrder($order, $refundAmount, "Avoir partiel");
+                    $code = $this->createCouponForOrder($order, $refundAmount, 'Avoir partiel');
                     $note .= "\n🎟️ AJUSTEMENT : Avoir de {$refundAmount}€ généré (Code : {$code})";
                 }
                 $order->add_order_note($note);
@@ -365,31 +382,38 @@ class BoardingListPage
                 $processedCount++;
             }
         }
+
         return $processedCount;
     }
 
-    private function updateSailingBookedCount($sailingId, $change) {
+    private function updateSailingBookedCount($sailingId, $change)
+    {
         $current = (int) get_post_meta($sailingId, 'sailing_config_booked_count', true);
         $new = max(0, $current + $change);
         update_post_meta($sailingId, 'sailing_config_booked_count', $new);
     }
 
-    private function createCouponForOrder($order, $amount, $description) {
-        $code = 'AV-' . strtoupper(substr(md5(uniqid() . $order->get_id()), 0, 6));
+    private function createCouponForOrder($order, $amount, $description)
+    {
+        $code = 'AV-'.strtoupper(substr(md5(uniqid().$order->get_id()), 0, 6));
         $email = $order->get_billing_email();
-        $coupon = new WC_Coupon();
+        $coupon = new WC_Coupon;
         $coupon->set_code($code);
         $coupon->set_discount_type('fixed_cart');
         $coupon->set_amount($amount);
         $coupon->set_individual_use(true);
         $coupon->set_usage_limit(1);
-        if ($email) $coupon->set_email_restrictions([$email]);
-        $coupon->set_description($description . " (Commande #" . $order->get_id() . ")");
+        if ($email) {
+            $coupon->set_email_restrictions([$email]);
+        }
+        $coupon->set_description($description.' (Commande #'.$order->get_id().')');
         $coupon->save();
+
         return $code;
     }
 
-    private function processRefund($orderIds) {
+    private function processRefund($orderIds)
+    {
         $count = 0;
         foreach ($orderIds as $orderId) {
             $order = wc_get_order($orderId);
@@ -400,17 +424,21 @@ class BoardingListPage
                 $count++;
             }
         }
+
         return $count;
     }
 
-    private function processCreditNote($orderIds) {
+    private function processCreditNote($orderIds)
+    {
         $count = 0;
         foreach ($orderIds as $orderId) {
             $order = wc_get_order($orderId);
             if ($order) {
-                if ($order->get_meta('_credit_coupon_code')) continue;
+                if ($order->get_meta('_credit_coupon_code')) {
+                    continue;
+                }
                 $amount = $order->get_total();
-                $code = $this->createCouponForOrder($order, $amount, "Avoir total pour annulation");
+                $code = $this->createCouponForOrder($order, $amount, 'Avoir total pour annulation');
                 $order->update_meta_data('_credit_coupon_code', $code);
                 $order->update_meta_data('_boarding_status', 'credited');
                 $order->add_order_note("🎟️ AVOIR GÉNÉRÉ : Coupon créé automatiquement.\nCode : {$code}\nMontant : {$amount}€");
@@ -418,17 +446,22 @@ class BoardingListPage
                 $count++;
             }
         }
+
         return $count;
     }
 
     public function handleCsvExport()
     {
         if (isset($_GET['page'], $_GET['action'], $_GET['sailing_id']) && $_GET['page'] === 'navi-boarding-list' && $_GET['action'] === 'download_csv') {
-            if (!current_user_can('edit_posts')) return;
+            if (! current_user_can('edit_posts')) {
+                return;
+            }
             $sailingId = (int) $_GET['sailing_id'];
             $sailing = Sailing::find($sailingId);
             if ($sailing) {
-                if (ob_get_length()) ob_end_clean();
+                if (ob_get_length()) {
+                    ob_end_clean();
+                }
                 $passengersList = $this->getPassengersForSailing($sailingId);
                 $this->generateCsv($sailing, $passengersList);
                 exit;
@@ -438,10 +471,10 @@ class BoardingListPage
 
     private function generateCsv($sailing, $passengers)
     {
-        $filename = 'boarding-' . $sailing->ID . '-' . date('Y-m-d') . '.csv';
+        $filename = 'boarding-'.$sailing->ID.'-'.date('Y-m-d').'.csv';
         header('Content-Description: File Transfer');
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=' . $filename);
+        header('Content-Disposition: attachment; filename='.$filename);
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
@@ -453,7 +486,7 @@ class BoardingListPage
             'Détail Passagers', 'Options', 'Total Pers.',
             'Montant (€)',
             'Statut Paiement',
-            'Note Client', 'Note Interne', 'Log Système'
+            'Note Client', 'Note Interne', 'Log Système',
         ], ';');
 
         foreach ($passengers as $pax) {
@@ -472,7 +505,7 @@ class BoardingListPage
                 $pax['status_label'],
                 $pax['boarding_notes'],
                 $pax['private_note'],
-                $pax['notes']
+                $pax['notes'],
             ], ';');
         }
         fclose($output);
@@ -481,8 +514,8 @@ class BoardingListPage
     private function getPassengersForSailing($sailingId)
     {
         global $wpdb;
-        $table_items = $wpdb->prefix . 'woocommerce_order_items';
-        $table_meta = $wpdb->prefix . 'woocommerce_order_itemmeta';
+        $table_items = $wpdb->prefix.'woocommerce_order_items';
+        $table_meta = $wpdb->prefix.'woocommerce_order_itemmeta';
 
         $results = $wpdb->get_results($wpdb->prepare("
             SELECT i.order_id, m.order_item_id
@@ -490,15 +523,19 @@ class BoardingListPage
             INNER JOIN {$table_meta} m ON i.order_item_id = m.order_item_id
             WHERE (m.meta_key = '_sailing_id' OR m.meta_key = 'sailing_id')
             AND m.meta_value = %s
-        ", (string)$sailingId));
+        ", (string) $sailingId));
 
         $list = [];
         foreach ($results as $row) {
             $order = wc_get_order($row->order_id);
-            if (!$order) continue;
+            if (! $order) {
+                continue;
+            }
 
             $item = $order->get_item($row->order_item_id);
-            if (!$item) continue;
+            if (! $item) {
+                continue;
+            }
 
             $rawData = $item->get_meta('_booking_data_raw');
             $data = json_decode($rawData, true) ?: [];
@@ -506,14 +543,16 @@ class BoardingListPage
             $passengers = $data['passengers'] ?? [];
             $totalSeats = 0;
             if (is_array($passengers)) {
-                foreach ($passengers as $qty) $totalSeats += (int)$qty;
+                foreach ($passengers as $qty) {
+                    $totalSeats += (int) $qty;
+                }
             }
 
             $customStatus = $order->get_meta('_boarding_status');
             $couponCode = $order->get_meta('_credit_coupon_code');
             $statusLabel = wc_get_order_status_name($order->get_status());
             if ($customStatus === 'credited') {
-                $statusLabel = '🎟️ Avoir (' . $couponCode . ')';
+                $statusLabel = '🎟️ Avoir ('.$couponCode.')';
             } elseif ($customStatus === 'refunded_manual' || $order->get_status() === 'refunded') {
                 $statusLabel = '💸 Remboursé';
             }
@@ -524,7 +563,7 @@ class BoardingListPage
             $list[] = [
                 'order_id' => $order->get_id(),
                 'order_link' => get_edit_post_link($order->get_id()),
-                'edit_booking_url' => admin_url('admin.php?page=navi-boarding-list&action=edit&order_id=' . $order->get_id()),
+                'edit_booking_url' => admin_url('admin.php?page=navi-boarding-list&action=edit&order_id='.$order->get_id()),
                 'customer_name' => $order->get_formatted_billing_full_name() ?: 'Client Invité',
                 'customer_email' => $order->get_billing_email(),
                 'phone' => $order->get_billing_phone(),
@@ -536,36 +575,47 @@ class BoardingListPage
                 'total_amount' => $order->get_total(),
                 'boarding_notes' => $boardingNotes,
                 'private_note' => $privateNote,
-                'notes' => $order->get_customer_note()
+                'notes' => $order->get_customer_note(),
             ];
         }
+
         return $list;
     }
 
     private function formatPassengers($passengers)
     {
-        if (!is_array($passengers)) return '-';
+        if (! is_array($passengers)) {
+            return '-';
+        }
         $output = [];
         foreach ($passengers as $typeId => $qty) {
             if ($qty > 0) {
                 $term = get_term($typeId, 'passenger_type');
-                $name = ($term && !is_wp_error($term)) ? $term->name : 'Passager';
+                $name = ($term && ! is_wp_error($term)) ? $term->name : 'Passager';
                 $output[] = "<strong>{$qty}</strong> x {$name}";
             }
         }
+
         return implode(', ', $output);
     }
 
     private function formatOptions($options)
     {
-        if (!is_array($options)) return '-';
+        if (! is_array($options)) {
+            return '-';
+        }
         $output = [];
         foreach ($options as $key => $value) {
             $optId = is_numeric($value) ? $value : $key;
-            if (is_numeric($key)) $optId = $value;
+            if (is_numeric($key)) {
+                $optId = $value;
+            }
             $term = get_term($optId, 'extra_option_type');
-            if ($term && !is_wp_error($term)) $output[] = $term->name;
+            if ($term && ! is_wp_error($term)) {
+                $output[] = $term->name;
+            }
         }
+
         return implode(', ', $output);
     }
 }

@@ -5,18 +5,18 @@ use Roots\Acorn\Configuration\Exceptions;
 use Roots\Acorn\Configuration\Middleware;
 
 // Bootstrap WordPress environment
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/..');
 $dotenv->load();
 
 // Set testing environment before any WordPress constants are defined
 $_ENV['WP_ENV'] = 'testing';
 
 // Bootstrap WordPress
-require_once __DIR__ . '/../public/wp-config.php';
+require_once __DIR__.'/../public/wp-config.php';
 
 // Ensure WordPress is fully loaded
-if (!function_exists('wp_loaded')) {
-    require_once ABSPATH . 'wp-settings.php';
+if (! function_exists('wp_loaded')) {
+    require_once ABSPATH.'wp-settings.php';
 }
 
 // Bootstrap Acorn the same way as the mu-plugin
@@ -31,7 +31,7 @@ $app = Application::configure()
     ->boot();
 
 // Manually set up database connection since Acorn's provider registration is incomplete
-$capsule = new \Illuminate\Database\Capsule\Manager();
+$capsule = new \Illuminate\Database\Capsule\Manager;
 $capsule->addConnection([
     'driver' => 'mysql',
     'host' => DB_HOST,

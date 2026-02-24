@@ -3,10 +3,15 @@
   <component name="LaravelPint">
     <laravel_pint_settings>
       <LaravelPintConfiguration tool_path="$PROJECT_DIR$/vendor/bin/pint" />
+      <laravel_pint_by_interpreter asDefaultInterpreter="true" interpreter_id="ef52e24b-b49b-490e-a759-7128eb8d646c" tool_path="$PROJECT_DIR$/vendor/bin/pint">
+        <option name="timeout" value="30000" />
+      </laravel_pint_by_interpreter>
     </laravel_pint_settings>
   </component>
   <component name="LaravelPintOptionsConfiguration">
     <option name="pintJsonPath" value="$PROJECT_DIR$/pint.json" />
+    <option name="reformatOnlyUncommittedFiles" value="true" />
+    <option name="ruleset" value="defined in pint.json" />
   </component>
   <component name="MessDetectorOptionsConfiguration">
     <option name="transferred" value="true" />

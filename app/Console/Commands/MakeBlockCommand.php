@@ -54,6 +54,7 @@ class MakeBlockCommand extends Command
 
         if (file_exists($path)) {
             $this->error("Block class already exists: {$path}");
+
             return;
         }
 
@@ -90,6 +91,7 @@ EOT;
 
         if (file_exists($path)) {
             $this->error("Block view already exists: {$path}");
+
             return;
         }
 
@@ -110,6 +112,7 @@ EOT;
 
         if (file_exists($path)) {
             $this->error("Block JS already exists: {$path}");
+
             return;
         }
 
@@ -188,7 +191,8 @@ EOT;
         $content = file_get_contents($path);
 
         if ($content === false) {
-            $this->error("Could not read BlocksServiceProvider.php");
+            $this->error('Could not read BlocksServiceProvider.php');
+
             return;
         }
 
@@ -198,19 +202,19 @@ EOT;
             // Insert after the last existing "use ..." or after namespace if none
             if (preg_match('/^(namespace\s+[^;]+;\s*(?:\Ruse\s+[^;]+;\s*)*)/m', $content, $m)) {
                 $block = $m[1];
-                $replacement = rtrim($block) . PHP_EOL . $useStatement . PHP_EOL;
+                $replacement = rtrim($block).PHP_EOL.$useStatement.PHP_EOL;
                 $content = preg_replace('/^(namespace\s+[^;]+;\s*(?:\Ruse\s+[^;]+;\s*)*)/m', $replacement, $content, 1);
             } else {
                 // Fallback: insert after namespace line
-                $content = preg_replace('/^(namespace\s+[^;]+;\s*)/m', '$0' . $useStatement . PHP_EOL, $content, 1);
+                $content = preg_replace('/^(namespace\s+[^;]+;\s*)/m', '$0'.$useStatement.PHP_EOL, $content, 1);
             }
         }
 
         // 2) Prepare the filter call we want to add
         $filterCall = "        /**\n"
-            . "         * Render `radicle/{$kebabName}` block with Blade template\n"
-            . "         */\n"
-            . "        add_filter('render_block', [new {$studlyName}(), 'render'], 10, 2);";
+            ."         * Render `radicle/{$kebabName}` block with Blade template\n"
+            ."         */\n"
+            ."        add_filter('render_block', [new {$studlyName}(), 'render'], 10, 2);";
 
         // Skip if it's already present
         if (strpos($content, $filterCall) === false) {
@@ -220,21 +224,23 @@ EOT;
             if (preg_match($pattern, $content)) {
                 $content = preg_replace(
                     $pattern,
-                    '$1$2' . PHP_EOL . $filterCall . '$3',
+                    '$1$2'.PHP_EOL.$filterCall.'$3',
                     $content,
                     1
                 );
             } else {
-                $this->error("Could not find register() method in BlocksServiceProvider.php");
+                $this->error('Could not find register() method in BlocksServiceProvider.php');
+
                 return;
             }
         }
 
         if (file_put_contents($path, $content) === false) {
-            $this->error("Failed to write BlocksServiceProvider.php");
+            $this->error('Failed to write BlocksServiceProvider.php');
+
             return;
         }
 
-        $this->info("BlocksServiceProvider updated.");
+        $this->info('BlocksServiceProvider updated.');
     }
 }

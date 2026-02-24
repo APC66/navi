@@ -37,7 +37,7 @@ class AcfCruiseInfos extends Field
                 'label' => 'Heure Départ',
                 'display_format' => 'H:i', // H = 24h avec zéro, i = minutes
                 'return_format' => 'H:i:s',
-                'wrapper' => ['width' => '25']
+                'wrapper' => ['width' => '25'],
             ])
 
             // HEURE DE RETOUR (Format 24h)
@@ -46,14 +46,14 @@ class AcfCruiseInfos extends Field
                 'display_format' => 'H:i', // H = 24h avec zéro
                 'return_format' => 'H:i:s',
                 'wrapper' => ['width' => '25'],
-                'instructions' => 'Si < à l\'heure de départ, sera considéré le lendemain.'
+                'instructions' => 'Si < à l\'heure de départ, sera considéré le lendemain.',
             ])
 
             ->addNumber('batch_quota', ['label' => 'Quota Global', 'default_value' => 50])
 
             ->addCheckbox('days', [
                 'label' => 'Jours actifs',
-                'choices' => ['1'=>'Lundi', '2'=>'Mardi', '3'=>'Mercredi', '4'=>'Jeudi', '5'=>'Vendredi', '6'=>'Samedi', '0'=>'Dimanche'],
+                'choices' => ['1' => 'Lundi', '2' => 'Mardi', '3' => 'Mercredi', '4' => 'Jeudi', '5' => 'Vendredi', '6' => 'Samedi', '0' => 'Dimanche'],
                 'layout' => 'horizontal',
                 'return_format' => 'value',
             ])
@@ -82,7 +82,7 @@ class AcfCruiseInfos extends Field
             ->addTrueFalse('has_quota', ['label' => 'Stock ?', 'ui' => 1, 'wrapper' => ['width' => '33']])
             ->addNumber('quota', [
                 'label' => 'Stock',
-                'conditional_logic' => [[['field' => 'has_quota', 'operator' => '==', 'value' => '1']]]
+                'conditional_logic' => [[['field' => 'has_quota', 'operator' => '==', 'value' => '1']]],
             ])
             ->endRepeater()
             ->addAccordion('batch_pricing_accordion_end')

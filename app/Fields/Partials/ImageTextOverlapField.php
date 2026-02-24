@@ -26,7 +26,6 @@ class ImageTextOverlapField extends Partial
                 'toolbar' => 'basic',
                 'rows' => 6,
             ])
-
             ->addTab('visuel', ['label' => 'Visuels'])
             ->addImage('image_front', [
                 'label' => 'Image Avant (Principale)',
@@ -40,7 +39,6 @@ class ImageTextOverlapField extends Partial
                 'return_format' => 'id',
                 'preview_size' => 'medium',
             ])
-
             ->addTab('reglages', ['label' => 'Réglages'])
             ->addTrueFalse('invert', [
                 'label' => 'Inverser la disposition',

@@ -9,7 +9,6 @@ class CalendarPage
 {
     protected $pageSlug = 'navi-planning';
 
-
     public function __invoke(): void
     {
         add_menu_page(

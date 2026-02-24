@@ -28,7 +28,7 @@ class FrontPage extends Composer
         $featured = Post::published()
             ->whereHas('meta', function ($query) {
                 $query->where('meta_key', 'featured')
-                      ->where('meta_value', '1');
+                    ->where('meta_value', '1');
             })
             ->orderBy('post_date', 'desc')
             ->first();
@@ -57,7 +57,7 @@ class FrontPage extends Composer
         $featured = Seed::published()
             ->whereHas('meta', function ($query) {
                 $query->where('meta_key', 'featured')
-                      ->where('meta_value', '1');
+                    ->where('meta_value', '1');
             })
             ->orderBy('post_date', 'desc')
             ->limit(4)

@@ -2,7 +2,7 @@
 
 // phpcs:disable
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/..');
 $dotenv->load();
 
 it('should return a 200 status code', function () {

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ReservationService;
 use App\Models\Sailing;
+use App\Services\ReservationService;
 use WP_REST_Request;
-use WC_Cart;
 
 class CartController
 {
@@ -13,7 +12,7 @@ class CartController
 
     public function __construct()
     {
-        $this->reservationService = new ReservationService();
+        $this->reservationService = new ReservationService;
     }
 
     public function addToCart(WP_REST_Request $request)
@@ -41,7 +40,7 @@ class CartController
 
         $sailing = Sailing::find($sailingId);
 
-        if (!$sailing) {
+        if (! $sailing) {
             return ['success' => false, 'message' => 'Date invalide ou expirée.'];
         }
 
@@ -51,7 +50,7 @@ class CartController
             // Le service doit gérer le format [id => qty] maintenant
             $isAvailable = $this->reservationService->checkAvailability($sailingId, $totalHumans, $options);
 
-            if (!$isAvailable) {
+            if (! $isAvailable) {
                 return ['success' => false, 'message' => 'Désolé, il n\'y a plus assez de places ou d\'options disponibles.'];
             }
         } catch (\Exception $e) {
@@ -61,7 +60,7 @@ class CartController
         $cruiseId = $sailing->parentCruiseId;
         $productId = get_post_meta($cruiseId, 'related_wc_product_id', true);
 
-        if (!$productId) {
+        if (! $productId) {
             return ['success' => false, 'message' => 'Erreur technique : Produit non configuré.'];
         }
 
@@ -73,7 +72,7 @@ class CartController
         foreach ($passengers as $typeId => $qty) {
             if ($qty > 0) {
                 $term = get_term($typeId, 'passenger_type');
-                $name = !is_wp_error($term) ? $term->name : 'Passager';
+                $name = ! is_wp_error($term) ? $term->name : 'Passager';
                 $details[] = "$qty x $name";
             }
         }
@@ -82,7 +81,7 @@ class CartController
         foreach ($options as $optId => $qty) {
             if ($qty > 0) {
                 $term = get_term($optId, 'extra_option_type');
-                $name = !is_wp_error($term) ? $term->name : 'Option';
+                $name = ! is_wp_error($term) ? $term->name : 'Option';
                 $details[] = "$qty x $name";
             }
         }
@@ -94,21 +93,21 @@ class CartController
                 'passengers' => $passengers,
                 'options' => $options, // On stocke le format normalisé [id => qty]
                 'price_override' => $totalPrice,
-                'details_string' => implode(', ', $details)
-            ]
+                'details_string' => implode(', ', $details),
+            ],
         ];
 
         try {
-            if (null === WC()->session) {
+            if (WC()->session === null) {
                 $session = apply_filters('woocommerce_session_handler', 'WC_Session_Handler');
-                WC()->session = new $session();
+                WC()->session = new $session;
                 WC()->session->init();
             }
-            if (null === WC()->customer) {
+            if (WC()->customer === null) {
                 WC()->customer = new \WC_Customer(get_current_user_id(), true);
             }
-            if (null === WC()->cart) {
-                WC()->cart = new \WC_Cart();
+            if (WC()->cart === null) {
+                WC()->cart = new \WC_Cart;
             }
 
             WC()->cart->add_to_cart($productId, 1, 0, [], $cartItemData);
@@ -117,11 +116,11 @@ class CartController
                 'success' => true,
                 'data' => [
                     'redirect' => wc_get_cart_url(),
-                    'message' => 'Ajouté au panier !'
-                ]
+                    'message' => 'Ajouté au panier !',
+                ],
             ];
         } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Erreur WooCommerce : ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Erreur WooCommerce : '.$e->getMessage()];
         }
     }
 }

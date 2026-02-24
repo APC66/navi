@@ -44,7 +44,7 @@ class HeroVideo extends Block
     {
         return [
             'video_desktop' => get_field('video_desktop'),
-            'video_mobile'  => get_field('video_mobile'),
+            'video_mobile' => get_field('video_mobile'),
             'fallback_image' => get_field('fallback_image'),
         ];
     }

@@ -30,7 +30,7 @@ return [
          * Sidebar instances
          */
         'register' => [
-            ['name' => __('Footer', 'radicle'), 'id' => 'sidebar-footer']
+            ['name' => __('Footer', 'radicle'), 'id' => 'sidebar-footer'],
         ],
 
         /**
@@ -40,7 +40,7 @@ return [
             'before_widget' => '<section class="widget %1$s %2$s">',
             'after_widget' => '</section>',
             'before_title' => '<h3>',
-            'after_title' => '</h3>'
+            'after_title' => '</h3>',
         ],
     ],
 

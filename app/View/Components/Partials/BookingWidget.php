@@ -3,7 +3,6 @@
 namespace App\View\Components\Partials;
 
 use Roots\Acorn\View\Component;
-use function Roots\bundle;
 
 class BookingWidget extends Component
 {

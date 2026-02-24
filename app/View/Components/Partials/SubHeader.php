@@ -24,9 +24,9 @@ class SubHeader extends Component
     /**
      * Create a new component instance.
      *
-     * @param string $subtitle
-     * @param string $content
-     * @param string $align
+     * @param  string  $subtitle
+     * @param  string  $content
+     * @param  string  $align
      * @return void
      */
     public function __construct($subtitle = '', $content = '', $align = 'text-center')

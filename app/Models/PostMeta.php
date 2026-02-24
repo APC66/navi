@@ -10,6 +10,7 @@ class PostMeta extends Model
     public $timestamps = false;
 
     protected $table = 'postmeta';
+
     protected $primaryKey = 'meta_id';
 
     protected $fillable = [

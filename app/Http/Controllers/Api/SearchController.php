@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use WP_REST_Request;
 use WP_Query;
+use WP_REST_Request;
+
 use function Roots\view;
 
 class SearchController
@@ -31,7 +32,7 @@ class SearchController
         ];
 
         // 1. Filtre par TAGS (cruise_tag)
-        if (!empty($tags)) {
+        if (! empty($tags)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'cruise_tag',
                 'field' => 'term_id',
@@ -41,7 +42,7 @@ class SearchController
         }
 
         // 2. Filtre par TYPE (cruise_type)
-        if (!empty($categories)) {
+        if (! empty($categories)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'cruise_type',
                 'field' => 'term_id',
@@ -82,7 +83,7 @@ class SearchController
             'html' => $html,
             'count' => $query->found_posts,
             'max_pages' => $query->max_num_pages,
-            'current_page' => $page
+            'current_page' => $page,
         ];
     }
 }

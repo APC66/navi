@@ -45,7 +45,7 @@ class TextImage extends Block
      */
     public function with()
     {
-        $margins = get_field('margin_top') . ' ' . get_field('margin_bottom');
+        $margins = get_field('margin_top').' '.get_field('margin_bottom');
 
         return [
             'title_group' => get_field('title_group'),

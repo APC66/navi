@@ -90,9 +90,9 @@ class ThemeServiceProvider extends SageServiceProvider
                 acf_add_options_page([
                     'page_title' => 'Options du Thème',
                     'menu_title' => 'Options Thème',
-                    'menu_slug'  => 'theme-options',
+                    'menu_slug' => 'theme-options',
                     'capability' => 'edit_theme_options',
-                    'redirect'   => false
+                    'redirect' => false,
                 ]);
             }
         });
@@ -123,7 +123,7 @@ class ThemeServiceProvider extends SageServiceProvider
             }
         }, 100);
 
-        //Disable wp block
+        // Disable wp block
         add_filter('allowed_block_types_all', function ($allowed_blocks, $editor_context) {
             return [
                 'acf/hero-video',
@@ -135,15 +135,16 @@ class ThemeServiceProvider extends SageServiceProvider
             ];
         }, 10, 2);
 
-        //Disable preview
+        // Disable preview
         add_filter('acf/register_block_type_args', function ($args) {
             $args['mode'] = 'edit'; // Force l'affichage des champs
             $args['supports']['mode'] = false; // Cache le bouton pour switcher en preview
+
             return $args;
         });
 
-        //Disable autosave
-        add_action('admin_init', function() {
+        // Disable autosave
+        add_action('admin_init', function () {
             wp_deregister_script('autosave');
         });
     }

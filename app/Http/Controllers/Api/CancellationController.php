@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Sailing;
 use WP_REST_Request;
-use WC_Order;
 
 class CancellationController
 {
@@ -13,7 +12,7 @@ class CancellationController
         $sailingId = (int) $request->get_param('sailing_id');
         $sailing = Sailing::find($sailingId);
 
-        if (!$sailing) {
+        if (! $sailing) {
             return new \WP_Error('not_found', 'Départ introuvable', ['status' => 404]);
         }
 
@@ -30,8 +29,8 @@ class CancellationController
             'impact' => [
                 'orders_count' => count($impactedOrders),
                 'passengers_count' => $totalPassengers,
-                'orders' => $impactedOrders
-            ]
+                'orders' => $impactedOrders,
+            ],
         ];
     }
 
@@ -45,7 +44,9 @@ class CancellationController
         $status = $request->get_param('status') ?: 'Annulé'; // Par défaut Annulé si vide, mais accepte 'Reporté'
 
         $sailing = Sailing::find($sailingId);
-        if (!$sailing) return new \WP_Error('not_found', 'Départ introuvable');
+        if (! $sailing) {
+            return new \WP_Error('not_found', 'Départ introuvable');
+        }
 
         // 1. Mise à jour de la Taxonomie
         // Cela permet de passer en 'Annulé', 'Reporté', ou même de revenir à 'Actif'
@@ -67,7 +68,7 @@ class CancellationController
                     $note = "ℹ️ INFO : Le départ (ID $sailingId) a été réactivé.";
                 } else {
                     $note = "ℹ️ STATUT DÉPART MODIFIÉ : $status (ID $sailingId).\n";
-                    $note .= "Raison : " . ($reason ?: 'Non spécifiée');
+                    $note .= 'Raison : '.($reason ?: 'Non spécifiée');
                     $note .= "\nAction requise : Vérifier si remboursement/report nécessaire.";
                 }
 
@@ -78,7 +79,7 @@ class CancellationController
         return [
             'success' => true,
             'message' => "Statut mis à jour vers '$status'.",
-            'new_status' => $status
+            'new_status' => $status,
         ];
     }
 
@@ -90,13 +91,17 @@ class CancellationController
         $orderIds = $request->get_param('order_ids') ?: [];
 
         $newSailing = Sailing::find($newSailingId);
-        if (!$newSailing) return new \WP_Error('not_found', 'Nouveau départ introuvable');
+        if (! $newSailing) {
+            return new \WP_Error('not_found', 'Nouveau départ introuvable');
+        }
 
         $processed = 0;
 
         foreach ($orderIds as $orderId) {
             $order = wc_get_order($orderId);
-            if (!$order) continue;
+            if (! $order) {
+                continue;
+            }
 
             $changed = false;
             foreach ($order->get_items() as $item) {
@@ -115,7 +120,8 @@ class CancellationController
                                 $raw['date'] = $newSailing->start;
                                 $item->update_meta_data('_booking_data_raw', json_encode($raw));
                             }
-                        } catch (\Exception $e) {}
+                        } catch (\Exception $e) {
+                        }
                     }
                     $item->save();
                     $changed = true;
@@ -123,7 +129,7 @@ class CancellationController
             }
 
             if ($changed) {
-                $order->add_order_note("🔄 REPROGRAMMATION : Client déplacé vers le départ #$newSailingId (" . $newSailing->start . ").");
+                $order->add_order_note("🔄 REPROGRAMMATION : Client déplacé vers le départ #$newSailingId (".$newSailing->start.').');
                 $order->save();
                 $processed++;
             }
@@ -131,7 +137,7 @@ class CancellationController
 
         return [
             'success' => true,
-            'message' => "$processed commandes déplacées vers le départ du " . $newSailing->start
+            'message' => "$processed commandes déplacées vers le départ du ".$newSailing->start,
         ];
     }
 }

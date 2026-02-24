@@ -14,6 +14,7 @@ class Seed extends Post
     public function categories(): array
     {
         $terms = get_the_terms($this->ID, 'seed_category');
+
         return is_array($terms) ? $terms : [];
     }
 

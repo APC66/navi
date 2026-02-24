@@ -89,9 +89,10 @@ class Cruise extends Post
         return get_the_title($this->ID);
     }
 
-     public function getTagsAttribute()
+    public function getTagsAttribute()
     {
         $types = wp_get_post_terms($this->ID, 'cruise_tag');
+
         return collect($types)->map(function ($type) {
             return [
                 'id' => $type->term_id,
@@ -104,6 +105,7 @@ class Cruise extends Post
     public function getTypesAttribute()
     {
         $types = wp_get_post_terms($this->ID, 'cruise_type');
+
         return collect($types)->map(function ($type) {
             return [
                 'id' => $type->term_id,
@@ -116,6 +118,7 @@ class Cruise extends Post
     public function getHarborAttribute()
     {
         $harbor = wp_get_post_terms($this->ID, 'harbor');
+
         return collect($harbor)->first();
 
     }

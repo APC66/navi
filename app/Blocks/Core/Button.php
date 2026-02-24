@@ -34,16 +34,16 @@ class Button
             return $blockContent;
         }
 
-        $html5 = new HTML5();
+        $html5 = new HTML5;
         $dom = $html5->loadHTML($blockContent);
         $anchor = $dom->getElementsByTagName('a')->item(0);
 
-        if (!$anchor) {
+        if (! $anchor) {
             return $blockContent;
         }
 
         $classes = $anchor->getAttribute('class') ?? '';
-        $classes .= ' ' . ($block['attrs']['className'] ?? '');
+        $classes .= ' '.($block['attrs']['className'] ?? '');
 
         $href = $anchor->getAttribute('href') ?? null;
         $rel = $anchor->getAttribute('rel') ?? null;

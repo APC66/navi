@@ -21,7 +21,7 @@ return [
                 'singular' => 'Seed',
                 'plural' => 'Seeds',
                 'slug' => 'seeds',
-            ]
+            ],
         ],
 
         'cruise' => [
@@ -57,10 +57,10 @@ return [
                 'sailing_date' => [
                     'title' => 'Date de départ',
                     'meta_key' => 'departure_date',
-                    'function' => function() {
+                    'function' => function () {
                         $date = get_field('departure_date');
                         echo $date ? date_i18n('d/m/Y H:i', strtotime($date)) : '-';
-                    }
+                    },
                 ],
                 'sailing_quota' => [
                     'title' => 'Quota',

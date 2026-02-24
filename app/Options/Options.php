@@ -94,7 +94,7 @@ class Options extends Field
                 'label' => __('Guide des tailles', 'radicle'),
                 'instructions' => __('Lien vers le guide des tailles.', 'radicle'),
             ])
-        ->addText('livraison_text', [
+            ->addText('livraison_text', [
                 'label' => __('Texte de livraison', 'radicle'),
                 'instructions' => __('Texte affiché sur la page de livraison.', 'radicle'),
             ])
@@ -112,7 +112,7 @@ class Options extends Field
                 'instructions' => __('Image par defaut utilisée dans la liste de bijoux', 'radicle'),
                 'return_format' => 'url',
             ])
-        ->addTab('scripts')
+            ->addTab('scripts')
             ->addTextarea('header_scripts', [
                 'label' => __('Scripts dans le head', 'radicle'),
                 'instructions' => __('Scripts à insérer dans le head de chaque page.', 'radicle'),
