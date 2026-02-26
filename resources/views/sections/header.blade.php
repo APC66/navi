@@ -106,23 +106,23 @@
     >
       <a
         href="{{ get_permalink(get_option('woocommerce_myaccount_page_id')) }}"
-        class="bg-secondary inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        class="bg-secondary text-primary-1000 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
       >
         @svg('user', 'h-6 w-6')
       </a>
       <a
         href="{{ get_permalink(get_option('woocommerce_cart_page_id')) }}"
-        class="bg-secondary relative mr-2 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        class="bg-secondary text-primary-1000 relative mr-2 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
       >
         @svg('cart', 'h-6 w-6')
         <div
-          class="text-md absolute top-0 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white font-medium"
+          class="text-md text-primary-1000 absolute top-0 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white font-medium"
         >
           {{ WC()->cart->get_cart_contents_count() }}
         </div>
       </a>
       <button
-        class="bg-secondary inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        class="bg-secondary text-primary-1000 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
       >
         @svg('glass', 'h-6 w-6')
       </button>

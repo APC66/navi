@@ -1,16 +1,18 @@
 <div
   id="booking-widget-{{ $cruiseId }}"
-  class="booking-widget text-primary-900 relative rounded-[30px] bg-[#EBF0F5] p-6 font-sans shadow-2xl md:p-8 lg:p-10"
+  class="booking-widget text-primary-900 relative"
   x-data="bookingWidget({{ $cruiseId }}, '{{ wp_create_nonce('wp_rest') }}')"
   x-init="init()"
 >
+  <h3 class="text-center text-3xl text-white uppercase font-medium my-12 ">
+    Réserver votre
+    <span class="text-secondary">croisière</span>
+  </h3>
   <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-    <!-- ========================================= -->
-    <!-- COLONNE GAUCHE : CALENDRIER               -->
-    <!-- ========================================= -->
-    <div class="calendar-section flex h-full flex-col">
-      <div class="flex-1 rounded-2xl bg-white p-6 shadow-sm">
-        <!-- En-tête Calendrier -->
+    <div
+      class="calendar-section bg-primary-50 flex h-full flex-col rounded-2xl p-6 shadow-sm lg:p-10"
+    >
+      <div class="flex-1">
         <div class="mb-6 flex items-center justify-between">
           <button
             @click="changeMonth(-1)"
@@ -44,99 +46,103 @@
           </button>
         </div>
 
-        <!-- Jours Semaine -->
-        <div
-          class="text-primary-900 mb-2 grid grid-cols-7 text-center text-xs font-bold tracking-widest uppercase"
-        >
-          <div>Lun</div>
-          <div>Mar</div>
-          <div>Mer</div>
-          <div>Jeu</div>
-          <div>Ven</div>
-          <div>Sam</div>
-          <div>Dim</div>
-        </div>
-
-        <!-- Grille des Jours -->
-        <div class="relative grid grid-cols-7 gap-1.5 text-sm md:gap-2">
-          <!-- Loader Overlay -->
+        <div class="rounded-2xl bg-[#FBF8F0] p-6">
           <div
-            x-show="loading"
-            class="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm"
+            class="text-primary-900 mb-2 grid grid-cols-7 text-center text-xs font-bold tracking-widest uppercase"
           >
-            <svg
-              class="text-primary-600 mb-2 h-8 w-8 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span class="text-primary-600 text-sm font-bold">Chargement...</span>
+            <div>Lun</div>
+            <div>Mar</div>
+            <div>Mer</div>
+            <div>Jeu</div>
+            <div>Ven</div>
+            <div>Sam</div>
+            <div>Dim</div>
           </div>
 
-          <template x-for="(dayObj, index) in calendarGrid" :key="index">
+          <div class="relative grid grid-cols-7 gap-1.5 text-sm md:gap-2">
             <div
-              class="relative aspect-square w-full overflow-hidden rounded-xl border-4 shadow-sm transition-transform duration-200"
-              :class="getDayClasses(dayObj)"
-              @click="handleDayClick(dayObj)"
+              x-show="loading"
+              class="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm"
             >
-              <button
-                class="flex h-full w-full flex-col items-center justify-center p-1 disabled:cursor-not-allowed"
-                :disabled="dayObj.empty || !dayObj.sailing || dayObj.isPast || !dayObj.isSelectable"
+              <svg
+                class="text-primary-600 mb-2 h-8 w-8 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                <span x-text="dayObj.day" class="text-sm font-bold md:text-base"></span>
-
-                <template x-if="dayObj.statusLabel">
-                  <span
-                    class="xs:block mt-1 hidden text-[9px] font-extrabold tracking-tighter uppercase"
-                    x-text="dayObj.statusLabel"
-                  ></span>
-                </template>
-
-                <!-- Barre de rayure pour Annulé -->
-                <template x-if="dayObj.status === 'Annulé'">
-                  <svg
-                    class="pointer-events-none absolute inset-0 h-full w-full text-red-500 opacity-90"
-                    preserveAspectRatio="none"
-                    viewBox="0 0 100 100"
-                  >
-                    <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="4" />
-                  </svg>
-                </template>
-              </button>
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span class="text-primary-600 text-sm font-bold">Chargement...</span>
             </div>
-          </template>
+
+            <template x-for="(dayObj, index) in calendarGrid" :key="index">
+              <div
+                class="relative aspect-square w-full overflow-hidden rounded-xl border-4 shadow-sm transition-transform duration-200"
+                :class="getDayClasses(dayObj)"
+                @click="handleDayClick(dayObj)"
+              >
+                <button
+                  class="flex h-full w-full flex-col items-center justify-center p-1 disabled:cursor-not-allowed"
+                  :disabled="dayObj.empty || !dayObj.sailing || dayObj.isPast || !dayObj.isSelectable"
+                >
+                  <span x-text="dayObj.day" class="text-sm font-bold md:text-base"></span>
+
+                  <template x-if="dayObj.statusLabel">
+                    <span
+                      class="xs:block mt-1 hidden text-[9px] font-extrabold tracking-tighter uppercase"
+                      x-text="dayObj.statusLabel"
+                    ></span>
+                  </template>
+
+                  <template x-if="dayObj.status === 'Annulé'">
+                    <svg
+                      class="pointer-events-none absolute inset-0 h-full w-full text-red-500 opacity-90"
+                      preserveAspectRatio="none"
+                      viewBox="0 0 100 100"
+                    >
+                      <line
+                        x1="0"
+                        y1="100"
+                        x2="100"
+                        y2="0"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      />
+                    </svg>
+                  </template>
+                </button>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
 
-      <!-- Légende -->
       <div
-        class="text-primary-900 mt-6 grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-white p-5 text-[11px] font-bold shadow-sm"
+        class="bg-text-primary-900 mt-6 grid grid-cols-1 gap-x-4 gap-y-3 rounded-2xl bg-[#FBF8F0] p-5 text-sm font-bold shadow-sm sm:grid-cols-2"
       >
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#C5F8A5] shadow-sm"></span>
-          Disponible
+          <span class="shrink-1">Disponible</span>
         </div>
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#FFA632] shadow-sm"></span>
-          Dernières places disponibles
+          <span class="shrink-1">Dernièr places disponibles</span>
         </div>
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#FBF166] shadow-sm"></span>
-          Reporté
+          <span class="shrink-1">Reporté</span>
         </div>
         <div class="flex items-center">
           <span class="relative mr-3 h-4 w-4 overflow-hidden rounded bg-[#60386B] shadow-sm">
@@ -148,16 +154,16 @@
               <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="8" />
             </svg>
           </span>
-          Annulé
+          <span class="shrink-1">Annulé</span>
         </div>
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#C33149] shadow-sm"></span>
-          Complet
+          <span class="shrink-1">Complet</span>
         </div>
       </div>
     </div>
 
-    <div class="form-section flex h-full flex-col lg:pl-4">
+    <div class="form-section bg-primary-50 flex h-full flex-col rounded-2xl p-6 lg:p-10">
       <div
         x-show="!currentSailing"
         class="text-primary-600/50 flex min-h-[400px] flex-1 flex-col items-center justify-center text-center"
@@ -188,11 +194,11 @@
           <div class="mb-8">
             <div class="mb-2 flex items-start justify-between">
               <div>
-                <h4 class="text-primary-600 mb-1 text-xs font-bold tracking-widest uppercase">
+                <h4 class="text-primary-600 mb-1 font-bold tracking-widest uppercase">
                   Votre départ
                 </h4>
                 <div
-                  class="text-primary-900 font-heading text-2xl leading-none font-bold uppercase md:text-3xl"
+                  class="text-primary-900 font-heading text-2xl leading-none font-medium uppercase md:text-3xl"
                   x-text="formatHeaderDate(currentSailing.start)"
                 ></div>
               </div>
@@ -203,19 +209,14 @@
                 places dispo
               </div>
             </div>
-            <div
-              class="text-primary-900 mt-3 text-[10px] font-bold tracking-widest uppercase opacity-80"
-            >
+            <div class="text-primary-600 mt-3 font-bold tracking-widest uppercase opacity-80">
               DÉPART DEPUIS
-              <span
-                x-text="currentSailing.extendedProps.port || 'VOTRE PORT DE CROISIÈRE'"
-              ></span>
+              <span x-text="currentSailing.port || 'VOTRE PORT DE CROISIÈRE'"></span>
             </div>
           </div>
 
-          <!-- PASSAGERS -->
           <div class="mb-8">
-            <h4 class="text-primary-900 mb-4 text-sm font-bold tracking-widest uppercase">
+            <h4 class="text-primary-900 mb-2 text-lg font-bold tracking-widest uppercase">
               Passagers
             </h4>
             <div class="space-y-0">
@@ -228,7 +229,7 @@
                     <div class="flex flex-col">
                       <span class="text-primary-900 block font-bold" x-text="fare.name"></span>
                       <span
-                        class="text-primary-600 text-sm font-medium"
+                        class="text-primary-600 font-medium"
                         x-text="formatPrice(fare.price)"
                       ></span>
                     </div>
@@ -271,7 +272,7 @@
             "
             class="mb-8"
           >
-            <h4 class="text-primary-900 mb-4 text-sm font-bold tracking-widest uppercase">
+            <h4 class="text-primary-900 mb-2 text-lg font-bold tracking-widest uppercase">
               Options
             </h4>
             <div class="space-y-0">
@@ -284,7 +285,7 @@
                     <div class="flex flex-col">
                       <span class="text-primary-900 block font-bold" x-text="option.name"></span>
                       <span
-                        class="text-primary-600 text-sm font-medium"
+                        class="text-primary-600 font-medium"
                         x-text="formatPrice(option.price)"
                       ></span>
                     </div>

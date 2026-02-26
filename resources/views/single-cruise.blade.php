@@ -12,13 +12,19 @@
 
       $bgImage = $headerGroup['header_image'] ?? get_the_post_thumbnail_url(null, 'full');
 
-      $title = $headerGroup['header_title'] ?: get_the_title();
+
+      $title = $headerGroup['header_title'] ?? get_the_title();
+
 
       $highlight = $headerGroup['header_highlight'] ?? '';
       $highlightColor = $headerGroup['header_highlight_color'] ?? 'text-secondary';
       $subtitle = $headerGroup['header_subtitle'] ?? '';
 
+
+
       $price = $cruise->base_price;
+
+
 
       $imageTextOverlapGroup = get_field('image_text_overlap');
 
@@ -27,6 +33,20 @@
       $videos = get_field('videos');
       $mapImage = get_field('map_image');
       $additionalTabs = get_field('additional_tabs');
+
+      $relatedPosts = get_posts([
+          'post_type'      => 'cruise',
+          'posts_per_page' => 8,
+          'orderby'        => 'rand',
+          'post__not_in'   => [get_the_ID()],
+          'post_status'    => 'publish',
+      ]);
+
+
+      $relatedCruises = collect(array_map(function($p) {
+          return \App\Models\Cruise::find($p->ID);
+      }, $relatedPosts));
+
     @endphp
 
     <div class="relative text-white">
@@ -102,12 +122,23 @@
     </div>
 
     <div class="bg-primary-1000 relative">
-      <div id="booking-area" class="border-t border-gray-200 bg-gray-50 py-16">
+      <img
+        src="@asset('resources/images/bg-widget.jpg')"
+        class="absolute z-0 h-[690px] w-full object-cover"
+      />
+      <img
+        src="@asset('resources/images/waves.svg')"
+        class="absolute top-[690px] z-0 h-auto w-full -translate-y-1/2"
+      />
+      <div id="booking-area" class="bg-primary-1000 py-16">
         <div class="container mx-auto max-w-5xl px-4">
           <x-partials.booking-widget :cruise-id="get_the_ID()" />
         </div>
       </div>
-      <div class="container mx-auto px-4 py-12 md:py-20" x-data="{ activeTab: 'description' }">
+      <div
+        class="relative z-10 container mx-auto px-4 py-12 md:py-20"
+        x-data="{ activeTab: 'description' }"
+      >
         <div
           class="border-primary-400 mb-16 flex flex-wrap justify-center gap-x-10 space-x-2 gap-y-4 overflow-x-auto border-b pb-4"
           style="scrollbar-width: none; -ms-overflow-style: none"
@@ -224,6 +255,27 @@
           @endif
         </div>
       </div>
+
+      @if($relatedCruises->isNotEmpty())
+        @include('blocks.cruise-carousel', [
+            'block' => clone (object) ['classes' => ''],
+            'bg_image' => asset('resources/images/bg-carousel.jpg'),
+            'title_group' => [
+                'prefix' => 'Nos',
+                'highlight' => 'Nos',
+                'suffix' => 'autres croisières',
+                'highlight_break' => false,
+                'highlight_color' => 'text-white',
+                'tag' => 'h2',
+                'align' => 'text-center',
+                'size' => 'M'
+            ],
+            'cruises' => $relatedCruises,
+            'cta' => null,
+            'block_id' => 'cruise-carousel-related-' . uniqid()
+        ])
+      @endif
     </div>
+
   @endwhile
 @endsection

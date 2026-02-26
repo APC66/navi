@@ -42,11 +42,10 @@ export const initCruiseCarousel = () => {
           },
         768: {
           slidesPerView: 3.2,
-          spaceBetween: 32
         },
         1280: {
           slidesPerView: 4.9,
-          spaceBetween: 40,
+          spaceBetween: 32,
           autoplay: false
         }
         },

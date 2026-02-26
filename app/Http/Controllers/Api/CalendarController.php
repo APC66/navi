@@ -12,11 +12,16 @@ class CalendarController
         $context = $request->get_param('context');
         $is_admin = $context === 'admin' && current_user_can('edit_posts');
 
-        // LOGIQUE DE RÉCUPÉRATION (Back-end / Disponibilité technique)
-        // On utilise les statuts natifs WP.
-        // En front, on ne veut voir que ce qui est "publié".
-        // Si un départ est "Annulé" via la taxonomie mais toujours "Publié" WP, il sera récupéré (ce qu'on veut pour l'afficher en gris).
-        // Si un départ est "Brouillon", il est caché du front.
+        $cruiseId = (int) $request->get_param('cruise_id');
+        $portName = null;
+
+        if ($cruiseId) {
+            $terms = wp_get_post_terms($cruiseId, 'harbor', ['fields' => 'names']);
+            if (! is_wp_error($terms) && ! empty($terms)) {
+                $portName = $terms[0];
+            }
+        }
+
         $post_statuses = ['publish'];
 
         if ($is_admin) {
@@ -62,7 +67,7 @@ class CalendarController
             return [];
         }
 
-        $events = $sailings->map(function ($sailing) use ($is_admin) {
+        $events = $sailings->map(function ($sailing) use ($is_admin, $portName) {
 
             $quota = $sailing->quota;
             $start = $sailing->start;
@@ -160,6 +165,7 @@ class CalendarController
                 'allDay' => false,
                 'backgroundColor' => $color,
                 'borderColor' => $color,
+                'port' => $portName,
                 'classNames' => $classNames,
                 'extendedProps' => [
                     'quota' => $quota,

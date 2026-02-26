@@ -25,6 +25,7 @@ const bookingWidgetData = (cruiseId, nonce) => ({
       .then((res) => res.json())
       .then((data) => {
         this.sailings = data
+        console.log(data);
         this.loading = false
       })
   },
@@ -189,6 +190,7 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
   updateSelectedSailing() {
     this.currentSailing = this.sailings.find((s) => s.id == this.selectedSailingId)
+    console.log(this.currentSailing);
     this.passengers = {}
     this.selectedOptions = {}
     this.message = ''
@@ -266,11 +268,9 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
   // Format attendu : "92.00 €" ou "Gratuit"
   formatPrice(amount) {
-    if (amount === undefined || amount === null) return '0.00 €'
+    if (amount === undefined || amount === null) return '0,00 €'
     const numAmount = parseFloat(amount)
-    if (numAmount === 0) return 'Gratuit'
-    // Utilisation de toFixed pour forcer le point décimal comme sur la maquette
-    return numAmount.toFixed(2) + ' €'
+    return numAmount.toFixed(2).replace('.', ',') + ' €'
   },
 
   addToCart() {
