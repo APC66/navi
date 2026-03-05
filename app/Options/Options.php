@@ -12,21 +12,21 @@ class Options extends Field
      *
      * @var string
      */
-    public $name = 'Options';
+    public $name = 'Options contact';
 
     /* *
      * The option page position.
      *
      * @var int
      */
-    public $position = 100;
+    public $position = 90;
 
     /**
      * The option page document title.
      *
      * @var string
      */
-    public $title = 'Options du thème';
+    public $title = 'Options de contact';
 
     /**
      * The option page field group.
@@ -89,29 +89,6 @@ class Options extends Field
                 'label' => __('Pays', 'radicle'),
             ])
             ->endGroup()
-            ->addTab('Produits')
-            ->addLink('size_guide', [
-                'label' => __('Guide des tailles', 'radicle'),
-                'instructions' => __('Lien vers le guide des tailles.', 'radicle'),
-            ])
-            ->addText('livraison_text', [
-                'label' => __('Texte de livraison', 'radicle'),
-                'instructions' => __('Texte affiché sur la page de livraison.', 'radicle'),
-            ])
-            ->addText('livraison_text_demand', [
-                'label' => __('Texte de livraison sur demande', 'radicle'),
-                'instructions' => __('Texte affiché sur la page de livraison pour les produits "livraison sur demande".', 'radicle'),
-            ])
-            ->addWysiwyg('delivery_text', [
-                'label' => __('Texte de livraison', 'radicle'),
-                'instructions' => __('Texte affiché sur la page de livraison.', 'radicle'),
-            ])
-            ->addTab('Boutique')
-            ->addImage('default_image', [
-                'label' => __('Image par défaut', 'radicle'),
-                'instructions' => __('Image par defaut utilisée dans la liste de bijoux', 'radicle'),
-                'return_format' => 'url',
-            ])
             ->addTab('scripts')
             ->addTextarea('header_scripts', [
                 'label' => __('Scripts dans le head', 'radicle'),

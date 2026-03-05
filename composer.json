@@ -39,8 +39,9 @@
     "require": {
         "php": ">=8.3",
         "blade-ui-kit/blade-heroicons": "^2.6",
-        "blade-ui-kit/blade-icons": "^1.8",
+        "blade-ui-kit/blade-icons": "^1.9",
         "composer/installers": "^2.2",
+        "davidhsianturi/blade-bootstrap-icons": "^2.1",
         "guzzlehttp/guzzle": "^7.10",
         "log1x/acf-composer": "^3.4",
         "log1x/acorn-disable-media-pages": "^1.0",

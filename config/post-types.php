@@ -42,7 +42,6 @@ return [
             ],
         ],
 
-        // 2. CPT Enfant : Le Départ (Date technique & Quotas)
         'sailing' => [
             'menu_icon' => 'dashicons-calendar-alt',
             'supports' => ['title'],

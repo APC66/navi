@@ -2,30 +2,10 @@
   class="pointer-events-none fixed top-0 z-50 w-full bg-transparent"
   x-data="{ mobileMenuOpen: false }"
 >
-  <div class="pointer-events-auto mx-auto flex h-20 items-center justify-between px-4 md:px-0">
-    <div
-      class="bg-primary-1000 fixed top-6 left-0 z-[70] flex h-[80px] w-[100px] items-center justify-end rounded-r-full transition-all duration-300 ease-in-out"
-      :class="mobileMenuOpen ? 'translate-x-[370px]' : 'translate-x-0'"
-    >
-      <button
-        class="bg-secondary mr-4 flex h-[55px] w-[55px] flex-col items-center justify-center rounded-full p-2 text-black shadow-lg transition-all hover:bg-white focus:outline-none"
-        @click="mobileMenuOpen = true"
-        aria-label="Ouvrir le menu"
-      >
-        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-        <span class="text-xs font-bold">MENU</span>
-      </button>
-    </div>
+    @include('partials.navigation')
 
     <div class="group relative mx-auto">
-      <div class="fixed top-0 left-1/2 z-40 h-[159px] w-[354px] -translate-x-1/2 transform">
+      <div class="fixed top-0 left-1/2 z-40 h-[159px] w-[354px] -translate-x-1/2 transform ">
         <a class="relative h-full w-full" href="{{ home_url('/') }}">
           <svg
             width="354"

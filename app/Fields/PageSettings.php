@@ -17,7 +17,8 @@ class PageSettings extends Field
 
         $page
             ->setLocation('post_type', '==', 'page')
-            ->setLocation('post_type', '==', 'cruise');
+            ->or('page_template', '==', 'template-planning.blade.php')
+            ->or('post_type', '==', 'cruise');
 
         $page
             ->addGroup('page_header', ['label' => 'Configuration de l\'Entête'])

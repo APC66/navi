@@ -1,3 +1,11 @@
+@php
+  $colors = [
+    'text-secondary' => '[&>span]:text-secondary',
+    'text-white' => '[&>span]:text-white',
+    'danger' => '[&>span]:text-danger',
+  ];
+@endphp
+
 <div class="bg-primary-900 relative h-[300px] w-full overflow-hidden md:h-[400px]">
   @if ($image)
     <img src="{{ $image }}" alt="{{ strip_tags($title) }}" class="h-full w-full object-cover" />
@@ -20,10 +28,10 @@
     </div>
 
     <h1
-      class="font-heading mb-6 text-center text-4xl leading-tight font-bold uppercase md:text-6xl"
+      class="font-heading mb-6 mt-12 text-center text-4xl leading-tight font-bold uppercase md:text-6xl {{$colors[$highlightColor]}} [&>span]:font-light"
     >
       @if ($highlight)
-        <span class="{{ $highlightColor }} font-light">{!! $highlight !!}</span>
+        <span>{!! $highlight !!}</span>
       @endif
 
       {!! $title !!}

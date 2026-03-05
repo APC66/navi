@@ -18,6 +18,7 @@ export default defineConfig({
         'resources/js/admin/calendar.js',
         'resources/js/components/booking-widget.js',
         'resources/js/components/cruise-filters.js',
+        'resources/js/components/global-planning.js',
       ],
       refresh: true,
     }),

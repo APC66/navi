@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\CancellationController;
+use App\Http\Controllers\Api\PlanningController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SeedController;
 use App\Http\Controllers\CartController;
@@ -32,6 +33,8 @@ class ApiServiceProvider extends ServiceProvider
         $this->registerApiRoute('POST', 'cancellation/reschedule', [CancellationController::class, 'reschedule']);
 
         $this->registerApiRoute('GET', 'cruises/search', [SearchController::class, 'search']);
+
+        $this->registerApiRoute('GET', 'planning/week', [PlanningController::class, 'week']);
 
     }
 

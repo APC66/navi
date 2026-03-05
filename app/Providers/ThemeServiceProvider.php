@@ -143,6 +143,23 @@ class ThemeServiceProvider extends SageServiceProvider
             return $args;
         });
 
+        // Active guttenberg que pour le template specifique et la page accueil
+        add_filter('use_block_editor_for_post', function ($use_block_editor, $post) {
+            if ($post->post_type === 'page') {
+                if ((int) get_option('page_on_front') === $post->ID) {
+                    return true;
+                }
+                $template = get_post_meta($post->ID, '_wp_page_template', true);
+                if ($template === 'template-gutenberg.blade.php') {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return $use_block_editor;
+        }, 10, 2);
+
         // Disable autosave
         add_action('admin_init', function () {
             wp_deregister_script('autosave');

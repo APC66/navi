@@ -140,32 +140,44 @@
         x-data="{ activeTab: 'description' }"
       >
         <div
-          class="border-primary-400 mb-16 flex flex-wrap justify-center gap-x-10 space-x-2 gap-y-4 overflow-x-auto border-b pb-4"
+          class="border-primary-400 mb-16 flex flex-wrap justify-center gap-x-10 gap-y-4 overflow-x-auto border-b pb-4 lg:space-x-2"
           style="scrollbar-width: none; -ms-overflow-style: none"
         >
           <button
             @click="activeTab = 'description'"
             :class="activeTab === 'description' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
-            class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-4 py-2 text-sm font-bold tracking-wider transition"
+            class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-6 py-3 text-sm font-bold tracking-wider transition w-full lg:w-max"
           >
             Description
           </button>
 
+          @if (! empty($additionalTabs))
+            @foreach ($additionalTabs as $index => $tab)
+              <button
+                @click="activeTab = 'custom-{{ $index }}'"
+                :class="activeTab === 'custom-{{ $index }}' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
+                class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-6 py-3 text-sm font-bold tracking-wider transition w-full lg:w-max"
+              >
+                {{ $tab['tab_title'] }}
+              </button>
+            @endforeach
+          @endif
           @if (! empty($gallery))
             <button
               @click="activeTab = 'gallery'"
               :class="activeTab === 'gallery' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
-              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-4 py-2 text-sm font-bold tracking-wider transition"
+              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-6 py-3 text-sm font-bold tracking-wider transition w-full lg:w-max"
             >
               Galerie
             </button>
           @endif
 
+
           @if (! empty($videos))
             <button
               @click="activeTab = 'videos'"
               :class="activeTab === 'videos' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
-              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-5 py-2 text-sm font-bold tracking-wider transition"
+              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-6 py-3 text-sm font-bold tracking-wider transition w-full lg:w-max"
             >
               Galerie vidéo
             </button>
@@ -175,22 +187,10 @@
             <button
               @click="activeTab = 'map'"
               :class="activeTab === 'map' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
-              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-4 py-2 text-sm font-bold tracking-wider transition"
+              class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-6 py-3 text-sm font-bold tracking-wider transition w-full lg:w-max"
             >
               Carte
             </button>
-          @endif
-
-          @if (! empty($additionalTabs))
-            @foreach ($additionalTabs as $index => $tab)
-              <button
-                @click="activeTab = 'custom-{{ $index }}'"
-                :class="activeTab === 'custom-{{ $index }}' ? 'bg-secondary text-primary-1000' : 'bg-primary-900 text-primary-100'"
-                class="hover:bg-secondary hover:text-primary-1000 cursor-pointer rounded-full px-4 py-2 text-sm font-bold tracking-wider transition"
-              >
-                {{ $tab['tab_title'] }}
-              </button>
-            @endforeach
           @endif
         </div>
 

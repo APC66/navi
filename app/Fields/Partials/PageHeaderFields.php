@@ -29,9 +29,7 @@ class PageHeaderFields extends Partial
             ->addSelect('header_highlight_color', [
                 'label' => 'Couleur de mise en avant',
                 'choices' => [
-                    'text-secondary' => 'Jaune (Secondary)',
-                    'text-tertiary-800' => 'Bleu Canard (Tertiary)',
-                    'text-primary-600' => 'Bleu Principal',
+                    'text-secondary' => 'Jaune',
                     'text-white' => 'Blanc',
                 ],
                 'default_value' => 'text-secondary',
