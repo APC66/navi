@@ -152,6 +152,14 @@ if (file_exists($env_config)) {
     require_once $env_config;
 }
 
+Config::define('WP_REDIS_HOST', env('WP_REDIS_HOST') ?: '127.0.0.1');
+Config::define('WP_REDIS_PORT', env('WP_REDIS_PORT') ?: 6379);
+
+if (env('WP_REDIS_PASSWORD')) {
+    Config::define('WP_REDIS_PASSWORD', env('WP_REDIS_PASSWORD'));
+}
+Config::define('WP_CACHE_KEY_SALT', env('WP_HOME').'_');
+
 Config::apply();
 
 /**

@@ -80,7 +80,7 @@
         <button
           @click="filterMenuOpen = !filterMenuOpen"
           @click.away="filterMenuOpen = false"
-          class="text-primary-900 z-20 flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 font-bold shadow-sm transition-all hover:shadow-md"
+          class="text-primary-900 z-20 flex items-center cursor-pointer justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 font-bold shadow-sm transition-all hover:shadow-md"
         >
           <svg
             class="text-secondary mr-3 h-5 w-5"
