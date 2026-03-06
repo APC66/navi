@@ -21,6 +21,12 @@ class AssetsServiceProvider extends ServiceProvider
          */
         add_action('wp_enqueue_scripts', function (): void {
             remove_action('wp_body_open', 'wp_global_styles_render_svg_filters');
+
+            wp_localize_script('app', 'radicle_params', [
+                'rest_nonce' => wp_create_nonce('wp_rest'),
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'sailing_statuses' => \config('sailing.statuses'),
+            ]);
         }, 100);
 
         /**

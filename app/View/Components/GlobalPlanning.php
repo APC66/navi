@@ -29,8 +29,22 @@ class GlobalPlanning extends Component
      */
     public function render()
     {
-        asset('resources/js/components/global-planning.js')->uri();
-        wp_enqueue_script('booking-widget', asset('resources/js/components/global-planning.js')->uri(), [], null, true);
+        $handle = 'global-planning-js';
+
+        // 1. On charge le script JS via l'URL générée par Vite/Acorn
+        wp_enqueue_script(
+            $handle,
+            asset('resources/js/components/global-planning.js')->uri(),
+            [],
+            null,
+            true
+        );
+
+        // 2. On encode la configuration PHP en JSON
+        $config = json_encode(config('sailing.statuses'));
+
+        // 3. On injecte le script INLINE juste "avant" le chargement du fichier JS
+        wp_add_inline_script($handle, "window.SailingConfig = {$config};", 'before');
 
         return $this->view('components.global-planning');
     }

@@ -83,6 +83,7 @@ class PlanningController
             $sailingsData[] = [
                 'id' => $sailing->ID,
                 'datetime' => $sailing->start,
+                'return_time' => $sailing->end,
                 'cruise_title' => $cruise->title,
                 'cruise_url' => $cruise->permalink,
                 'port' => $harborName,

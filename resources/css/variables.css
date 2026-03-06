@@ -21,6 +21,17 @@
   --font-murecho: var(--wp--preset--font-family--murecho);
   --font-elms: var(--wp--preset--font-family--elms);
 
+  --color-status-available: var(--wp--preset--color--status-available);
+  --color-status-available-text: var(--wp--preset--color--status-available-text);
+  --color-status-limited: var(--wp--preset--color--status-limited);
+  --color-status-limited-text: var(--wp--preset--color--status-limited-text);
+  --color-status-postponed: var(--wp--preset--color--status-postponed);
+  --color-status-postponed-text: var(--wp--preset--color--status-postponed-text);
+  --color-status-cancelled: var(--wp--preset--color--status-cancelled);
+  --color-status-cancelled-text: var(--wp--preset--color--status-cancelled-text);
+  --color-status-full: var(--wp--preset--color--status-full);
+  --color-status-full-text: var(--wp--preset--color--status-full-text);
+
   --radius-card: 3rem;
 
   --container-sm: 640px;

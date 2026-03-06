@@ -1,79 +1,150 @@
-<div class="relative bg-primary-1000 min-h-screen font-sans bg-gradient-to-b from-[#182646] from-20% via-20% via-primary-1000 to-primary-1000">
+<div
+  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative min-h-screen bg-gradient-to-b from-[#182646] from-20% via-20% font-sans"
+>
   <img
     src="@asset('resources/images/waves.svg')"
     class="absolute top-1/5 z-0 h-auto w-full -translate-y-1/2"
     alt=""
   />
-  <div class="container mx-auto px-4 max-w-7xl">
+  <div class="container mx-auto max-w-7xl px-4">
     <div
-      class="bg-[#EBF0F5] rounded-[30px] p-6 md:p-10 shadow-2xl relative"
+      class="relative rounded-[30px] bg-[#EBF0F5] p-6 shadow-2xl md:p-10"
       x-data="globalPlanning('{{ wp_create_nonce('wp_rest') }}')"
     >
       {{-- LOADER OVERLAY --}}
-      <div x-show="loading" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-[30px]" style="display: none;">
-        <svg class="animate-spin h-12 w-12 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      <div
+        x-show="loading"
+        class="absolute inset-0 z-50 flex items-center justify-center rounded-[30px] bg-white/50 backdrop-blur-sm"
+        style="display: none"
+      >
+        <svg
+          class="text-primary-600 h-12 w-12 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
       </div>
 
       {{-- 1. EN-TÊTE : Navigation Semaine --}}
-      <div class="flex justify-center items-center mb-8">
-        <button @click="prevWeek()" class="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl shadow-sm text-primary-900 hover:bg-gray-50 transition-transform hover:scale-105">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      <div class="mb-8 flex items-center justify-center">
+        <button
+          @click="prevWeek()"
+          class="text-primary-900 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition-transform hover:scale-105 hover:bg-gray-50"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            ></path>
+          </svg>
         </button>
 
-        <h1 class="text-xl md:text-2xl font-bold text-primary-900 mx-6 font-heading" x-text="weekRangeLabel"></h1>
+        <h1
+          class="text-primary-900 font-heading mx-6 text-xl font-bold md:text-2xl"
+          x-text="weekRangeLabel"
+        ></h1>
 
-        <button @click="nextWeek()" class="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-xl shadow-sm text-primary-900 hover:bg-gray-50 transition-transform hover:scale-105">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <button
+          @click="nextWeek()"
+          class="text-primary-900 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition-transform hover:scale-105 hover:bg-gray-50"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            ></path>
+          </svg>
         </button>
-      </div>
-
-      {{-- 2. LÉGENDE --}}
-      <div class="bg-white rounded-full py-3 px-6 shadow-sm mb-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-bold text-primary-900 uppercase tracking-wider">
-        <div class="flex items-center"><span class="w-5 h-5 rounded bg-[#C5F8A5] mr-2 shadow-inner"></span> Disponible</div>
-        <div class="flex items-center"><span class="w-5 h-5 rounded bg-[#FFA632] mr-2 shadow-inner"></span> Dernières places disponibles</div>
-        <div class="flex items-center"><span class="w-5 h-5 rounded bg-[#FBF166] mr-2 shadow-inner"></span> Reporté</div>
-        <div class="flex items-center"><span class="w-5 h-5 rounded bg-[#60386B] mr-2 shadow-inner relative overflow-hidden"><svg class="absolute inset-0 w-full h-full text-red-500 opacity-80" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="8" /></svg></span> Annulé</div>
-        <div class="flex items-center"><span class="w-5 h-5 rounded bg-[#C33149] mr-2 shadow-inner"></span> Complet</div>
       </div>
 
       {{-- 3. BARRE DE FILTRES UNIFIÉE (Nouveau Design) --}}
-      <div class="flex justify-center md:justify-end mb-10 relative">
+      <div class="relative mb-10 flex justify-center md:justify-end">
         <button
           @click="filterMenuOpen = !filterMenuOpen"
           @click.away="filterMenuOpen = false"
-          class="flex items-center justify-center bg-white px-6 py-3.5 rounded-2xl shadow-sm border border-gray-200 text-primary-900 font-bold hover:shadow-md transition-all z-20"
+          class="text-primary-900 z-20 flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-3.5 font-bold shadow-sm transition-all hover:shadow-md"
         >
-          <svg class="w-5 h-5 mr-3 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+          <svg
+            class="text-secondary mr-3 h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+            ></path>
+          </svg>
           Filtrer les départs
 
           {{-- Pastille de compteur de filtres actifs --}}
-          <span x-show="activeFiltersCount > 0" class="ml-3 bg-secondary text-primary-900 text-xs px-2 py-0.5 rounded-full font-black" x-text="activeFiltersCount" style="display: none;"></span>
+          <span
+            x-show="activeFiltersCount > 0"
+            class="bg-secondary text-primary-900 ml-3 rounded-full px-2 py-0.5 text-xs font-black"
+            x-text="activeFiltersCount"
+            style="display: none"
+          ></span>
         </button>
 
         {{-- Panneau des filtres unifiés --}}
         <div
           x-show="filterMenuOpen"
-          style="display: none;"
-          x-transition:enter="transition ease-out duration-200"
-          x-transition:enter-start="opacity-0 translate-y-4"
-          x-transition:enter-end="opacity-100 translate-y-0"
-          x-transition:leave="transition ease-in duration-150"
-          x-transition:leave-start="opacity-100 translate-y-0"
-          x-transition:leave-end="opacity-0 translate-y-4"
-          class="absolute top-full mt-4 right-0 md:right-auto w-[calc(100vw-3rem)] md:w-[480px] bg-white rounded-3xl shadow-2xl border border-gray-100 z-30 p-6 md:p-8 cursor-default"
+          style="display: none"
+          x-transition:enter="transition duration-200 ease-out"
+          x-transition:enter-start="translate-y-4 opacity-0"
+          x-transition:enter-end="translate-y-0 opacity-100"
+          x-transition:leave="transition duration-150 ease-in"
+          x-transition:leave-start="translate-y-0 opacity-100"
+          x-transition:leave-end="translate-y-4 opacity-0"
+          class="absolute top-full right-0 z-30 mt-4 w-[calc(100vw-3rem)] cursor-default rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl md:right-auto md:w-[480px] md:p-8"
           @click.stop
         >
-          <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
-            <h3 class="font-bold text-lg text-primary-900">Vos filtres</h3>
-            <button @click="resetFilters()" x-show="activeFiltersCount > 0" class="text-sm text-primary-400 hover:text-secondary font-bold transition-colors">Tout effacer</button>
+          <div class="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+            <h3 class="text-primary-900 text-lg font-bold">Vos filtres</h3>
+            <button
+              @click="resetFilters()"
+              x-show="activeFiltersCount > 0"
+              class="text-primary-400 hover:text-secondary text-sm font-bold transition-colors"
+            >
+              Tout effacer
+            </button>
           </div>
 
           {{-- Filtre Date Rapide --}}
           <div class="mb-6">
-            <p class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-3">Aller à la date</p>
+            <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">
+              Aller à la date
+            </p>
             <div class="flex gap-2">
-              <input type="date" x-model="datePickerValue" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold text-primary-900 focus:outline-none focus:ring-2 focus:ring-secondary">
-              <button @click="goToToday(); filterMenuOpen = false;" class="bg-primary-50 text-primary-600 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-primary-100 transition-colors">
+              <input
+                type="date"
+                x-model="datePickerValue"
+                class="text-primary-900 focus:ring-secondary flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-bold focus:ring-2 focus:outline-none"
+              />
+              <button
+                @click="goToToday(); filterMenuOpen = false;"
+                class="bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors"
+              >
                 Aujourd'hui
               </button>
             </div>
@@ -81,13 +152,18 @@
 
           {{-- Filtre Ports --}}
           <div class="mb-6">
-            <p class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-3">Ports de départ</p>
+            <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">
+              Ports de départ
+            </p>
             <div class="flex flex-wrap gap-2">
-              @php $ports = get_terms(['taxonomy' => 'harbor', 'hide_empty' => false]); @endphp
-              @foreach($ports as $port)
+              @php
+                $ports = get_terms(['taxonomy' => 'harbor', 'hide_empty' => false]);
+              @endphp
+
+              @foreach ($ports as $port)
                 <button
                   @click="toggleFilter('ports', {{ $port->term_id }})"
-                  class="px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 border"
+                  class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
                   :class="filters.ports.includes({{ $port->term_id }}) ? 'bg-primary-900 border-primary-900 text-white shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-primary-400'"
                 >
                   {{ $port->name }}
@@ -98,13 +174,18 @@
 
           {{-- Filtre Types --}}
           <div class="mb-6">
-            <p class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-3">Types de croisière</p>
+            <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">
+              Types de croisière
+            </p>
             <div class="flex flex-wrap gap-2">
-              @php $types = get_terms(['taxonomy' => 'cruise_type', 'hide_empty' => false]); @endphp
-              @foreach($types as $type)
+              @php
+                $types = get_terms(['taxonomy' => 'cruise_type', 'hide_empty' => false]);
+              @endphp
+
+              @foreach ($types as $type)
                 <button
                   @click="toggleFilter('types', {{ $type->term_id }})"
-                  class="px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 border"
+                  class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
                   :class="filters.types.includes({{ $type->term_id }}) ? 'bg-primary-900 border-primary-900 text-white shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-primary-400'"
                 >
                   {{ $type->name }}
@@ -115,13 +196,18 @@
 
           {{-- Filtre Tags (Nouveau) --}}
           <div>
-            <p class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-3">Thématiques</p>
+            <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">
+              Thématiques
+            </p>
             <div class="flex flex-wrap gap-2">
-              @php $tags = get_terms(['taxonomy' => 'cruise_tag', 'hide_empty' => false]); @endphp
-              @foreach($tags as $tag)
+              @php
+                $tags = get_terms(['taxonomy' => 'cruise_tag', 'hide_empty' => false]);
+              @endphp
+
+              @foreach ($tags as $tag)
                 <button
                   @click="toggleFilter('tags', {{ $tag->term_id }})"
-                  class="px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 border"
+                  class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
                   :class="filters.tags.includes({{ $tag->term_id }}) ? 'bg-secondary border-secondary text-primary-900 shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-secondary'"
                 >
                   {{ $tag->name }}
@@ -130,8 +216,11 @@
             </div>
           </div>
 
-          <div class="mt-8 pt-4 border-t border-gray-100 flex justify-end">
-            <button @click="filterMenuOpen = false" class="bg-secondary text-primary-900 font-bold px-8 py-3 rounded-xl hover:bg-secondary-hover transition-colors shadow-md">
+          <div class="mt-8 flex justify-end border-t border-gray-100 pt-4">
+            <button
+              @click="filterMenuOpen = false"
+              class="bg-secondary text-primary-900 hover:bg-secondary-hover rounded-xl px-8 py-3 font-bold shadow-md transition-colors"
+            >
               Appliquer les filtres
             </button>
           </div>
@@ -139,78 +228,169 @@
       </div>
 
       {{-- 4. GRILLE DU CALENDRIER (Scrollable sur mobile) --}}
-      <div class="overflow-x-auto pb-6 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
-        <div class="min-w-[900px] grid grid-cols-7 gap-4">
-
+      <div class="scrollbar-hide -mx-6 overflow-x-auto px-6 pb-6 md:mx-0 md:px-0">
+        <div class="grid min-w-[900px] grid-cols-7 gap-2">
           {{-- Boucle sur les 7 jours --}}
           <template x-for="(day, index) in weekDays" :key="index">
-            <div class="flex flex-col h-full">
-
+            <div class="flex h-full flex-col">
               {{-- En-tête de la colonne (Jour) --}}
               <div
-                class="text-center py-2.5 rounded-t-2xl font-bold uppercase tracking-wider text-sm mb-4 transition-colors"
+                class="rounded-t-2xl pt-2 pb-4 text-center text-sm font-bold tracking-wider uppercase transition-colors"
                 :class="isToday(day) ? 'bg-secondary text-primary-900' : 'bg-transparent text-primary-900'"
                 x-text="formatDayHeader(day)"
               ></div>
 
               {{-- Liste des croisières pour ce jour --}}
-              <div class="flex-1 flex flex-col gap-3">
-
+              <div
+                class="flex flex-1 flex-col overflow-hidden gap-3 p-3"
+                :class="isToday(day) ? 'bg-[#FFF5CA] rounded-b-2xl' : 'bg-white rounded-2xl'"
+              >
                 <template x-for="sailing in getFilteredSailingsForDay(day)" :key="sailing.id">
                   {{-- CARTE CROISIÈRE --}}
-                  <div
-                    class="flex flex-col rounded-2xl p-3 shadow-sm hover:shadow-md transition-all text-center relative overflow-hidden"
-                    :class="getCardStyle(sailing.status).bg + ' ' + getCardStyle(sailing.status).text"
+                  <div class="relative rounded-xl overflow-hidden"
+                       :class="getCardStyle(sailing).bg + ' ' + getCardStyle(sailing).text + (getCardStyle(sailing).isPast ? ' opacity-60 pointer-events-none' : '')"
                   >
-                    {{-- Effet Rayé si Annulé --}}
-                    <template x-if="sailing.status === 'Annulé'">
-                      <svg class="absolute inset-0 w-full h-full text-red-500 opacity-60 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-                        <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="4" />
-                      </svg>
-                    </template>
-
-                    {{-- Heure --}}
-                    <span class="text-xs font-bold mb-1 opacity-90" x-text="formatTime(sailing.datetime)"></span>
-
-                    {{-- Titre --}}
-                    <h4 class="font-extrabold text-[13px] leading-tight mb-1 font-heading" x-text="sailing.cruise_title"></h4>
-
-                    {{-- Port --}}
-                    <span class="text-[11px] mb-3 opacity-90" x-text="sailing.port"></span>
-
-                    {{-- Bouton Réserver --}}
-                    <a
-                      :href="sailing.cruise_url"
-                      class="w-full py-2 bg-white font-bold text-xs rounded shadow-sm hover:shadow transition-shadow mb-2 z-10"
-                      :class="getCardStyle(sailing.status).btnText + (sailing.status === 'Annulé' || sailing.status === 'Complet' || sailing.status === 'Reporté' ? ' opacity-50 pointer-events-none' : '')"
+                    <div
+                      class="relative flex flex-col p-3 text-center transition-all"
                     >
-                      Réserver
-                    </a>
+                      {{-- Effet Rayé si Annulé --}}
+                      <template x-if="sailing.status === 'Annulé'">
+                        <svg
+                          class="pointer-events-none absolute inset-0 h-full w-full text-red-500 opacity-60"
+                          preserveAspectRatio="none"
+                          viewBox="0 0 100 100"
+                        >
+                          <line
+                            x1="0"
+                            y1="100"
+                            x2="100"
+                            y2="0"
+                            stroke="currentColor"
+                            stroke-width="4"
+                          />
+                        </svg>
+                      </template>
 
-                    {{-- Statut Bottom Bar --}}
-                    <div class="w-full border-t border-black/10 pt-2 pb-1 flex flex-col items-center mt-auto z-10">
-                      <span class="text-[9px] uppercase font-black tracking-widest" x-text="sailing.status === 'Dispo' ? 'DISPONIBLE' : sailing.status.toUpperCase()"></span>
-                      <svg class="w-3 h-3 mt-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                      {{-- Heure --}}
+                      <span
+                        class="mb-1 text-xs font-bold opacity-90"
+                        x-text="formatTime(sailing.datetime)"
+                      ></span>
+
+                      {{-- Titre --}}
+                      <h4
+                        class="font-heading mb-1 text-[13px] leading-tight font-extrabold"
+                        x-text="sailing.cruise_title"
+                      ></h4>
+
+                      {{-- Port --}}
+                      <span class="mb-3 text-[11px] opacity-90" x-text="sailing.port"></span>
+
+                      {{-- Bouton Réserver --}}
+                      <a
+                        :href="sailing.cruise_url"
+                        class="z-10 mb-2 w-full rounded bg-white py-2 text-xs font-bold shadow-sm transition-shadow hover:shadow"
+                        :class="getCardStyle(sailing).btnText + (!getCardStyle(sailing).isSelectable ? ' opacity-50 pointer-events-none' : '')"
+                        x-text="getCardStyle(sailing).buttonLabel"
+                      ></a>
+
+                      {{-- Zone cachée : Détails des places et heures (S'insère ENTRE le bouton et la flèche) --}}
+                      <div
+                        x-show="expandedSailingId === sailing.id"
+                        x-transition:enter="transition duration-200 ease-out"
+                        x-transition:enter-start="-translate-y-2 opacity-0"
+                        x-transition:enter-end="translate-y-0 opacity-100"
+                        style="display: none"
+                        class="z-10 w-full px-1 pb-3 text-left"
+                      >
+                        <div class="mb-1 flex items-center justify-between text-[11px]">
+                          <span class="opacity-70">Départ :</span>
+                          <span
+                            class="font-bold opacity-90"
+                            x-text="formatTime(sailing.datetime)"
+                          ></span>
+                        </div>
+                        <div class="mb-1 flex items-center justify-between text-[11px]">
+                          <span class="opacity-70">Retour :</span>
+                          {{-- Fallback '--:--' si return_time n'est pas encore présent dans l'API --}}
+                          <span
+                            class="font-bold opacity-90"
+                            x-text="sailing.return_time ? formatTime(sailing.return_time) : '--:--'"
+                          ></span>
+                        </div>
+                        <div
+                          class="mt-2 flex items-center justify-between border-t border-black/10 pt-2 text-[11px]"
+                        >
+                          <span class="opacity-70">Places libres :</span>
+                          <span class="font-bold opacity-90" x-text="sailing.available"></span>
+                        </div>
+                      </div>
+
+                      {{-- Statut Bottom Bar (Flèche toujours en bas) --}}
+                      <span
+                        class="text-[9px] font-black tracking-widest uppercase"
+                        x-text="getCardStyle(sailing).label"
+                      ></span>
                     </div>
+
+                    {{-- Bouton Triangle --}}
+                    <button
+                      class="group/btn z-10 mt-auto flex w-full cursor-pointer flex-col bg-secondary text-black/50 hover:text-black items-center  py-2 transition-colors"
+                      @click="toggleSailing(sailing.id)"
+                    >
+                      <svg
+                        class="h-6 w-6"
+                        :class="expandedSailingId === sailing.id ? 'rotate-180 opacity-100 scale-125' : ''"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        {{-- Icône Triangle --}}
+                        <path d="M7 10l5 5 5-5z"></path>
+                      </svg>
+                    </button>
+
                   </div>
                 </template>
 
                 {{-- Message si vide --}}
                 <template x-if="getFilteredSailingsForDay(day).length === 0">
-                  <div class="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl bg-white/50 opacity-50 h-24">
-                    <span class="text-xs font-bold text-gray-400">Aucun départ</span>
+                  <div
+                    class="flex h-24 flex-1 items-center justify-center rounded-2xl border-2 border-dashed opacity-50"
+                    :class="isToday(day) ? 'border-secondary text-secondary' : 'text-primary-400 border-gray-300'"
+                  >
+                    <span class="text-xs font-bold">Aucun départ</span>
                   </div>
                 </template>
-
               </div>
-
             </div>
           </template>
-
         </div>
       </div>
-      {{-- Fin Grille --}}
 
+      <div
+        class="text-primary-900 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-full bg-white px-6 py-3 text-xs font-bold tracking-wider uppercase shadow-sm"
+      >
+        @foreach (config('sailing.statuses') as $key => $status)
+          @if ($status['showInLegend'])
+            <div class="flex items-center">
+              <span
+                class="{{ $status['bg'] }} {{ $key === 'Annulé' ? 'relative overflow-hidden' : '' }} mr-2 h-5 w-5 rounded shadow-inner"
+              >
+                @if ($key === 'Annulé')
+                  <svg
+                    class="absolute inset-0 h-full w-full text-red-500 opacity-80"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 100 100"
+                  >
+                    <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-width="8" />
+                  </svg>
+                @endif
+              </span>
+              {{ $status['label'] }}
+            </div>
+          @endif
+        @endforeach
+      </div>
     </div>
   </div>
 </div>

@@ -90,6 +90,56 @@
           "slug": "off-white",
           "color": "#FBF8F0",
           "name": "Blanc Cassé"
+        },
+        {
+          "slug": "status-available",
+          "color": "#C5F8A5",
+          "name": "Status Available"
+        },
+        {
+          "slug": "status-available-text",
+          "color": "#070E22",
+          "name": "Status Available Text"
+        },
+        {
+          "slug": "status-limited",
+          "color": "#FFA632",
+          "name": "Status Limited"
+        },
+        {
+          "slug": "status-limited-text",
+          "color": "#070E22",
+          "name": "Status Limited Text"
+        },
+        {
+          "slug": "status-postponed",
+          "color": "#FBF166",
+          "name": "Status Postponed"
+        },
+        {
+          "slug": "status-postponed-text",
+          "color": "#070E22",
+          "name": "Status Postponed Text"
+        },
+        {
+          "slug": "status-cancelled",
+          "color": "#60386B",
+          "name": "Status Cancelled"
+        },
+        {
+          "slug": "status-cancelled-text",
+          "color": "#FFFFFF",
+          "name": "Status Cancelled Text"
+        },
+        {
+          "slug": "status-full",
+          "color": "#C33149",
+          "name": "Status Full"
+        },
+        {
+          "slug": "status-full-text",
+          "color": "#FFFFFF",
+          "name": "Status Full Text"
         }
       ],
       "gradients": [

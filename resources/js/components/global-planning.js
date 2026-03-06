@@ -12,8 +12,20 @@ const globalPlanningData = (nonce) => ({
     tags: []
   },
 
+  // État pour savoir quelle carte est dépliée
+  expandedSailingId: null,
+
   init() {
     this.fetchWeekData();
+  },
+
+  // Action pour dérouler/replier une carte
+  toggleSailing(id) {
+    if (this.expandedSailingId === id) {
+      this.expandedSailingId = null; // Replie si c'est déjà ouvert
+    } else {
+      this.expandedSailingId = id; // Déplie la nouvelle carte
+    }
   },
 
   // Compteur de filtres actifs pour la pastille
@@ -138,6 +150,7 @@ const globalPlanningData = (nonce) => ({
       .then(data => {
         this.sailings = data;
         this.loading = false;
+        this.expandedSailingId = null; // On referme toutes les cartes quand on change de semaine
       })
       .catch(err => {
         console.error('Erreur API Planning:', err);
@@ -169,21 +182,45 @@ const globalPlanningData = (nonce) => ({
     });
   },
 
-  getCardStyle(status) {
-    switch(status) {
-      case 'Dispo':
-        return { bg: 'bg-[#C5F8A5]', text: 'text-[#166534]', btnText: 'text-[#166534]' };
-      case 'Limité':
-        return { bg: 'bg-[#FFA632]', text: 'text-[#9A3B0D]', btnText: 'text-[#9A3B0D]' };
-      case 'Reporté':
-        return { bg: 'bg-[#FBF166]', text: 'text-[#744210]', btnText: 'text-[#744210]' };
-      case 'Annulé':
-        return { bg: 'bg-[#60386B]', text: 'text-white', btnText: 'text-[#60386B]' };
-      case 'Complet':
-        return { bg: 'bg-[#C33149]', text: 'text-white', btnText: 'text-[#C33149]' };
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-600', btnText: 'text-gray-900' };
+  // Nouvelle méthode pour vérifier si une date est passée
+  isPastDate(datetimeStr) {
+    if (!datetimeStr) return false;
+    // Remplacer l'espace par T pour compatibilité Safari
+    return new Date(datetimeStr.replace(' ', 'T')) < new Date();
+  },
+
+  // Utilise la configuration centralisée passée par PHP (wp_add_inline_script)
+  // MODIFICATION : On passe l'objet `sailing` complet au lieu de juste `status`
+  getCardStyle(sailing) {
+    const isPast = this.isPastDate(sailing.datetime);
+
+    // On sécurise avec l'optional chaining (?.) au cas où la config mettrait du temps à charger
+    const config = window.SailingConfig?.[sailing.status] || window.SailingConfig?.['default'] || {
+      bg: 'bg-gray-100', text: 'text-gray-600', btnText: 'text-gray-900', label: 'NON DISPONIBLE', isSelectable: false
+    };
+
+    // LOGIQUE : Si c'est passé (et que ce n'est pas annulé), on force un style grisé "Terminé"
+    if (isPast && sailing.status !== 'Annulé') {
+      return {
+        bg: 'bg-gray-200',
+        text: 'text-gray-500',
+        btnText: 'text-gray-500',
+        label: 'TERMINÉ',
+        buttonLabel: 'Terminé',
+        isSelectable: false,
+        isPast: true
+      };
     }
+
+    return {
+      bg: config.bg,
+      text: config.text,
+      btnText: config.btnText,
+      label: config.label,
+      buttonLabel: 'Réserver',
+      isSelectable: config.isSelectable && !isPast, // On empêche la sélection si c'est passé
+      isPast: isPast
+    };
   }
 });
 
