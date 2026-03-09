@@ -373,7 +373,7 @@
 
       {{-- LÉGENDE STATUTS --}}
       <div
-        class="text-primary-900 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-full bg-white px-6 py-3 text-xs font-bold tracking-wider uppercase shadow-sm"
+        class="text-primary-900 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl bg-white px-6 py-3 text-xs font-bold tracking-wider uppercase shadow-sm"
       >
         @foreach (config('sailing.statuses') as $key => $status)
           @if ($status['showInLegend'])

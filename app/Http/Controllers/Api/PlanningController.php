@@ -10,7 +10,7 @@ class PlanningController
 {
     /**
      * Récupère tous les départs (sailings) pour une plage de dates donnée
-     * avec optimisation du chargement (Eager Loading) et Cache Hybride.
+     * avec optimisation du chargement (Eager Loading) en temps réel (sans cache).
      */
     public function week(WP_REST_Request $request)
     {
@@ -22,21 +22,7 @@ class PlanningController
         }
 
         // =================================================================
-        // 1. LECTURE DU CACHE TRANSIENT (Bypass TOTAL de PHP)
-        // =================================================================
-        $cacheKey = 'api_planning_week_'.md5($start.'_'.$end);
-        $cachedData = get_transient($cacheKey);
-
-        if ($cachedData !== false) {
-            // On renvoie directement la donnée sans aucune boucle ni calcul !
-            $response = rest_ensure_response($cachedData);
-            $response->header('X-Planning-Cache', 'HIT-FULL');
-
-            return $response;
-        }
-
-        // =================================================================
-        // 2. GÉNÉRATION LOURDE (Exécuté 1x toutes les 5 minutes)
+        // 1. RÉCUPÉRATION DES DÉPARTS
         // =================================================================
         $sailings = Sailing::fetch([
             'posts_per_page' => -1,
@@ -54,6 +40,9 @@ class PlanningController
             'order' => 'ASC',
         ]);
 
+        // =================================================================
+        // 2. OPTIMISATION (EAGER LOADING)
+        // =================================================================
         $cruiseIds = [];
         foreach ($sailings as $sailing) {
             if ($sailing->parentCruiseId) {
@@ -62,11 +51,14 @@ class PlanningController
         }
         $cruiseIds = array_unique($cruiseIds);
 
-        // Eager Loading
+        // Charge toutes les croisières en RAM d'un coup pour éviter le N+1
         if (! empty($cruiseIds)) {
             _prime_post_caches($cruiseIds, true, true);
         }
 
+        // =================================================================
+        // 3. CONSTRUCTION DU TABLEAU (Temps réel)
+        // =================================================================
         $sailingsData = [];
 
         foreach ($sailings as $sailing) {
@@ -81,10 +73,11 @@ class PlanningController
                 continue;
             }
 
-            // Récupération initiale (sera écrasée par la vérif live au prochain hit)
+            // Récupération des places restantes
             $booked = (int) get_post_meta($sailing->ID, 'sailing_config_booked_count', true) ?: 0;
             $available = max(0, $sailing->quota - $booked);
 
+            // Gestion du statut
             $statusTerms = wp_get_post_terms($sailing->ID, 'sailing_status', ['fields' => 'names']);
             $apiStatus = ! is_wp_error($statusTerms) && ! empty($statusTerms) ? $statusTerms[0] : 'Actif';
 
@@ -99,6 +92,7 @@ class PlanningController
                 $status = 'Limité';
             }
 
+            // Récupération des taxonomies liées à la croisière parente
             $harborId = $cruise->harbor->term_id ?? null;
             $harborName = $cruise->harbor->name ?? '';
 
@@ -108,9 +102,11 @@ class PlanningController
             $tagTerms = wp_get_post_terms($cruiseId, 'cruise_tag');
             $tagIds = ! is_wp_error($tagTerms) && ! empty($tagTerms) ? array_map('intval', wp_list_pluck($tagTerms, 'term_id')) : [];
 
+            // Ajout au tableau de réponse
             $sailingsData[] = [
                 'id' => $sailing->ID,
                 'datetime' => $sailing->start,
+                'return_time' => $sailing->end ?? get_post_meta($sailing->ID, 'sailing_config_return_date', true),
                 'cruise_title' => $cruise->title,
                 'cruise_url' => $cruise->permalink,
                 'port' => $harborName,
@@ -122,11 +118,6 @@ class PlanningController
             ];
         }
 
-        set_transient($cacheKey, $sailingsData, 5 * MINUTE_IN_SECONDS);
-
-        $response = rest_ensure_response($sailingsData);
-        $response->header('X-Planning-Cache', 'MISS');
-
-        return $response;
+        return rest_ensure_response($sailingsData);
     }
 }
