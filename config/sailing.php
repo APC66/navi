@@ -20,7 +20,7 @@ return [
             'showInLegend' => true,
         ],
         'Limité' => [
-            'label' => 'DERNIÈRES PLACES',
+            'label' => 'DERNIÈRES PLACES !',
             'bg' => 'bg-status-limited',
             'border' => 'border-status-limited',
             'text' => 'text-status-limited-text',

@@ -22,43 +22,21 @@ class PlanningController
         }
 
         // =================================================================
-        // 1. LECTURE DU CACHE TRANSIENT (Bypass de l'exécution PHP lourde)
+        // 1. LECTURE DU CACHE TRANSIENT (Bypass TOTAL de PHP)
         // =================================================================
         $cacheKey = 'api_planning_week_'.md5($start.'_'.$end);
         $cachedData = get_transient($cacheKey);
 
         if ($cachedData !== false) {
-            // Le lourd (modèles, ACF) est en cache.
-            // On met juste à jour les stocks et le statut en temps réel (instantané via Redis)
-            foreach ($cachedData as &$data) {
-                $sailingId = $data['id'];
+            // On renvoie directement la donnée sans aucune boucle ni calcul !
+            $response = rest_ensure_response($cachedData);
+            $response->header('X-Planning-Cache', 'HIT-FULL');
 
-                // Vérification en direct (0.1ms)
-                $booked = (int) get_post_meta($sailingId, 'sailing_config_booked_count', true) ?: 0;
-                $available = max(0, $data['_raw_quota'] - $booked);
-                $data['available'] = $available;
-
-                $statusTerms = wp_get_post_terms($sailingId, 'sailing_status', ['fields' => 'names']);
-                $apiStatus = ! is_wp_error($statusTerms) && ! empty($statusTerms) ? $statusTerms[0] : 'Actif';
-
-                $status = 'Dispo';
-                if ($apiStatus === 'Annulé') {
-                    $status = 'Annulé';
-                } elseif ($apiStatus === 'Reporté') {
-                    $status = 'Reporté';
-                } elseif ($apiStatus === 'Complet' || $available <= 0) {
-                    $status = 'Complet';
-                } elseif ($available > 0 && $available <= 5) {
-                    $status = 'Limité';
-                }
-                $data['status'] = $status;
-            }
-
-            return rest_ensure_response($cachedData);
+            return $response;
         }
 
         // =================================================================
-        // 2. GÉNÉRATION LOURDE (Exécuté 1x toutes les 15 minutes)
+        // 2. GÉNÉRATION LOURDE (Exécuté 1x toutes les 5 minutes)
         // =================================================================
         $sailings = Sailing::fetch([
             'posts_per_page' => -1,
@@ -141,13 +119,14 @@ class PlanningController
                 'tags' => $tagIds,
                 'status' => $status,
                 'available' => $available,
-                '_raw_quota' => $sailing->quota, // Caché mais vital pour les calculs live
             ];
         }
 
-        // 3. ENREGISTREMENT DU CACHE (Durée : 15 minutes)
-        set_transient($cacheKey, $sailingsData, 15 * MINUTE_IN_SECONDS);
+        set_transient($cacheKey, $sailingsData, 5 * MINUTE_IN_SECONDS);
 
-        return rest_ensure_response($sailingsData);
+        $response = rest_ensure_response($sailingsData);
+        $response->header('X-Planning-Cache', 'MISS');
+
+        return $response;
     }
 }
