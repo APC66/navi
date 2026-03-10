@@ -132,6 +132,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'acf/text-images-cards',
                 'acf/text-image',
                 'acf/simple-cta',
+                'acf/image-carousel',
             ];
         }, 10, 2);
 
@@ -163,6 +164,35 @@ class ThemeServiceProvider extends SageServiceProvider
         // Disable autosave
         add_action('admin_init', function () {
             wp_deregister_script('autosave');
+        });
+
+        add_filter('tiny_mce_before_init', function ($init) {
+            $custom_colors = [
+                '"BFCAE6"', '"Primary 100"',
+                '"9AA7CB"', '"Primary 200"',
+                '"5B6C9F"', '"Primary 400"',
+                '"1C3787"', '"Primary 600"',
+                '"101F4D"', '"Primary 800"',
+                '"0A173D"', '"Primary 900"',
+                '"070E22"', '"Primary 1000"',
+
+                '"FFD21F"', '"Secondary"',
+                '"ECBA16"', '"Secondary Hover"',
+                '"FFE785"', '"Secondary 600"',
+                '"FFDC4C"', '"Secondary 800"',
+                '"58A4B0"', '"Tertiary 800"',
+
+                '"C33149"', '"Erreur / Rouge"',
+                '"FBF8F0"', '"Blanc Cassé"',
+                '"FFFFFF"', '"Blanc pur"',
+                '"000000"', '"Noir absolu"',
+            ];
+
+            $init['textcolor_map'] = '['.implode(', ', $custom_colors).']';
+
+            $init['textcolor_rows'] = 3;
+
+            return $init;
         });
     }
 }

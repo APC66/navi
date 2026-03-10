@@ -1,19 +1,15 @@
+import { initImageCarousel } from './blocks/image-carousel.js'
+import { initCruiseCarousel } from './blocks/cruise-carousel.js'
+
 import.meta.glob(["../images/**", "../fonts/**"]);
 import alpine from "alpinejs";
 import "./components/cruise-filters";
 
 Object.assign(window, { Alpine: alpine }).Alpine.start();
 
-// document.querySelectorAll('[data-js="reviews-carousel"]').forEach(el => {
-//   import('./components/reviews-carousel').then(module => {
-//     const initCarousel = module.init;
-//     initCarousel(el);
-//   });
-// });
-
-
 const blocks = {
   'cruise-swiper': () => import('./blocks/cruise-carousel').then(m => m.initCruiseCarousel),
+  'image-carousel': () => import('./blocks/image-carousel').then(m => m.initImageCarousel),
 };
 
 

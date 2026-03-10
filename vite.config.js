@@ -16,6 +16,10 @@ export default defineConfig({
         "resources/css/editor.css",
         "resources/js/editor.js",
         'resources/js/admin/calendar.js',
+
+        'resources/js/blocks/cruise-carousel.js',
+        'resources/js/blocks/image-carousel.js',
+
         'resources/js/components/booking-widget.js',
         'resources/js/components/cruise-filters.js',
         'resources/js/components/global-planning.js',

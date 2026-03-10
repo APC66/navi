@@ -1,8 +1,3 @@
-{{-- Chargement explicite du script JS pour ce bloc --}}
-@php
-  \Roots\bundle('resources/js/blocks/cruise-carousel.js')->enqueue();
-@endphp
-
 <section class="{{ $block->classes }} group/section relative overflow-hidden py-12 md:py-20">
   @if ($bg_image)
     <div class="absolute inset-0 z-0">
