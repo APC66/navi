@@ -77,6 +77,25 @@ class PlanningController
             $booked = (int) get_post_meta($sailing->ID, 'sailing_config_booked_count', true) ?: 0;
             $available = max(0, $sailing->quota - $booked);
 
+            // Vérification du booking cutoff
+            $isCutoffPassed = false;
+            $departureDate = $sailing->start;
+            if ($departureDate) {
+                try {
+                    $departureTime = new \DateTime($departureDate);
+                    $now = new \DateTime('now', new \DateTimeZone(wp_timezone_string()));
+                    $bookingCutoff = (int) get_field('booking_cutoff', $cruiseId);
+
+                    if ($bookingCutoff > 0) {
+                        $cutoffTime = clone $departureTime;
+                        $cutoffTime->modify("-{$bookingCutoff} minutes");
+                        $isCutoffPassed = ($now >= $cutoffTime);
+                    }
+                } catch (\Exception $e) {
+                    error_log('Erreur calcul cutoff dans PlanningController: '.$e->getMessage());
+                }
+            }
+
             // Gestion du statut
             $statusTerms = wp_get_post_terms($sailing->ID, 'sailing_status', ['fields' => 'names']);
             $apiStatus = ! is_wp_error($statusTerms) && ! empty($statusTerms) ? $statusTerms[0] : 'Actif';
@@ -86,6 +105,8 @@ class PlanningController
                 $status = 'Annulé';
             } elseif ($apiStatus === 'Reporté') {
                 $status = 'Reporté';
+            } elseif ($isCutoffPassed) {
+                $status = 'Complet'; // On affiche "Complet" si le délai est dépassé
             } elseif ($apiStatus === 'Complet' || $available <= 0) {
                 $status = 'Complet';
             } elseif ($available > 0 && $available <= 5) {

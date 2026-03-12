@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 
 class ReservationService
 {
     /**
      * Vérifie la disponibilité pour un départ donné
-     *
-     * @param  array  $options  Tableau [option_term_id => quantity]
      */
     public function checkAvailability(int $sailingId, int $passengerCount, array $options = []): bool
     {
@@ -20,7 +20,10 @@ class ReservationService
             throw new Exception('Départ non trouvé.');
         }
 
-        // 1. Vérification du Quota Global (Passagers)
+        // 1. Vérification du délai de réservation (Cutoff)
+        $this->validateBookingCutoff($sailing);
+
+        // 2. Vérification du Quota Global (Passagers)
         $totalQuota = $sailing->quota;
         $bookedCount = (int) get_post_meta($sailingId, 'sailing_config_booked_count', true);
 
@@ -28,25 +31,75 @@ class ReservationService
             return false;
         }
 
-        // 2. Vérification des Quotas d'Options
+        // 3. Vérification des Quotas d'Options
+        return $this->checkOptionsAvailability($sailing, $options);
+    }
+
+    /**
+     * Logique isolée pour le Cutoff
+     *
+     * @throws Exception
+     */
+    private function validateBookingCutoff($sailing): void
+    {
+        $departureDate = $sailing->start;
+        if (! $departureDate) {
+            return; // Ou throw Exception si la date est obligatoire
+        }
+
+        try {
+            $timezone = new DateTimeZone(wp_timezone_string() ?: 'UTC');
+            $departureTime = new DateTimeImmutable($departureDate, $timezone);
+            $now = new DateTimeImmutable('now', $timezone);
+
+            $cruiseId = $sailing->parentCruiseId;
+            if (! $cruiseId) {
+                return;
+            }
+
+            $bookingCutoff = (int) get_field('booking_cutoff', $cruiseId);
+
+            if ($bookingCutoff > 0) {
+                $cutoffLimit = $departureTime->modify("-{$bookingCutoff} minutes");
+
+                if ($now >= $cutoffLimit) {
+                    throw new Exception('Le délai de réservation pour ce départ est dépassé.');
+                }
+            }
+        } catch (Exception $e) {
+            // On ne re-throw que si c'est notre message métier
+            if ($e->getMessage() === 'Le délai de réservation pour ce départ est dépassé.') {
+                throw $e;
+            }
+            // Erreur technique de parsing : on log et on laisse passer (ou on bloque, au choix)
+            error_log('Erreur technique Cutoff : '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Vérification isolée des options
+     */
+    private function checkOptionsAvailability($sailing, array $optionsRequested): bool
+    {
         $optionsConfig = $sailing->options;
-        $optionsSold = get_post_meta($sailingId, 'sailing_options_booked_counts', true) ?: [];
+        $optionsSold = get_post_meta($sailing->id, 'sailing_options_booked_counts', true) ?: [];
 
-        if (! empty($options) && is_array($optionsConfig)) {
-            foreach ($optionsConfig as $optConfig) {
-                $typeId = $optConfig['option_type'] ?? null;
+        if (empty($optionsRequested) || ! is_array($optionsConfig)) {
+            return true;
+        }
 
-                // CORRECTION : On vérifie si l'option est dans le tableau (clé) et si la quantité > 0
-                if ($typeId && ! empty($optConfig['has_quota']) && isset($options[$typeId])) {
+        foreach ($optionsConfig as $optConfig) {
+            $typeId = $optConfig['option_type'] ?? null;
 
-                    $qtyRequested = (int) $options[$typeId];
-                    if ($qtyRequested > 0) {
-                        $maxQuota = (int) ($optConfig['quota'] ?? 0);
-                        $alreadySold = isset($optionsSold[$typeId]) ? (int) $optionsSold[$typeId] : 0;
+            if ($typeId && ! empty($optConfig['has_quota']) && isset($optionsRequested[$typeId])) {
+                $qtyRequested = (int) $optionsRequested[$typeId];
 
-                        if (($alreadySold + $qtyRequested) > $maxQuota) {
-                            return false;
-                        }
+                if ($qtyRequested > 0) {
+                    $maxQuota = (int) ($optConfig['quota'] ?? 0);
+                    $alreadySold = (int) ($optionsSold[$typeId] ?? 0);
+
+                    if (($alreadySold + $qtyRequested) > $maxQuota) {
+                        return false;
                     }
                 }
             }
@@ -55,11 +108,6 @@ class ReservationService
         return true;
     }
 
-    /**
-     * Calcule le prix total de la réservation
-     *
-     * @param  array  $options  Tableau [option_term_id => quantity]
-     */
     public function calculateTotal(int $sailingId, array $passengers, array $options): float
     {
         $sailing = \App\Models\Sailing::find($sailingId);
@@ -68,34 +116,25 @@ class ReservationService
         }
 
         $total = 0.0;
-
         $faresConfig = $sailing->fares;
         $optionsConfig = $sailing->options;
 
-        // 1. Prix Passagers
+        // Prix Passagers
         if ($faresConfig && ! empty($passengers)) {
             foreach ($faresConfig as $fare) {
                 $typeId = $fare['passenger_type'] ?? null;
                 if ($typeId && isset($passengers[$typeId])) {
-                    $qty = (int) $passengers[$typeId];
-                    $price = (float) ($fare['price'] ?? 0);
-                    $total += $qty * $price;
+                    $total += (int) $passengers[$typeId] * (float) ($fare['price'] ?? 0);
                 }
             }
         }
 
-        // 2. Prix Options
+        // Prix Options
         if ($optionsConfig && ! empty($options)) {
             foreach ($optionsConfig as $opt) {
                 $typeId = $opt['option_type'] ?? null;
-
-                // CORRECTION : Gestion de la quantité
-                if ($typeId && isset($options[$typeId])) {
-                    $qty = (int) $options[$typeId];
-                    if ($qty > 0) {
-                        $price = (float) ($opt['price'] ?? 0);
-                        $total += $qty * $price;
-                    }
+                if ($typeId && isset($options[$typeId]) && (int) $options[$typeId] > 0) {
+                    $total += (int) $options[$typeId] * (float) ($opt['price'] ?? 0);
                 }
             }
         }
