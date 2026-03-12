@@ -26,7 +26,6 @@ class SubHeaderFields extends Partial
             ->addWysiwyg('content', [
                 'label' => 'Contenu Riche',
                 'media_upload' => 0,
-                'toolbar' => 'basic',
                 'rows' => 4,
                 'instructions' => 'Le paragraphe descriptif.',
             ])

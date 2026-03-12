@@ -32,7 +32,6 @@ class IntroContentFields extends Partial
             ->addWysiwyg('intro_content', [
                 'label' => 'Contenu principal',
                 'media_upload' => 0,
-                'toolbar' => 'basic',
                 'rows' => 4,
             ]);
 

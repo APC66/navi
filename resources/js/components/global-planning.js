@@ -2,6 +2,7 @@ const globalPlanningData = (nonce) => ({
   loading: true,
   apiNonce: nonce,
   currentDate: new Date(),
+  datePickerValue: '', // NOUVEAU: Variable simple pour éviter le bug de x-model
   sailings: [],
 
   // Nouveaux états pour le menu unifié
@@ -16,7 +17,34 @@ const globalPlanningData = (nonce) => ({
   expandedSailingId: null,
 
   init() {
+    // Initialisation de la date
+    this.datePickerValue = this.formatDateForPicker(this.currentDate);
+
+    // NOUVEAU: On surveille les changements de l'input date
+    this.$watch('datePickerValue', (val) => {
+      if (val && val !== this.formatDateForPicker(this.currentDate)) {
+        this.currentDate = new Date(val);
+        this.fetchWeekData();
+      }
+    });
+
     this.fetchWeekData();
+  },
+
+  // NOUVEAU: Force l'ouverture du calendrier natif au clic
+  openDatePicker(event) {
+    try {
+      if (typeof event.target.showPicker === 'function') {
+        event.target.showPicker();
+      }
+    } catch (e) {
+      // Ignoré silencieusement pour les navigateurs non supportés
+    }
+  },
+
+  // NOUVEAU: Fonction utilitaire pour formater la date pour l'input
+  formatDateForPicker(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   },
 
   // Action pour dérouler/replier une carte
@@ -70,19 +98,6 @@ const globalPlanningData = (nonce) => ({
     }
   },
 
-  // Date formattée pour l'input natif HTML (YYYY-MM-DD)
-  get datePickerValue() {
-    const d = this.currentDate;
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  },
-
-  set datePickerValue(val) {
-    if (val) {
-      this.currentDate = new Date(val);
-      this.fetchWeekData();
-    }
-  },
-
   formatDayHeader(date) {
     const days = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
     const dayName = days[date.getDay()];
@@ -109,6 +124,7 @@ const globalPlanningData = (nonce) => ({
     const next = new Date(this.currentDate);
     next.setDate(next.getDate() + 7);
     this.currentDate = next;
+    this.datePickerValue = this.formatDateForPicker(this.currentDate); // MAJ
     this.fetchWeekData();
   },
 
@@ -116,11 +132,13 @@ const globalPlanningData = (nonce) => ({
     const prev = new Date(this.currentDate);
     prev.setDate(prev.getDate() - 7);
     this.currentDate = prev;
+    this.datePickerValue = this.formatDateForPicker(this.currentDate); // MAJ
     this.fetchWeekData();
   },
 
   goToToday() {
     this.currentDate = new Date();
+    this.datePickerValue = this.formatDateForPicker(this.currentDate); // MAJ
     this.fetchWeekData();
   },
 
@@ -190,7 +208,6 @@ const globalPlanningData = (nonce) => ({
   },
 
   // Utilise la configuration centralisée passée par PHP (wp_add_inline_script)
-  // MODIFICATION : On passe l'objet `sailing` complet au lieu de juste `status`
   getCardStyle(sailing) {
     const isPast = this.isPastDate(sailing.datetime);
 

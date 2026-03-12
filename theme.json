@@ -67,6 +67,11 @@
           "name": "Secondary Hover"
         },
         {
+          "slug": "secondary-200",
+          "color": "#FFF5CA",
+          "name": "Secondary 600"
+        },
+        {
           "slug": "secondary-600",
           "color": "#FFE785",
           "name": "Secondary 600"

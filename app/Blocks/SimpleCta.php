@@ -75,26 +75,48 @@ class SimpleCta extends Block
             ->addGroup('title_group', ['label' => 'Titre'])
             ->addFields(app(SectionHeaderFields::class)->fields())
             ->endGroup()
-
+            ->addTrueFalse('has_content', ['ui' => 1, 'label' => 'Contenu ?'])
             ->addWysiwyg('content', [
                 'label' => 'Contenu',
-                'toolbar' => 'basic',
                 'media_upload' => 0,
                 'conditional_logic' => [
                     [
                         [
-                            'field' => 'review_bloc',
+                            'field' => 'has_content',
                             'operator' => '==',
-                            'value' => 0,
+                            'value' => 1,
                         ],
                     ],
                 ],
             ])
-            ->addGroup('button_1', ['label' => 'Bouton Principal'])
+            ->addTrueFalse('has_button', ['ui' => 1, 'label' => 'Bouton ?'])
+            ->addGroup('button_1', [
+                'label' => 'Bouton Principal',
+                'conditional_logic' => [
+                    [
+                        [
+                            'field' => 'has_button',
+                            'operator' => '==',
+                            'value' => 1,
+                        ],
+                    ],
+                ],
+            ])
             ->addFields(app(ButtonFields::class)->fields())
             ->endGroup()
 
-            ->addGroup('button_2', ['label' => 'Bouton Secondaire'])
+            ->addGroup('button_2', [
+                'label' => 'Bouton Secondaire',
+                'conditional_logic' => [
+                    [
+                        [
+                            'field' => 'has_button',
+                            'operator' => '==',
+                            'value' => 1,
+                        ],
+                    ],
+                ],
+            ])
             ->addFields(app(ButtonFields::class)->fields())
             ->endGroup()
 
@@ -107,12 +129,10 @@ class SimpleCta extends Block
             ->addSelect('background_style', [
                 'label' => 'Couleur de fond',
                 'choices' => [
-                    'bg-white' => 'Blanc',
-                    'bg-off-white' => 'Blanc Cassé',
                     'bg-primary-50' => 'Bleu très clair',
                     'bg-primary-900' => 'Bleu Nuit (Texte blanc)',
                 ],
-                'default_value' => 'bg-white',
+                'default_value' => 'bg-primary-900',
                 'conditional_logic' => [
                     [
                         [

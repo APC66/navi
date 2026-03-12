@@ -11,6 +11,8 @@
       class="relative rounded-[30px] bg-[#EBF0F5] p-6 shadow-2xl md:p-10"
       x-data="globalPlanning('{{ wp_create_nonce('wp_rest') }}')"
     >
+
+
       {{-- LOADER OVERLAY --}}
       <div
         x-show="loading"
@@ -40,11 +42,10 @@
       </div>
 
       <div class="relative mb-12 lg:mb-20 flex flex-col items-center md:flex-row md:justify-between lg:justify-end gap-6 md:gap-0 w-full">
-
-        <div class="flex items-center justify-center bg-white rounded-xl lg:absolute lg:left-1/2 lg:-translate-x-1/2 z-10 w-full md:w-auto py-2 md:py-0">
+        <div class="flex items-center justify-center bg-white rounded-xl hover:bg-secondary-200  transition lg:absolute lg:left-1/2 lg:-translate-x-1/2 z-10 w-full md:w-auto py-2 md:py-0">
           <button
             @click="prevWeek()"
-            class="text-primary-900 flex h-10 w-10 items-center justify-center shadow-lg rounded-xl bg-white transition-transform hover:scale-105 hover:bg-gray-50"
+            class="text-primary-900 flex h-10 w-10 shrink-0 items-center cursor-pointer justify-center shadow-lg rounded-xl bg-white transition-transform hover:scale-110 hover:bg-gray-50"
           >
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -56,14 +57,24 @@
             </svg>
           </button>
 
-          <h1
-            class="text-primary-800 mx-4 md:mx-6 text-lg md:text-xl lg:text-xl font-medium text-center"
-            x-text="weekRangeLabel"
-          ></h1>
+          {{-- NOUVEAU : Titre transformé en DatePicker natif invisible --}}
+          <div class="relative flex items-center justify-center group cursor-pointer px-2 md:px-4 mx-2" title="Choisir une date">
+            <input
+              type="date"
+              x-model="datePickerValue"
+              @click="openDatePicker($event)"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+            />
+            <h1 class="text-primary-800 text-lg md:text-xl lg:text-xl font-medium text-center flex items-center">
+              <span x-text="weekRangeLabel"></span>
+              {{-- Petite icône calendrier pour indiquer que c'est cliquable --}}
+              <svg class="w-5 h-5 ml-2 block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </h1>
+          </div>
 
           <button
             @click="nextWeek()"
-            class="text-primary-900 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg transition-transform hover:scale-105 hover:bg-gray-50"
+            class="text-primary-900 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-white shadow-lg transition-transform hover:scale-110 hover:bg-gray-50"
           >
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -83,20 +94,10 @@
             @click.away="filterMenuOpen = false"
             class="text-primary-900 flex items-center cursor-pointer justify-center w-full md:w-auto rounded-2xl border border-gray-200 bg-white px-6 py-3.5 font-bold shadow-sm transition-all hover:shadow-md"
           >
-            <svg
-              class="text-secondary mr-3 h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.5"
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-              ></path>
+            Filtrer
+            <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h8m4 0h4M4 12h2m4 0h10M4 18h10m4 0h2M12 6a2 2 0 104 0 2 2 0 00-4 0zM6 12a2 2 0 104 0 2 2 0 00-4 0zM14 18a2 2 0 104 0 2 2 0 00-4 0z" />
             </svg>
-            Filtrer les départs
 
             {{-- Pastille de compteur de filtres actifs --}}
             <span
@@ -238,7 +239,7 @@
 
               {{-- En-tête de la colonne (Jour) --}}
               <div
-                class="py-3 lg:pt-2 lg:pb-4 text-center text-sm font-bold tracking-wider uppercase transition-colors"
+                class="py-3 lg:py-3 text-center text-sm font-bold tracking-wider uppercase transition-colors"
                 :class="isToday(day) ? 'bg-secondary text-primary-900 lg:rounded-t-2xl' : 'bg-primary-100 lg:bg-transparent text-primary-900'"
                 x-text="formatDayHeader(day)"
               ></div>
@@ -246,7 +247,7 @@
               {{-- Liste des croisières pour ce jour --}}
               <div
                 class="flex flex-1 flex-col overflow-hidden gap-3 p-4 lg:p-3"
-                :class="isToday(day) ? 'bg-[#FFF5CA] lg:rounded-b-2xl' : 'bg-white lg:rounded-2xl'"
+                :class="isToday(day) ? 'bg-secondary-200 lg:rounded-b-2xl' : 'bg-white lg:rounded-2xl'"
               >
                 <template x-for="sailing in getFilteredSailingsForDay(day)" :key="sailing.id">
                   {{-- CARTE CROISIÈRE --}}
@@ -293,7 +294,7 @@
                       <a
                         :href="sailing.cruise_url"
                         x-show="getCardStyle(sailing).isSelectable"
-                        class="z-10 mb-2 w-full rounded bg-white py-2 text-xs font-bold shadow-lg transition-shadow hover:shadow"
+                        class="z-10 mb-2 w-full rounded bg-white py-2 text-xs font-bold shadow-md transition-shadow hover:shadow hover:bg-secondary"
                         :class="getCardStyle(sailing).btnText"
                         x-text="getCardStyle(sailing).buttonLabel"
                       ></a>
@@ -331,7 +332,7 @@
 
                       {{-- Statut Bottom Bar (Flèche toujours en bas) --}}
                       <span
-                        class="text-[11px] font-primary-900 font-bold racking-widest uppercase my-1"
+                        class="text-[9px] font-black tracking-widest uppercase"
                         x-text="getCardStyle(sailing).label"
                       ></span>
                     </div>
@@ -339,7 +340,7 @@
                     {{-- Bouton Triangle (masqué si non sélectionnable) --}}
                     <button
                       x-show="getCardStyle(sailing).isSelectable"
-                      class="group/btn z-10 mt-auto flex w-full cursor-pointer flex-col bg-secondary text-primary-800/50 hover:text-primary-800 items-center py-1 transition-colors"
+                      class="group/btn z-10 mt-auto flex w-full cursor-pointer flex-col bg-secondary text-black/50 hover:text-black items-center py-2 transition-colors"
                       @click="toggleSailing(sailing.id)"
                     >
                       <svg
@@ -362,7 +363,7 @@
                     class="flex h-16 lg:h-24 flex-1 items-center justify-center rounded-xl lg:rounded-2xl border-2 border-dashed opacity-50"
                     :class="isToday(day) ? 'border-secondary text-secondary' : 'text-primary-400 border-gray-300'"
                   >
-                    <span class="text-xs font-bold">Aucun départ</span>
+                    <span class="text-xs font-bold text-center">Aucun départ<br> public</span>
                   </div>
                 </template>
               </div>
@@ -373,7 +374,7 @@
 
       {{-- LÉGENDE STATUTS --}}
       <div
-        class="text-primary-900 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl bg-white px-6 py-3 text-xs font-bold tracking-wider uppercase shadow-sm"
+        class="text-primary-900 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-full bg-white px-6 py-3 text-xs font-bold tracking-wider uppercase shadow-sm"
       >
         @foreach (config('sailing.statuses') as $key => $status)
           @if ($status['showInLegend'])
