@@ -8,7 +8,7 @@
 
 <div class="bg-primary-900 relative h-[300px] w-full overflow-hidden md:h-[400px]">
   @if ($image)
-    <img src="{{ $image }}" alt="{{ strip_tags($title) }}" class="h-full w-full object-cover" />
+    <img src="{{ $image }}" alt="{{ strip_tags($title) }}" class="h-full w-full object-cover object-center" />
     <div class="bg-primary-900/20 absolute inset-0"></div>
   @else
     <div class="from-primary-900 to-primary-800 absolute inset-0 bg-gradient-to-r"></div>

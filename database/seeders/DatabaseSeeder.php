@@ -13,6 +13,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Load the example seeder
-        $this->call(ExampleSeeder::class);
+        $this->call(UserSeeder::class);
     }
 }

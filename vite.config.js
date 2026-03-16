@@ -23,6 +23,7 @@ export default defineConfig({
         'resources/js/components/booking-widget.js',
         'resources/js/components/cruise-filters.js',
         'resources/js/components/global-planning.js',
+        'resources/js/components/agency-order-checkout.js',
       ],
       refresh: true,
     }),

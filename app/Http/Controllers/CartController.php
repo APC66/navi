@@ -24,14 +24,10 @@ class CartController
         $optionsRaw = $request->get_param('options') ?: [];
         $options = [];
 
-        // Normalisation des options au format [id => qty]
         foreach ($optionsRaw as $key => $val) {
             if (is_numeric($key)) {
-                // Format { 12: 1, 15: 2 } (Correct)
                 $options[$key] = (int) $val;
             } else {
-                // Format [12, 15] (Vieux format liste) -> on convertit en qté 1
-                // Dans ce cas $val est l'ID
                 if (is_numeric($val)) {
                     $options[$val] = 1;
                 }
@@ -95,6 +91,7 @@ class CartController
                 'price_override' => $totalPrice,
                 'details_string' => implode(', ', $details),
             ],
+            'unique_key' => md5($sailingId.microtime()),
         ];
 
         try {
@@ -110,7 +107,19 @@ class CartController
                 WC()->cart = new \WC_Cart;
             }
 
-            WC()->cart->add_to_cart($productId, 1, 0, [], $cartItemData);
+            // Force le rechargement de la session sinon le panier se met pas a jour avec le nouvel item
+            WC()->cart->get_cart();
+
+            $cartKey = WC()->cart->add_to_cart($productId, 1, 0, [], $cartItemData);
+            WC()->session->save_data();
+
+            if ($cartKey === false) {
+                $notices = wc_get_notices('error');
+                $message = ! empty($notices) ? $notices[0]['notice'] : 'Erreur inconnue';
+                wc_clear_notices();
+
+                return ['success' => false, 'message' => $message];
+            }
 
             return [
                 'success' => true,

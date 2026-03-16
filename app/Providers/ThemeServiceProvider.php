@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use App\Admin\BoardingListPage;
 use App\Admin\CalendarPage;
+use App\Admin\LoyaltySettingsPage;
+use App\Admin\OrdersExportPage;
+use App\Services\AgencyOrderService;
 use App\Services\CruiseManagement;
+use App\Services\LoyaltyService;
 use App\Services\WoocommerceBridge;
 use Illuminate\Support\Collection;
 use Roots\Acorn\Sage\SageServiceProvider;
@@ -81,6 +85,10 @@ class ThemeServiceProvider extends SageServiceProvider
 
         (new CruiseManagement)->init();
         (new WoocommerceBridge)->init();
+        (new AgencyOrderService)->init();
+        (new LoyaltyService)->init();
+        (new OrdersExportPage)->init();
+        (new LoyaltySettingsPage)->init();
 
         add_action('admin_menu', new CalendarPage);
         add_action('admin_menu', new BoardingListPage);
@@ -133,6 +141,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'acf/text-image',
                 'acf/simple-cta',
                 'acf/image-carousel',
+                'acf/text-with-icon',
             ];
         }, 10, 2);
 
@@ -193,6 +202,20 @@ class ThemeServiceProvider extends SageServiceProvider
             $init['textcolor_rows'] = 3;
 
             return $init;
+        });
+
+        add_action('init', function () {
+            // Attribuer la capability à un rôle spécifique
+            $role = get_role('shop_manager');
+            if ($role) {
+                $role->add_cap('place_agency_orders');
+            }
+
+            // Ou à un utilisateur spécifique
+            $user = get_user_by('email', 'julien@agencepoint.com');
+            if ($user) {
+                $user->add_cap('place_agency_orders');
+            }
         });
     }
 }

@@ -193,6 +193,7 @@
       <path value="$PROJECT_DIR$/public/content/plugins/query-monitor/vendor/composer" />
       <path value="$PROJECT_DIR$/public/content/plugins/advanced-custom-fields-pro/vendor/composer" />
       <path value="$PROJECT_DIR$/vendor/davidhsianturi/blade-bootstrap-icons" />
+      <path value="$PROJECT_DIR$/vendor/fakerphp/faker" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3" />

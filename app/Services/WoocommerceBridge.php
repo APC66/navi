@@ -21,6 +21,7 @@ class WoocommerceBridge
         add_action('woocommerce_admin_order_data_after_order_details', [$this, 'addAdminOrderNoteField']);
         add_action('woocommerce_process_shop_order_meta', [$this, 'saveAdminOrderNoteField']);
         add_action('woocommerce_update_order', [$this, 'saveAdminOrderNoteField'], 10, 1);
+        add_filter('woocommerce_cart_id', [$this, 'distinctProductSailing'], 10, 5);
 
     }
 
@@ -253,5 +254,14 @@ class WoocommerceBridge
         $order->save(); // HPOS + legacy
 
         $this->isSaving = false;
+    }
+
+    public function distinctProductSailing($cart_id, $product_id, $quantity, $variation_id, $variation)
+    {
+        if (isset($cart_item_data['booking_data']['sailing_id'])) {
+            return md5($cart_id.$cart_item_data['booking_data']['sailing_id']);
+        }
+
+        return $cart_id;
     }
 }
