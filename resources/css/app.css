@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./variables.css";
 @import './woocommerce.css';
+@import "./blocks/contact.css";
 @source "../views";
 @source "../../app";
 
@@ -42,6 +43,10 @@
 
     a{
       @apply text-secondary underline;
+    }
+
+    strong{
+      @apply font-bold;
     }
 
   }

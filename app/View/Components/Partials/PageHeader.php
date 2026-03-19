@@ -16,6 +16,8 @@ class PageHeader extends Component
 
     public $subtitle;
 
+    public $showTitle;
+
     /**
      * Create a new component instance.
      *
@@ -33,7 +35,8 @@ class PageHeader extends Component
         $highlight = '',
         $highlightColor = 'text-secondary',
         $subtitle = '',
-        $group = []
+        $group = [],
+        $showTitle = '',
     ) {
         if (! empty($group)) {
             $image = $image ?: ($group['header_image'] ?? null);
@@ -41,6 +44,7 @@ class PageHeader extends Component
             $highlight = $highlight ?: ($group['header_highlight'] ?? '');
             $highlightColor = $highlightColor !== 'text-secondary' ? $highlightColor : ($group['header_highlight_color'] ?? 'text-secondary');
             $subtitle = $subtitle ?: ($group['header_subtitle'] ?? '');
+            $showTitle = $showTitle ?: ($group['show_title'] ?? false);
         }
 
         // Fallback ultime pour le titre si aucun groupe n'est passé
@@ -53,6 +57,7 @@ class PageHeader extends Component
         $this->highlight = $highlight;
         $this->highlightColor = $highlightColor;
         $this->subtitle = $subtitle;
+        $this->showTitle = $showTitle;
     }
 
     /**

@@ -14,7 +14,6 @@
     <div class="from-primary-900 to-primary-800 absolute inset-0 bg-gradient-to-r"></div>
   @endif
 </div>
-
 <div class="w-full bg-[#182646]">
   <div class="relative z-10 container mx-auto px-4 pt-8 pb-12">
     <div class="mb-6 flex items-center">
@@ -23,26 +22,28 @@
       <span class="px-4">/</span>
 
       <span class="text-secondary max-w-[200px] truncate md:max-w-none">
-        {!! $title !!}
+        {!! get_the_title() !!}
       </span>
     </div>
-
-    <h1
-      class="font-heading mb-6 mt-12 text-center text-4xl leading-tight font-bold uppercase md:text-6xl {{$colors[$highlightColor]}} [&>span]:font-light"
-    >
-      @if ($highlight)
-        <span>{!! $highlight !!}</span>
-      @endif
-
-      {!! $title !!}
-    </h1>
-
-    @if ($subtitle)
-      <div
-        class="border-secondary max-w-4xl border-l-4 pl-6 text-lg leading-relaxed font-light text-gray-600 md:text-xl"
+    @if($showTitle)
+      <h1
+        class="font-heading mb-6 mt-12 text-center text-4xl leading-tight font-bold uppercase md:text-6xl {{$colors[$highlightColor]}} [&>span]:font-light"
       >
-        {!! $subtitle !!}
-      </div>
+        @if ($highlight)
+          <span>{!! $highlight !!}</span>
+        @endif
+
+        {!! $title !!}
+      </h1>
+
+      @if ($subtitle)
+        <div
+          class="border-secondary max-w-4xl border-l-4 pl-6 text-lg leading-relaxed font-light text-gray-600 md:text-xl"
+        >
+          {!! $subtitle !!}
+        </div>
+      @endif
     @endif
+
   </div>
 </div>

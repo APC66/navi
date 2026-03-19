@@ -142,6 +142,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'acf/simple-cta',
                 'acf/image-carousel',
                 'acf/text-with-icon',
+                'acf/contact',
             ];
         }, 10, 2);
 
