@@ -218,5 +218,14 @@ class ThemeServiceProvider extends SageServiceProvider
                 $user->add_cap('place_agency_orders');
             }
         });
+
+        add_action('pre_get_posts', function ($query) {
+            if (! is_admin() && $query->is_main_query() && is_post_type_archive('cruise')) {
+                $search = sanitize_text_field($_GET['cruise_search'] ?? '');
+                if (! empty($search)) {
+                    $query->set('s', $search);
+                }
+            }
+        });
     }
 }

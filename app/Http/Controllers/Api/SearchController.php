@@ -9,14 +9,53 @@ use function Roots\view;
 
 class SearchController
 {
+    public function liveSearch(WP_REST_Request $request): array
+    {
+        $q = sanitize_text_field($request->get_param('q') ?? '');
+
+        if (strlen($q) < 2) {
+            return [];
+        }
+
+        $query = new WP_Query([
+            'post_type' => 'cruise',
+            'post_status' => 'publish',
+            'posts_per_page' => 6,
+            's' => $q,
+            'orderby' => 'relevance',
+        ]);
+
+        $results = [];
+
+        foreach ($query->posts as $post) {
+            $id = $post->ID;
+
+            $thumbnail = get_the_post_thumbnail_url($id, 'thumbnail') ?: null;
+
+            $harbor = null;
+            $terms = get_the_terms($id, 'harbor');
+            if (! empty($terms) && ! is_wp_error($terms)) {
+                $harbor = $terms[0]->name;
+            }
+
+            $results[] = [
+                'id' => $id,
+                'title' => get_the_title($id),
+                'url' => get_permalink($id),
+                'thumbnail' => $thumbnail,
+                'harbor' => $harbor,
+            ];
+        }
+
+        return $results;
+    }
+
     public function search(WP_REST_Request $request)
     {
-        // Récupération des paramètres
         $sort = $request->get_param('sort');
         $page = $request->get_param('page') ? intval($request->get_param('page')) : 1; // Page courante
         $perPage = 12; // Nombre d'éléments par page
 
-        // Les filtres arrivent sous forme de chaîne "12,14"
         $tagsStr = $request->get_param('tags');
         $tags = $tagsStr ? explode(',', $tagsStr) : [];
 
@@ -31,7 +70,6 @@ class SearchController
             'tax_query' => ['relation' => 'AND'],
         ];
 
-        // 1. Filtre par TAGS (cruise_tag)
         if (! empty($tags)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'cruise_tag',
@@ -41,7 +79,6 @@ class SearchController
             ];
         }
 
-        // 2. Filtre par TYPE (cruise_type)
         if (! empty($categories)) {
             $args['tax_query'][] = [
                 'taxonomy' => 'cruise_type',
@@ -51,7 +88,6 @@ class SearchController
             ];
         }
 
-        // 3. Gestion du TRI
         switch ($sort) {
             case 'price_asc':
                 $args['meta_key'] = 'base_price';
@@ -75,7 +111,6 @@ class SearchController
 
         $query = new WP_Query($args);
 
-        // Rendu de la vue partielle
         $html = view('partials.cruise-grid', ['query' => $query])->render();
 
         return [

@@ -13,14 +13,19 @@
     $tags = get_terms(['taxonomy' => 'cruise_tag', 'hide_empty' => false]);
 
     $paged = get_query_var('paged') ? get_query_var('paged') : (get_query_var('page') ? get_query_var('page') : 1);
-    $initialQuery = new WP_Query([
+    $searchQuery = get_query_var('s') ?: null;
+    $initialQueryArgs = [
       'post_type' => 'cruise',
       'post_status' => 'publish',
       'posts_per_page' => 12,
       'paged' => $paged,
       'orderby' => 'date',
       'order' => 'DESC',
-    ]);
+    ];
+    if ($searchQuery) {
+      $initialQueryArgs['s'] = $searchQuery;
+    }
+    $initialQuery = new WP_Query($initialQueryArgs);
   @endphp
 
   <x-partials.page-header :group="$headerGroup" />

@@ -82,7 +82,7 @@
     </div>
 
     <div
-      class="bg-primary-1000 fixed top-6 right-0 z-50 flex h-[60px] w-[190px] items-center justify-end gap-4 rounded-l-full pr-4"
+      class="bg-primary-1000 pointer-events-auto fixed top-6 right-0 z-50 flex h-[60px] w-[190px] items-center justify-end gap-4 rounded-l-full pr-4"
     >
       <a
         href="{{ get_permalink(get_option('woocommerce_myaccount_page_id')) }}"
@@ -103,6 +103,8 @@
       </a>
       <button
         class="bg-secondary text-primary-1000 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        @click="$dispatch('open-search')"
+        aria-label="Ouvrir la recherche"
       >
         @svg('glass', 'h-6 w-6')
       </button>

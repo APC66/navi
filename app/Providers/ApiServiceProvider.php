@@ -32,6 +32,7 @@ class ApiServiceProvider extends ServiceProvider
         $this->registerApiRoute('POST', 'cancellation/confirm', [CancellationController::class, 'confirm']);
         $this->registerApiRoute('POST', 'cancellation/reschedule', [CancellationController::class, 'reschedule']);
 
+        $this->registerApiRoute('GET', 'search', [SearchController::class, 'liveSearch']);
         $this->registerApiRoute('GET', 'cruises/search', [SearchController::class, 'search']);
 
         $this->registerApiRoute('GET', 'planning/week', [PlanningController::class, 'week']);

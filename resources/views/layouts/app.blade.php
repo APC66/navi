@@ -21,6 +21,7 @@
 
     <div id="app" class="">
       @include('sections.header')
+      <x-partials.search-overlay />
 
       <main id="main" class="{{ $containerClasses }}">
         <div class="{{ $containerInnerClasses }}">
