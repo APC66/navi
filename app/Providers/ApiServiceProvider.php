@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\CancellationController;
+use App\Http\Controllers\Api\GiftCardController;
 use App\Http\Controllers\Api\PlanningController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SeedController;
@@ -36,6 +37,10 @@ class ApiServiceProvider extends ServiceProvider
         $this->registerApiRoute('GET', 'cruises/search', [SearchController::class, 'search']);
 
         $this->registerApiRoute('GET', 'planning/week', [PlanningController::class, 'week']);
+
+        // ROUTES CARTES CADEAUX
+        $this->registerApiRoute('GET', 'gift-card/pricing/(?P<id>[\d]+)', [GiftCardController::class, 'pricing']);
+        $this->registerApiRoute('POST', 'gift-card/add-to-cart', [GiftCardController::class, 'addToCart']);
 
     }
 

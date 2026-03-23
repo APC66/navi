@@ -212,7 +212,6 @@ class ThemeServiceProvider extends SageServiceProvider
                 $role->add_cap('place_agency_orders');
             }
 
-            // Ou à un utilisateur spécifique
             $user = get_user_by('email', 'julien@agencepoint.com');
             if ($user) {
                 $user->add_cap('place_agency_orders');
@@ -227,5 +226,19 @@ class ThemeServiceProvider extends SageServiceProvider
                 }
             }
         });
+
+        // Enqueue JS carte cadeau uniquement sur le template dédié
+        add_action('wp_enqueue_scripts', function () {
+            if (is_page_template('template-gift-card.blade.php')) {
+                wp_enqueue_script(
+                    'gift-card-js',
+                    asset('resources/js/components/gift-card.js')->uri(),
+                    [],
+                    null,
+                    true
+                );
+            }
+        });
+
     }
 }

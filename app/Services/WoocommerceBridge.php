@@ -15,6 +15,7 @@ class WoocommerceBridge
         add_action('woocommerce_check_cart_items', [$this, 'validateCartAvailability'], 10);
         add_action('woocommerce_order_status_processing', [$this, 'processOrderBooking'], 10, 1);
         add_action('woocommerce_order_status_completed', [$this, 'processOrderBooking'], 10, 1);
+        add_action('woocommerce_order_status_completed', [$this, 'processGiftCardItems'], 20, 1);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancelOrderBooking'], 10, 1);
         add_action('woocommerce_order_status_refunded', [$this, 'cancelOrderBooking'], 10, 1);
 
@@ -263,5 +264,43 @@ class WoocommerceBridge
         }
 
         return $cart_id;
+    }
+
+    /**
+     * Traitement des items carte cadeau lors du passage en statut "Terminée".
+     * Génère le coupon WooCommerce et envoie l'email avec le PDF.
+     */
+    public function processGiftCardItems(int $order_id): void
+    {
+        $order = wc_get_order($order_id);
+        if (! $order) {
+            return;
+        }
+
+        $giftCardService = new GiftCardService;
+
+        foreach ($order->get_items() as $item) {
+            // Identifier les items carte cadeau par la meta _gc_amount
+            if (! $item->get_meta('_gc_amount')) {
+                continue;
+            }
+
+            // Éviter le double traitement
+            if ($item->get_meta('_gc_processed')) {
+                continue;
+            }
+
+            // 1. Générer le coupon
+            $couponCode = $giftCardService->generateCoupon($order, $item);
+
+            if ($couponCode) {
+                // 2. Envoyer l'email avec le PDF
+                $giftCardService->sendGiftCardEmail($order, $item);
+
+                // Marquer l'item comme traité
+                $item->update_meta_data('_gc_processed', '1');
+                $item->save();
+            }
+        }
     }
 }
