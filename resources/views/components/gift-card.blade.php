@@ -1,5 +1,5 @@
 <div
-  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative min-h-screen bg-gradient-to-b from-[#182646] from-20% via-20% font-sans py-16"
+  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative min-h-screen bg-gradient-to-b from-[#182646] from-20% via-20% font-sans pb-16"
   x-data="giftCard('{{ wp_create_nonce('wp_rest') }}', '{{ $buyerEmail }}')"
 >
   <img
@@ -9,7 +9,6 @@
   />
 
   <div class="container mx-auto max-w-3xl px-4 relative z-10">
-
     {{-- Titre --}}
     <div class="text-center mb-10">
       <h1 class="text-white text-4xl font-bold uppercase tracking-wide">
@@ -38,7 +37,7 @@
     </div>
 
     {{-- Carte principale --}}
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+    <div class="bg-primary-50 rounded-3xl shadow-2xl overflow-hidden">
 
       {{-- ===================== ÉTAPE 1 : Choix du mode ===================== --}}
       <div x-show="step === 1" x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
@@ -50,8 +49,8 @@
             {{-- Option : Croisière --}}
             <button
               @click="selectMode('cruise')"
-              class="group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 transition-all text-left"
-              :class="mode === 'cruise' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'"
+              class="group relative cursor-pointer flex flex-col items-center justify-center p-8 rounded-2xl border-2 transition-all text-left"
+              :class="mode === 'cruise' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-primary-100 hover:border-primary-300 '"
             >
               <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors"
                    :class="mode === 'cruise' ? 'bg-secondary' : 'bg-primary-100'">
@@ -69,8 +68,8 @@
             {{-- Option : Montant libre --}}
             <button
               @click="selectMode('free')"
-              class="group relative flex flex-col items-center justify-center p-8 rounded-2xl border-2 transition-all text-left"
-              :class="mode === 'free' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'"
+              class="group relative flex flex-col items-center cursor-pointer justify-center p-8 rounded-2xl border-2 transition-all text-left"
+              :class="mode === 'free' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-primary-100 hover:border-primary-300 '"
             >
               <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors"
                    :class="mode === 'free' ? 'bg-secondary' : 'bg-primary-100'">
@@ -92,7 +91,7 @@
             <select
               x-model="selectedCruiseId"
               @change="loadPricing()"
-              class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+              class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
             >
               <option value="">— Sélectionner une croisière —</option>
               @foreach ($cruises as $cruise)
@@ -123,7 +122,7 @@
                 min="1"
                 step="1"
                 placeholder="Ex : 150"
-                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-12 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+                class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 pr-12 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
               />
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary-400 font-bold">€</span>
             </div>
@@ -158,8 +157,8 @@
             <div class="grid grid-cols-2 gap-4">
               <button
                 @click="season = 'low'"
-                class="flex flex-col items-center p-5 rounded-2xl border-2 transition-all"
-                :class="season === 'low' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-gray-200 hover:border-primary-300'"
+                class="flex flex-col items-center cursor-pointer p-5 rounded-2xl border-2 transition-all"
+                :class="season === 'low' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-primary-100 hover:border-primary-300'"
               >
                 <span class="font-bold text-primary-900">Basse Saison</span>
                 <span class="text-primary-400 text-xs mt-1" x-show="lowSeasonLabel" x-text="lowSeasonLabel"></span>
@@ -169,8 +168,8 @@
               </button>
               <button
                 @click="season = 'high'"
-                class="flex flex-col items-center p-5 rounded-2xl border-2 transition-all"
-                :class="season === 'high' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-gray-200 hover:border-primary-300'"
+                class="flex flex-col items-center cursor-pointer p-5 rounded-2xl border-2 transition-all"
+                :class="season === 'high' ? 'border-secondary bg-secondary/10 shadow-md' : 'border-primary-100 hover:border-primary-300'"
               >
                 <span class="font-bold text-primary-900">Haute Saison</span>
                 <span class="text-primary-400 text-xs mt-1" x-show="highSeasonLabel" x-text="highSeasonLabel"></span>
@@ -197,13 +196,13 @@
                         type="button"
                         @click="decrementPassenger(row.id)"
                         :disabled="!passengers[row.id]"
-                        class="w-9 h-9 flex items-center justify-center text-primary-1000 rounded-xl border border-gray-200 bg-white font-bold shadow-sm hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                        class="w-9 h-9 flex items-center cursor-pointer justify-center text-primary-1000 rounded-xl border border-primary-100 bg-primary-50 font-bold shadow-sm  disabled:opacity-40 transition-colors"
                       >−</button>
                       <span class="w-6 text-center font-bold text-primary-900" x-text="passengers[row.id] || 0"></span>
                       <button
                         type="button"
                         @click="incrementPassenger(row.id)"
-                        class="w-9 h-9 flex items-center justify-center text-primary-1000 rounded-xl border border-gray-200 bg-white font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                        class="w-9 h-9 flex items-center cursor-pointer justify-center text-primary-1000 rounded-xl border border-primary-100 bg-primary-50 font-bold shadow-sm  transition-colors"
                       >+</button>
                     </div>
                   </div>
@@ -229,13 +228,13 @@
                         type="button"
                         @click="decrementOption(opt.id)"
                         :disabled="!options[opt.id]"
-                        class="w-9 h-9 flex items-center justify-center rounded-xl text-primary-1000 border border-gray-200 bg-white font-bold shadow-sm hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                        class="w-9 h-9 flex items-center justify-center rounded-xl text-primary-1000 border border-primary-100 bg-primary-50 font-bold shadow-sm  disabled:opacity-40 transition-colors"
                       >−</button>
                       <span class="w-6 text-center font-bold text-primary-900" x-text="options[opt.id] || 0"></span>
                       <button
                         type="button"
                         @click="incrementOption(opt.id)"
-                        class="w-9 h-9 flex items-center justify-center text-primary-1000 rounded-xl border border-gray-200 bg-white font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                        class="w-9 h-9 flex items-center justify-center text-primary-1000 rounded-xl border border-primary-100 bg-primary-50 font-bold shadow-sm  transition-colors"
                       >+</button>
                     </div>
                   </div>
@@ -252,7 +251,7 @@
           </div>
 
           <div class="flex justify-between">
-            <button @click="step = 1" class="text-primary-400 hover:text-primary-600 font-bold px-6 py-3 rounded-full border border-gray-200 transition-colors">
+            <button @click="step = 1" class="text-primary-400 hover:text-primary-600 font-bold px-6 py-3 rounded-full border border-primary-100 transition-colors">
               ← Retour
             </button>
             <button
@@ -299,7 +298,7 @@
               type="email"
               x-model="recipientEmail"
               placeholder="prenom.nom@email.com"
-              class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+              class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
               :class="recipientEmailError ? 'border-red-400' : ''"
             />
             <p x-show="recipientEmailError" class="text-red-500 text-sm mt-1" x-text="recipientEmailError"></p>
@@ -312,7 +311,7 @@
               x-model="recipientMessage"
               rows="4"
               placeholder="Joyeux anniversaire ! Profite bien de cette belle aventure..."
-              class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none resize-none"
+              class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none resize-none"
             ></textarea>
           </div>
 

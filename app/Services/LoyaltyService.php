@@ -253,7 +253,7 @@ class LoyaltyService
         $points = $this->getCustomerPoints($customer_id);
         $threshold = (int) get_option('loyalty_points_threshold', 500);
 
-        echo '<div class="loyalty-points-balance bg-primary-900 border border-primary-100 rounded-lg p-6 mb-8">';
+        echo '<div class="loyalty-points-balance bg-primary-50 border border-primary-100 rounded-lg p-6 mb-8">';
         echo '<h3 style="margin-top: 0;">Votre Programme de Fidélité</h3>';
         echo '<p style="font-size: 18px; margin: 10px 0;"><strong>Solde actuel :</strong> '.$points.' points</p>';
 

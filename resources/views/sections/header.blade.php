@@ -82,17 +82,17 @@
     </div>
 
     <div
-      class="bg-primary-1000 pointer-events-auto fixed top-6 right-0 z-50 flex h-[60px] w-[190px] items-center justify-end gap-4 rounded-l-full pr-4"
+      class="w-[70px] bg-primary-1000 pointer-events-auto fixed top-6 right-0 z-50 flex h-[60px] md:w-[190px] items-center justify-end gap-4 rounded-l-full pr-4"
     >
       <a
         href="{{ get_permalink(get_option('woocommerce_myaccount_page_id')) }}"
-        class="bg-secondary text-primary-1000 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        class="hidden bg-secondary text-primary-1000 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
       >
         @svg('user', 'h-6 w-6')
       </a>
       <a
         href="{{ get_permalink(get_option('woocommerce_cart_page_id')) }}"
-        class="bg-secondary text-primary-1000 relative mr-2 inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+        class="hidden bg-secondary text-primary-1000 relative mr-2 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
       >
         @svg('cart', 'h-6 w-6')
         <div

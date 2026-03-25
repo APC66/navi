@@ -22,7 +22,7 @@
 
     {{-- Bouton Burger --}}
     <div
-      class="absolute top-6 -right-[100px] w-[100px] h-[80px] bg-primary-1000 rounded-r-full flex items-center justify-end shadow-lg pointer-events-auto transition-colors">
+      class="absolute top-6 -right-[100px] w-[100px] h-[80px] bg-primary-800 rounded-r-full flex items-center justify-end shadow-lg pointer-events-auto transition-colors">
       <button
         class="mr-4 p-2 flex flex-col text-primary-1000 w-[55px] h-[55px] justify-center items-center bg-secondary rounded-full shadow-lg hover: focus:outline-none transition-all transform hover:scale-105"
         @click="toggleMenu()"

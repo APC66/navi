@@ -82,8 +82,8 @@ class AgencyOrderService
             return;
         }
 
-        echo '<div class="agency-client-selection bg-primary-800 border border-blue-200 rounded-lg p-6 mb-8">';
-        echo '<h3 class="text-xl font-bold text-blue-900 mb-4">🏢 Commande pour le compte d\'un client</h3>';
+        echo '<div class="agency-client-selection border border-primary-400 rounded-lg p-6 mb-8">';
+        echo '<h3 class="text-xl font-bold mb-4">🏢 Commande pour le compte d\'un client</h3>';
 
         // Champ de sélection : client existant ou nouveau
         woocommerce_form_field('agency_client_type', [

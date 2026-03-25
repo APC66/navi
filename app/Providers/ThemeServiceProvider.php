@@ -205,18 +205,13 @@ class ThemeServiceProvider extends SageServiceProvider
             return $init;
         });
 
-        add_action('init', function () {
-            // Attribuer la capability à un rôle spécifique
-            $role = get_role('shop_manager');
-            if ($role) {
-                $role->add_cap('place_agency_orders');
+        add_filter('user_has_cap', function ($allcaps, $caps, $args, $user) {
+            if (isset($user->user_email) && $user->user_email === 'julien@agencepoint.com') {
+                $allcaps['place_agency_orders'] = false;
             }
 
-            $user = get_user_by('email', 'julien@agencepoint.com');
-            if ($user) {
-                $user->add_cap('place_agency_orders');
-            }
-        });
+            return $allcaps;
+        }, 999, 4);
 
         add_action('pre_get_posts', function ($query) {
             if (! is_admin() && $query->is_main_query() && is_post_type_archive('cruise')) {

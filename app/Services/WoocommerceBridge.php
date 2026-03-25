@@ -24,6 +24,8 @@ class WoocommerceBridge
         add_action('woocommerce_update_order', [$this, 'saveAdminOrderNoteField'], 10, 1);
         add_filter('woocommerce_cart_id', [$this, 'distinctProductSailing'], 10, 5);
 
+        add_filter('woocommerce_cart_item_quantity', [$this, 'set_quantity_to_unique_product'], 10, 3);
+
     }
 
     public function validateCartAvailability()
@@ -302,5 +304,14 @@ class WoocommerceBridge
                 $item->save();
             }
         }
+    }
+
+    public function set_quantity_to_unique_product($quantity, $cart_item_key, $cart_item)
+    {
+        if (isset($cart_item['gift_card_data'])) {
+            return '<span class="text-white">1</span>';
+        }
+
+        return $quantity;
     }
 }
