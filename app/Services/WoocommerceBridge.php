@@ -178,6 +178,13 @@ class WoocommerceBridge
             }
             $item->add_meta_data('_booking_data_raw', json_encode($data));
         }
+
+        if (isset($values['gift_card_data'])) {
+            $gc = $values['gift_card_data'];
+            foreach ($gc as $key => $value) {
+                $item->add_meta_data($key, $value);
+            }
+        }
     }
 
     public function syncCruiseToProduct($postId, $post, $update)
@@ -282,6 +289,8 @@ class WoocommerceBridge
         $giftCardService = new GiftCardService;
 
         foreach ($order->get_items() as $item) {
+
+            error_log('Item: '.$item->get_name().' | gc_amount: '.$item->get_meta('_gc_amount'));
             // Identifier les items carte cadeau par la meta _gc_amount
             if (! $item->get_meta('_gc_amount')) {
                 continue;
