@@ -290,7 +290,6 @@ class WoocommerceBridge
 
         foreach ($order->get_items() as $item) {
 
-            error_log('Item: '.$item->get_name().' | gc_amount: '.$item->get_meta('_gc_amount'));
             // Identifier les items carte cadeau par la meta _gc_amount
             if (! $item->get_meta('_gc_amount')) {
                 continue;

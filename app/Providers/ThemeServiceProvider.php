@@ -83,6 +83,8 @@ class ThemeServiceProvider extends SageServiceProvider
     {
         parent::boot();
 
+        (new \App\Shortcodes\Button)->register();
+
         (new CruiseManagement)->init();
         (new WoocommerceBridge)->init();
         (new AgencyOrderService)->init();
@@ -233,6 +235,20 @@ class ThemeServiceProvider extends SageServiceProvider
                     true
                 );
             }
+        });
+
+        add_action('phpmailer_init', function (\PHPMailer\PHPMailer\PHPMailer $phpmailer) {
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+
+            if (! str_ends_with($host, '.test')) {
+                return;
+            }
+
+            $phpmailer->isSMTP();
+            $phpmailer->Host = env('MAILPIT_HOST', '127.0.0.1');
+            $phpmailer->Port = env('MAILPIT_PORT', 1025);
+            $phpmailer->SMTPAuth = false;
+            $phpmailer->SMTPSecure = '';
         });
 
     }

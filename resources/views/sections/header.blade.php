@@ -5,11 +5,13 @@
     @include('partials.navigation')
 
     <div class="group relative mx-auto">
-      <div class="fixed top-0 left-1/2 z-40 h-[159px] w-[354px] -translate-x-1/2 transform ">
-        <a class="relative h-full w-full" href="{{ home_url('/') }}">
+      <div class="fixed top-0 left-1/2 z-40  md:h-[159px] md:w-[354px] -translate-x-1/2 transform ">
+      </div>
+      <div class="fixed top-0 left-1/2 z-40 h-[80px] w-[177px] md:h-[159px] md:w-[354px] -translate-x-1/2 transform">
+        <a class="relative pointer-events-auto h-full w-full" href="{{ home_url('/') }}">
           <svg
-            width="354"
-            height="159"
+            width="100%"
+            height="100%"
             viewBox="0 0 354 159"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +77,7 @@
           <img
             src="@asset('resources/images/logo-blanc.svg')"
             alt="Logo Blanc"
-            class="absolute top-4 left-1/2 z-50 h-auto w-[108px] -translate-x-1/2 object-cover"
+            class="absolute top-2 md:top-4 left-1/2 z-50 h-auto w-[54px] md:w-[108px] -translate-x-1/2 object-cover"
           />
         </a>
       </div>

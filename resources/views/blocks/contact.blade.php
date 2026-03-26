@@ -32,6 +32,9 @@
               <div class="contentText">
                 {!! $contact_info !!}
               </div>
+              @php
+                echo do_shortcode($google_map)
+              @endphp
             @endif
           </div>
         </div>

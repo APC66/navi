@@ -18,17 +18,6 @@ class PageHeader extends Component
 
     public $showTitle;
 
-    /**
-     * Create a new component instance.
-     *
-     * @param  string|null  $image
-     * @param  string  $title
-     * @param  string  $highlight
-     * @param  string  $highlightColor
-     * @param  string  $subtitle
-     * @param  array  $group  (Optionnel) Groupe ACF contenant les champs
-     * @return void
-     */
     public function __construct(
         $image = null,
         $title = '',
@@ -36,20 +25,32 @@ class PageHeader extends Component
         $highlightColor = 'text-secondary',
         $subtitle = '',
         $group = [],
-        $showTitle = '',
+        $showTitle = false,
     ) {
+        $group = is_array($group) ? $group : [];
+
         if (! empty($group)) {
             $image = $image ?: ($group['header_image'] ?? null);
-            $title = $title ?: ($group['header_title'] ?: get_the_title());
+            $title = $title ?: ($group['header_title'] ?? '');
             $highlight = $highlight ?: ($group['header_highlight'] ?? '');
-            $highlightColor = $highlightColor !== 'text-secondary' ? $highlightColor : ($group['header_highlight_color'] ?? 'text-secondary');
+            $highlightColor = $highlightColor !== 'text-secondary'
+                ? $highlightColor
+                : ($group['header_highlight_color'] ?? 'text-secondary');
             $subtitle = $subtitle ?: ($group['header_subtitle'] ?? '');
             $showTitle = $showTitle ?: ($group['show_title'] ?? false);
         }
 
-        // Fallback ultime pour le titre si aucun groupe n'est passé
-        if (empty($title) && empty($group)) {
-            $title = get_the_title();
+        // Fallback titre
+        if (empty($title)) {
+            $title = get_the_title() ?: __('Page sans titre');
+        }
+
+        // Fallback highlightColor
+        $highlightColor = $highlightColor ?: 'text-secondary';
+
+        // Fallback image
+        if (empty($image)) {
+            $image = \Roots\asset('resources/images/bg-default.jpg');
         }
 
         $this->image = $image;
@@ -60,11 +61,6 @@ class PageHeader extends Component
         $this->showTitle = $showTitle;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\View\View|string
-     */
     public function render()
     {
         return $this->view('components.partials.page-header');

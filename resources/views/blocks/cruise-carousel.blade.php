@@ -53,7 +53,7 @@
                   class="group/card relative h-[470px] w-full overflow-hidden rounded-3xl shadow-lg transition-all duration-300 hover:shadow-2xl"
                 >
                   <a href="{{ $cruise->permalink }}" class="absolute inset-0 z-10">
-                    <span class="sr-only">Voir la croisière {{ $cruise->title }}</span>
+                    <span class="sr-only">Voir la croisière {!! $cruise->title !!}</span>
                   </a>
 
                   @if ($cruise->thumbnail_url)
@@ -90,7 +90,7 @@
                     <h3
                       class="font-heading mb-2 text-xl leading-tight font-bold tracking-wide text-white uppercase drop-shadow-md"
                     >
-                      {{ $cruise->title }}
+                      {!! $cruise->title !!}
                     </h3>
                     <div class="font-elms flex flex-col items-center">
                       <span class="text-primary-100 mb-1 text-sm font-light opacity-90">

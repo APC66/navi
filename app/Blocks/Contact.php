@@ -24,6 +24,7 @@ class Contact extends Block
             'contact_info' => get_field('contact_info'),
             'form_title' => get_field('form_title'),
             'form_code' => get_field('form_code'),
+            'google_map' => get_field('google_map'),
         ];
     }
 
@@ -50,7 +51,7 @@ class Contact extends Block
                 'toolbar' => 'full',
                 'rows' => 4,
             ])
-            ->addImage('map', ['label' => 'Carte'])
+            ->addText('google_map', ['label' => 'Google Map'])
 
             ->addTab('droite', ['label' => 'Formulaire (Droite)'])
             ->addText('form_title', [

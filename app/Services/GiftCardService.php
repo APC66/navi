@@ -81,6 +81,8 @@ class GiftCardService
      */
     public function sendGiftCardEmail(\WC_Order $order, $item): void
     {
+        error_log('[GiftCard] sendGiftCardEmail called');
+
         $couponCode = $item->get_meta('_gc_coupon_code');
         if (! $couponCode) {
             return;
@@ -190,6 +192,8 @@ class GiftCardService
     private function generatePdf(string $html, string $couponCode): ?string
     {
         try {
+            error_log('[GiftCardService] HTML length: '.strlen($html));
+
             $options = new Options;
             $options->set('defaultFont', 'DejaVu Sans');
             $options->set('isRemoteEnabled', true);
@@ -202,9 +206,13 @@ class GiftCardService
 
             $pdfContent = $dompdf->output();
 
-            // Chemin temporaire
+            error_log('[GiftCardService] PDF size: '.strlen($pdfContent));
+
             $uploadDir = wp_upload_dir();
             $tmpDir = trailingslashit($uploadDir['basedir']).'gift-cards/';
+
+            error_log('[GiftCardService] tmpDir: '.$tmpDir);
+            error_log('[GiftCardService] tmpDir writable: '.(is_writable(dirname($tmpDir)) ? 'yes' : 'no'));
 
             if (! file_exists($tmpDir)) {
                 wp_mkdir_p($tmpDir);
@@ -213,9 +221,13 @@ class GiftCardService
             $filename = 'carte-cadeau-'.sanitize_file_name($couponCode).'.pdf';
             $pdfPath = $tmpDir.$filename;
 
-            file_put_contents($pdfPath, $pdfContent);
+            $written = file_put_contents($pdfPath, $pdfContent);
+
+            // 4. Vérifier l'écriture
+            error_log('[GiftCardService] Bytes written: '.($written === false ? 'FAILED' : $written));
 
             return $pdfPath;
+
         } catch (\Exception $e) {
             error_log('[GiftCardService] Erreur génération PDF : '.$e->getMessage());
 

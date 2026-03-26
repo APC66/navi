@@ -36,7 +36,7 @@
             @if ($cruise->thumbnail_url)
               <img
                 src="{{ $cruise->thumbnail_url }}"
-                alt="{{ $cruise->title }}"
+                alt="{!! $cruise->title !!}"
                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             @else
