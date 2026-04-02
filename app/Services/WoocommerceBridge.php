@@ -500,6 +500,7 @@ class WoocommerceBridge
     {
         // Rendre le champ société visible et optionnel
         $fields['billing']['billing_company']['class'] = ['form-row-wide'];
+        $fields['billing']['billing_company']['label'] = 'Entreprise';
         $fields['billing']['billing_company']['priority'] = 34;
 
         // Ajouter SIRET juste après

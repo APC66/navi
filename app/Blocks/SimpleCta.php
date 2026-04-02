@@ -14,14 +14,14 @@ class SimpleCta extends Block
      *
      * @var string
      */
-    public $name = 'Simple Cta';
+    public $name = 'Simple bloc';
 
     /**
      * The block description.
      *
      * @var string
      */
-    public $description = 'Bloc simple avec titre contenu et boutons.';
+    public $description = 'Bloc Titre et/ou texte et/ou bouton.';
 
     /**
      * The block category.

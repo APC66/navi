@@ -22,7 +22,7 @@ class TextImage extends Block
      *
      * @var string
      */
-    public $description = 'Bloc classique Texte + Image avec inversion de position.';
+    public $description = 'Bloc classique Texte + Image en 50/50 avec inversion de position possible.';
 
     /**
      * The block category.

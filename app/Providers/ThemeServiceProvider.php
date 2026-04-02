@@ -141,7 +141,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'acf/reassurance',
                 'acf/text-images-cards',
                 'acf/text-image',
-                'acf/simple-cta',
+                'acf/simple-bloc',
                 'acf/image-carousel',
                 'acf/text-with-icon',
                 'acf/contact',
