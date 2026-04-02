@@ -30,6 +30,175 @@ class WoocommerceBridge
         add_action('woocommerce_checkout_create_order', [$this, 'saveCompanyFields'], 10, 2);
         add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'displayCompanyFieldsInAdmin'], 10, 1);
 
+        // Affichage lisible des metas carte cadeau dans le backoffice
+        add_filter('woocommerce_hidden_order_itemmeta', [$this, 'hideRawGiftCardMeta']);
+        add_filter('woocommerce_order_item_get_formatted_meta_data', [$this, 'formatGiftCardMeta'], 10, 2);
+
+        add_action('manage_posts_extra_tablenav', [$this, 'addCleanupGiftCardButton']);
+        add_action('admin_action_cleanup_gift_card_products', [$this, 'cleanupGiftCardProducts']);
+    }
+
+    /**
+     * Masque les clés brutes _gc_* dans le détail de commande admin.
+     */
+    public function hideRawGiftCardMeta(array $hidden): array
+    {
+        return array_merge($hidden, [
+            '_gc_cruise_id',
+            '_gc_season',
+            '_gc_passengers',
+            '_gc_options',
+            '_gc_amount',
+            '_gc_recipient_email',
+            '_gc_recipient_message',
+            '_gc_send_to_self',
+            '_gc_mode',
+            '_gc_product_title',
+            '_gc_coupon_expiry',
+            '_gc_processed',
+        ]);
+    }
+
+    /**
+     * Injecte les données lisibles de la carte cadeau dans le détail de commande admin.
+     */
+    public function formatGiftCardMeta(array $formattedMeta, $item): array
+    {
+        $couponCode = $item->get_meta('_gc_coupon_code');
+        if (! $couponCode) {
+            return $formattedMeta;
+        }
+
+        $mode = $item->get_meta('_gc_mode') ?: 'cruise';
+        $amount = floatval($item->get_meta('_gc_amount'));
+        $expiry = $item->get_meta('_gc_coupon_expiry');
+        $message = $item->get_meta('_gc_recipient_message');
+        $email = $item->get_meta('_gc_recipient_email');
+        $sendToSelf = $item->get_meta('_gc_send_to_self') === '1';
+
+        $idBase = count($formattedMeta) + 100;
+        $inject = [];
+
+        // Type
+        $inject[] = (object) [
+            'id' => $idBase++,
+            'key' => '_gc_display_type',
+            'display_key' => 'Type',
+            'value' => $mode === 'cruise' ? 'Croisière spécifique' : 'Montant libre',
+            'display_value' => '<strong>'.($mode === 'cruise' ? 'Croisière spécifique' : 'Montant libre').'</strong>',
+        ];
+
+        // Croisière
+        if ($mode === 'cruise') {
+            $cruiseId = absint($item->get_meta('_gc_cruise_id'));
+            $season = $item->get_meta('_gc_season');
+
+            if ($cruiseId) {
+                $inject[] = (object) [
+                    'id' => $idBase++,
+                    'key' => '_gc_display_cruise',
+                    'display_key' => 'Croisière',
+                    'value' => get_the_title($cruiseId),
+                    'display_value' => get_the_title($cruiseId),
+                ];
+            }
+
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_season',
+                'display_key' => 'Saison',
+                'value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+                'display_value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+            ];
+
+            // Passagers
+            $passengersRaw = $item->get_meta('_gc_passengers');
+            $passengers = $passengersRaw ? json_decode($passengersRaw, true) : [];
+            $passengerLines = [];
+            foreach ($passengers as $typeId => $qty) {
+                if ($qty <= 0) {
+                    continue;
+                }
+                $term = get_term(absint($typeId), 'passenger_type');
+                $name = (! is_wp_error($term) && $term) ? $term->name : "Type #{$typeId}";
+                $passengerLines[] = "{$name} × {$qty}";
+            }
+            if ($passengerLines) {
+                $inject[] = (object) [
+                    'id' => $idBase++,
+                    'key' => '_gc_display_passengers',
+                    'display_key' => 'Passagers',
+                    'value' => implode(', ', $passengerLines),
+                    'display_value' => implode('<br>', $passengerLines),
+                ];
+            }
+
+            // Options
+            $optionsRaw = $item->get_meta('_gc_options');
+            $options = $optionsRaw ? json_decode($optionsRaw, true) : [];
+            $optionLines = [];
+            foreach ($options as $typeId => $qty) {
+                if ($qty <= 0) {
+                    continue;
+                }
+                $term = get_term(absint($typeId), 'extra_option_type');
+                $name = (! is_wp_error($term) && $term) ? $term->name : "Option #{$typeId}";
+                $optionLines[] = "{$name} × {$qty}";
+            }
+            if ($optionLines) {
+                $inject[] = (object) [
+                    'id' => $idBase++,
+                    'key' => '_gc_display_options',
+                    'display_key' => 'Options',
+                    'value' => implode(', ', $optionLines),
+                    'display_value' => implode('<br>', $optionLines),
+                ];
+            }
+        }
+
+        // Montant
+        $inject[] = (object) [
+            'id' => $idBase++,
+            'key' => '_gc_display_amount',
+            'display_key' => 'Valeur',
+            'value' => number_format($amount, 2, ',', ' ').' €',
+            'display_value' => '<strong>'.number_format($amount, 2, ',', ' ').' €</strong>',
+        ];
+
+        // Destinataire
+        $recipientDisplay = $sendToSelf ? 'Envoi à soi-même' : esc_html($email);
+        $inject[] = (object) [
+            'id' => $idBase++,
+            'key' => '_gc_display_recipient',
+            'display_key' => 'Destinataire',
+            'value' => $recipientDisplay,
+            'display_value' => $recipientDisplay,
+        ];
+
+        // Message
+        if ($message) {
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_message',
+                'display_key' => 'Message',
+                'value' => $message,
+                'display_value' => esc_html($message),
+            ];
+        }
+
+        // Expiration
+        if ($expiry) {
+            $expiryFormatted = \DateTime::createFromFormat('Y-m-d', $expiry)?->format('d/m/Y') ?? $expiry;
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_expiry',
+                'display_key' => 'Expire le',
+                'value' => $expiryFormatted,
+                'display_value' => $expiryFormatted,
+            ];
+        }
+
+        return array_merge($formattedMeta, $inject);
     }
 
     public function validateCartAvailability()
@@ -367,5 +536,68 @@ class WoocommerceBridge
             }
             echo '</div>';
         }
+    }
+
+    public function addCleanupGiftCardButton(string $which): void
+    {
+        $screen = get_current_screen();
+        if ($screen->post_type !== 'product' || $which !== 'top') {
+            return;
+        }
+
+        $url = wp_nonce_url(
+            admin_url('admin.php?action=cleanup_gift_card_products'),
+            'cleanup_gift_cards'
+        );
+
+        echo '<div class="alignleft actions">';
+        echo '<a href="'.esc_url($url).'" class="button" onclick="return confirm(\'Supprimer les produits carte cadeau non liés à une commande active ?\')">🎁 Nettoyer les cartes cadeaux</a>';
+        echo '</div>';
+    }
+
+    public function cleanupGiftCardProducts(): void
+    {
+        check_admin_referer('cleanup_gift_cards');
+
+        if (! current_user_can('manage_woocommerce')) {
+            wp_die('Accès refusé.');
+        }
+
+        add_filter('posts_where', function ($where, $query) {
+            if ($query->get('_title_like')) {
+                global $wpdb;
+                $where .= $wpdb->prepare(
+                    ' AND '.$wpdb->posts.'.post_title LIKE %s',
+                    '%'.$wpdb->esc_like($query->get('_title_like')).'%'
+                );
+            }
+
+            return $where;
+        }, 10, 2);
+
+        $products = get_posts([
+            'post_type' => 'product',
+            'post_status' => 'any',
+            'numberposts' => -1,
+            'fields' => 'ids',
+            '_title_like' => 'Carte Cadeau',
+        ]);
+
+        $deleted = 0;
+        foreach ($products as $id) {
+            $orders = wc_get_orders([
+                'status' => ['processing', 'on-hold', 'pending'],
+                'product_id' => $id,
+                'limit' => 1,
+            ]);
+
+            if (empty($orders)) {
+                wp_delete_post($id, true);
+                $deleted++;
+            }
+        }
+
+        wp_redirect(admin_url('edit.php?post_type=product&cleaned='.$deleted));
+        exit;
     }
 }

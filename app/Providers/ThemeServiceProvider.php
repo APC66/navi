@@ -225,6 +225,66 @@ class ThemeServiceProvider extends SageServiceProvider
             }
         });
 
+        // Preview PDF carte cadeau (admin uniquement)
+        add_action('wp_ajax_preview_gift_card_pdf', function () {
+            if (! current_user_can('manage_options')) {
+                wp_die('Non autorisé', 403);
+            }
+
+            $cruiseId = 182;
+            $season = 'high';
+            $passengersRaw = [17 => 3, 18 => 3];
+            $optionsRaw = [20 => 2];
+
+            $passengersData = [];
+            foreach ($passengersRaw as $typeId => $qty) {
+                $term = get_term($typeId, 'passenger_type');
+                $passengersData[] = [
+                    'name' => (! is_wp_error($term) && $term) ? $term->name : 'Passager',
+                    'qty' => $qty,
+                ];
+            }
+
+            $optionsData = [];
+            foreach ($optionsRaw as $typeId => $qty) {
+                $term = get_term($typeId, 'extra_option_type');
+                $optionsData[] = [
+                    'name' => (! is_wp_error($term) && $term) ? $term->name : 'Option',
+                    'qty' => $qty,
+                ];
+            }
+
+            $viewData = [
+                'mode' => 'cruise',
+                'cruise_title' => get_the_title($cruiseId) ?: 'Observation du Grand dauphin au lever du soleil',
+                'season_label' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+                'passengers' => $passengersData,
+                'options' => $optionsData,
+                'amount' => 170.00,
+                'coupon_code' => 'CC-69CE68F0A4A61',
+                'expiry_date' => '2027-04-02',
+                'recipient_message' => 'Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test Carte cadeau test',
+                'logo_url' => get_theme_file_uri('public/images/logo.png'),
+                'site_name' => get_bloginfo('name'),
+                'bg_image_url' => get_field('gift_card_bg_image', 'option') ?: '',
+            ];
+
+            $html = \Roots\view('pdf.gift-card', $viewData)->render();
+
+            $options = new \Dompdf\Options;
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            $dompdf->stream('preview-carte-cadeau.pdf', ['Attachment' => false]);
+            exit;
+        });
+
         // Enqueue JS carte cadeau uniquement sur le template dédié
         add_action('wp_enqueue_scripts', function () {
             if (is_page_template('template-gift-card.blade.php')) {

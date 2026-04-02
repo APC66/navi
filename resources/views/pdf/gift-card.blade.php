@@ -22,7 +22,7 @@
     /* ── Bannière photo ── */
     .banner {
       width: 100%;
-      height: 72mm;
+      height: 70mm;
       position: relative;
       background: #0A173D;
       overflow: hidden;
@@ -36,11 +36,6 @@
       opacity: 0.75;
     }
 
-    .banner-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, rgba(10,23,61,0.35) 0%, rgba(10,23,61,0.75) 100%);
-    }
 
     .banner-content {
       position: absolute;
@@ -54,20 +49,30 @@
     }
 
     .banner-logo {
-      height: 36px;
+      height: 30mm;
       width: auto;
       margin-bottom: 8px;
+      position: absolute;
+      top:0;
+      left:50%;
+      transform: translateX(-50%);
     }
 
     .banner-badge {
-      background: #FFD21F;
-      color: #0A173D;
-      font-size: 9px;
+      background: #0A173D;
+      color: #FFD21F;
+      font-size: 26px;
       font-weight: bold;
       letter-spacing: 2px;
+      padding-top:2mm;
+      padding-bottom:2mm;
       text-transform: uppercase;
-      padding: 4px 14px;
-      border-radius: 20px;
+      text-align:center;
+      width:100%;
+    }
+
+    .banner-badge span{
+      color:white;
     }
 
     /* ── Corps ── */
@@ -282,6 +287,14 @@
       white-space: nowrap;
     }
 
+    .mentions-legales-title{
+      font-weight:bold;
+    }
+
+    .mentions-legales-content{
+      font-size:9px;
+    }
+
     /* ── Footer ── */
     .footer {
       border-top: 1px solid #E8ECF5;
@@ -300,14 +313,10 @@
     @if (!empty($bg_image_url))
       <img class="banner-photo" src="{{ $bg_image_url }}" alt="" />
     @endif
-    <div class="banner-overlay"></div>
-    <div class="banner-content">
-      @if (!empty($logo_url))
-        <img class="banner-logo" src="{{ $logo_url }}" alt="{{ $site_name }}" />
-      @endif
-      <div class="banner-badge">Carte Cadeau Croisière</div>
-    </div>
+    <img class="banner-logo" src="{{asset('resources/images/logo-mail.png')}}" alt="Logo Navivoile" />
   </div>
+  <div class="banner-badge"><span>Carte</span> Cadeau</div>
+
 
   {{-- Corps --}}
   <div class="body">
@@ -378,11 +387,23 @@
         @endif
       </div>
 
-      <div class="coupon-divider"></div>
-
       <div class="coupon-right">
         <div class="coupon-code-label">Votre code</div>
         <div class="coupon-code">{{ $coupon_code }}</div>
+      </div>
+    </div>
+    <div class="mentions-legales">
+      <div class="mentions-legales-title">
+        Comment utiliser ma carte cadeau ?
+      </div>
+      <div class="mentions-legales-content">
+        À saisir lors de votre commande sur Navivoile, vous pouvez l’utiliser sur n’importe quelle croisière. Le complément sera à
+        régler lors du passage de votre commande en ligne.
+        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
+        dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen
+        book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It
+        was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with
+        desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
       </div>
     </div>
 
