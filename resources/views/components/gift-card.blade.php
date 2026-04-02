@@ -54,9 +54,8 @@
             >
               <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors"
                    :class="mode === 'cruise' ? 'bg-secondary' : 'bg-primary-100'">
-                <svg class="w-8 h-8" :class="mode === 'cruise' ? 'text-primary-900' : 'text-primary-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
+
+                <svg class="w-8 h-8 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" stroke="currentColor"><path d="M461.93,261.05c-2-4.76-6.71-7.83-11.67-9.49L263.08,177.08a23.78,23.78,0,0,0-14.17,0l-187,74.52c-5,1.56-9.83,4.77-11.81,9.53s-2.94,9.37-1,15.08L95.63,395.36A7.46,7.46,0,0,0,103.1,400c26.69-1.68,50.31-15.23,68.38-32.5a7.66,7.66,0,0,1,10.49,0C201.29,386,227,400,256,400s54.56-14,73.88-32.54a7.67,7.67,0,0,1,10.5,0c18.07,17.28,41.69,30.86,68.38,32.54a7.45,7.45,0,0,0,7.46-4.61l46.7-119.16C464.9,271.45,463.91,265.82,461.93,261.05Z" style="fill:none;stroke:currentColor;stroke-miterlimit:10;stroke-width:32px"></path><path d="M416,473.14a6.84,6.84,0,0,0-3.56-6c-27.08-14.55-51.77-36.82-62.63-48a10.05,10.05,0,0,0-12.72-1.51c-50.33,32.42-111.61,32.44-161.95.05a10.09,10.09,0,0,0-12.82,1.56c-10.77,11.28-35.19,33.3-62.43,47.75A7.15,7.15,0,0,0,96,472.72a6.73,6.73,0,0,0,7.92,7.15c20.85-4.18,41-13.68,60.2-23.83a8.71,8.71,0,0,1,8-.06A185.14,185.14,0,0,0,340,456a8.82,8.82,0,0,1,8.09.06c19.1,10,39.22,19.59,60,23.8a6.72,6.72,0,0,0,7.95-6.71Z"></path><path d="M320,96V72a24.07,24.07,0,0,0-24-24H216a24.07,24.07,0,0,0-24,24V96" style="fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M416,233V144a48.14,48.14,0,0,0-48-48H144a48.14,48.14,0,0,0-48,48v92" style="fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="256" y1="183.6" x2="256" y2="396.45" style="fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></line></svg>
               </div>
               <h3 class="text-primary-900 text-lg font-bold mb-1">Choisir une croisière</h3>
               <p class="text-primary-400 text-sm text-center">Offrez une croisière précise avec ses tarifs et options.</p>
@@ -73,9 +72,7 @@
             >
               <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors"
                    :class="mode === 'free' ? 'bg-secondary' : 'bg-primary-100'">
-                <svg class="w-8 h-8" :class="mode === 'free' ? 'text-primary-900' : 'text-primary-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+                <svg class="w-8 h-8 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372zm117.7-588.6c-15.9-3.5-34.4-5.4-55.3-5.4-106.7 0-178.9 55.7-198.6 149.9H344c-4.4 0-8 3.6-8 8v27.2c0 4.4 3.6 8 8 8h26.4c-.3 4.1-.3 8.4-.3 12.8v36.9H344c-4.4 0-8 3.6-8 8V568c0 4.4 3.6 8 8 8h30.2c17.2 99.2 90.4 158 200.2 158 20.9 0 39.4-1.7 55.3-5.1 3.7-.8 6.4-4 6.4-7.8v-42.8c0-5-4.6-8.8-9.5-7.8-14.7 2.8-31.9 4.1-51.8 4.1-68.5 0-114.5-36.6-129.8-98.6h130.6c4.4 0 8-3.6 8-8v-27.2c0-4.4-3.6-8-8-8H439.2v-36c0-4.7 0-9.4.3-13.8h135.9c4.4 0 8-3.6 8-8v-27.2c0-4.4-3.6-8-8-8H447.1c17.2-56.9 62.3-90.4 127.6-90.4 19.9 0 37.1 1.5 51.7 4.4a8 8 0 0 0 9.6-7.8v-42.8c0-3.8-2.6-7-6.3-7.8z"></path></svg>
               </div>
               <h3 class="text-primary-900 text-lg font-bold mb-1">Montant libre</h3>
               <p class="text-primary-400 text-sm text-center">Définissez librement le montant de la carte cadeau.</p>
@@ -95,7 +92,7 @@
             >
               <option value="">— Sélectionner une croisière —</option>
               @foreach ($cruises as $cruise)
-                <option value="{{ $cruise['id'] }}">{{ $cruise['title'] }}@if($cruise['base_price']) — À partir de {{ number_format($cruise['base_price'], 2, ',', ' ') }} €@endif</option>
+                <option value="{{ $cruise['id'] }}">{!! $cruise['title']  !!}@if($cruise['base_price']) — À partir de {{ number_format($cruise['base_price'], 2, ',', ' ') }} €@endif</option>
               @endforeach
             </select>
             <div x-show="loadingPricing" class="mt-2 text-sm text-primary-400 flex items-center gap-2">
@@ -276,20 +273,22 @@
           <p class="text-primary-400 mb-8">Personnalisez votre carte cadeau.</p>
 
           {{-- Checkbox "M'envoyer à moi-même" --}}
-          <div class="mb-6 p-4 bg-primary-50 rounded-2xl">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                x-model="sendToSelf"
-                @change="handleSendToSelf()"
-                class="w-5 h-5 rounded accent-secondary"
-              />
-              <span class="text-primary-900 font-bold">M'envoyer le code à moi-même</span>
-            </label>
-            <p class="text-primary-400 text-sm mt-1 ml-8" x-show="buyerEmail">
-              Le code sera envoyé à <span class="font-bold" x-text="buyerEmail"></span>
-            </p>
-          </div>
+          @auth
+            <div class="mb-6 p-4 bg-primary-50 rounded-2xl">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  x-model="sendToSelf"
+                  @change="handleSendToSelf()"
+                  class="w-5 h-5 rounded accent-secondary"
+                />
+                <span class="text-primary-900 font-bold">M'envoyer le code à moi-même</span>
+              </label>
+              <p class="text-primary-400 text-sm mt-1 ml-8" x-show="buyerEmail">
+                Le code sera envoyé à <span class="font-bold" x-text="buyerEmail"></span>
+              </p>
+            </div>
+          @endauth
 
           {{-- Email destinataire --}}
           <div class="mb-6" x-show="!sendToSelf">

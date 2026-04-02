@@ -26,6 +26,10 @@ class WoocommerceBridge
 
         add_filter('woocommerce_cart_item_quantity', [$this, 'set_quantity_to_unique_product'], 10, 3);
 
+        add_filter('woocommerce_checkout_fields', [$this, 'addCompanyFields']);
+        add_action('woocommerce_checkout_create_order', [$this, 'saveCompanyFields'], 10, 2);
+        add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'displayCompanyFieldsInAdmin'], 10, 1);
+
     }
 
     public function validateCartAvailability()
@@ -321,5 +325,47 @@ class WoocommerceBridge
         }
 
         return $quantity;
+    }
+
+    public function addCompanyFields($fields): array
+    {
+        // Rendre le champ société visible et optionnel
+        $fields['billing']['billing_company']['class'] = ['form-row-wide'];
+        $fields['billing']['billing_company']['priority'] = 34;
+
+        // Ajouter SIRET juste après
+        $fields['billing']['billing_siret'] = [
+            'label' => 'Numéro SIRET',
+            'placeholder' => '123 456 789 00012',
+            'required' => false,
+            'class' => ['form-row-wide'],
+            'priority' => 35,
+        ];
+
+        return $fields;
+    }
+
+    public function saveCompanyFields($order, $data): void
+    {
+        if (! empty($_POST['billing_siret'])) {
+            $order->update_meta_data('_billing_siret', sanitize_text_field($_POST['billing_siret']));
+        }
+    }
+
+    public function displayCompanyFieldsInAdmin($order): void
+    {
+        $siret = $order->get_meta('_billing_siret');
+        $company = $order->get_billing_company();
+
+        if ($company || $siret) {
+            echo '<div style="margin-top: 12px;">';
+            if ($company) {
+                echo '<p><strong>Société :</strong> '.esc_html($company).'</p>';
+            }
+            if ($siret) {
+                echo '<p><strong>SIRET :</strong> '.esc_html($siret).'</p>';
+            }
+            echo '</div>';
+        }
     }
 }

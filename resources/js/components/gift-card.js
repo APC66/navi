@@ -86,6 +86,16 @@ const giftCardData = (nonce, buyerEmail) => ({
 
   // ─── Méthodes ───────────────────────────────────────────────────────────────
 
+  init() {
+    const params = new URLSearchParams(window.location.search)
+    const cruiseId = params.get('cruise_id')
+    if (cruiseId) {
+      this.mode = 'cruise'
+      this.selectedCruiseId = cruiseId
+      this.loadPricing()
+    }
+  },
+
   selectMode(newMode) {
     this.mode = newMode
     // Reset des données liées à l'autre mode

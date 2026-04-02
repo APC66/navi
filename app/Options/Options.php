@@ -48,7 +48,8 @@ class Options extends Field
                     'youtube' => 'Youtube',
                     'tiktok' => 'TikTok',
                     'pinterest' => 'Pinterest',
-                    'other' => 'Autre',
+                    'google' => 'Google',
+                    'tripadvisor' => 'Tripadvisor',
                 ],
             ])->addText('other', [
                 'label' => __('Classe FontAwesome', 'radicle'),

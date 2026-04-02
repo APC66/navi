@@ -148,6 +148,7 @@ class GiftCardService
             'recipient_message' => $recipientMessage,
             'logo_url' => get_theme_file_uri('public/images/logo.png'),
             'site_name' => get_bloginfo('name'),
+            'bg_image_url' => get_field('gift_card_bg_image', 'option') ?: '',
         ];
 
         // Génération du HTML via la vue Blade
@@ -201,7 +202,7 @@ class GiftCardService
 
             $dompdf = new Dompdf($options);
             $dompdf->loadHtml($html, 'UTF-8');
-            $dompdf->setPaper('A4', 'landscape');
+            $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
 
             $pdfContent = $dompdf->output();

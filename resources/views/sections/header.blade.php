@@ -111,7 +111,7 @@
         @svg('glass', 'h-6 w-6')
       </button>
     </div>
-  </div>
+
 
   {{-- Mobile Menu (Off-Canvas) --}}
   <div
@@ -174,24 +174,6 @@
           </svg>
         </button>
       </div>
-
-      <div class="px-2">
-        @if (has_nav_menu('primary_navigation'))
-          <ul class="flex flex-col space-y-1">
-            @foreach (\App\View\Navi::getMenu('primary_navigation') as $item)
-              <li>
-                <a
-                  href="{{ $item->url }}"
-                  class="{{ $item->active ? 'bg-primary-50 text-primary-900' : 'hover:text-primary-600 text-gray-700 hover:bg-gray-50' }} block rounded-lg px-4 py-3 text-lg font-medium transition-colors"
-                >
-                  {{ $item->label }}
-                </a>
-              </li>
-            @endforeach
-          </ul>
-        @endif
-      </div>
-
       <div class="mt-auto border-t border-gray-100 px-6 pt-8">
         <p class="text-center text-sm text-gray-400">&copy; {{ date('Y') }} {{ $siteName }}</p>
       </div>

@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Carte Cadeau Croisière</title>
   <style>
     * {
@@ -13,306 +12,322 @@
 
     body {
       font-family: DejaVu Sans, Arial, sans-serif;
-      background: #0A173D;
-      color: #ffffff;
-      width: 297mm;
-      height: 210mm;
+      background: #ffffff;
+      color: #0A173D;
+      width: 210mm;
+      height: 297mm;
       overflow: hidden;
     }
 
-    .card {
+    /* ── Bannière photo ── */
+    .banner {
+      width: 100%;
+      height: 72mm;
+      position: relative;
+      background: #0A173D;
+      overflow: hidden;
+    }
+
+    .banner-photo {
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #0A173D 0%, #1C3787 50%, #101F4D 100%);
-      position: relative;
+      object-fit: cover;
+      display: block;
+      opacity: 0.75;
+    }
+
+    .banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(10,23,61,0.35) 0%, rgba(10,23,61,0.75) 100%);
+    }
+
+    .banner-content {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
-      padding: 30px 40px;
-    }
-
-    /* Décoration vague */
-    .wave-decoration {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 80px;
-      background: rgba(255, 210, 31, 0.08);
-      border-radius: 50% 50% 0 0 / 30px 30px 0 0;
-    }
-
-    .wave-decoration-2 {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 50px;
-      background: rgba(255, 210, 31, 0.05);
-      border-radius: 50% 50% 0 0 / 20px 20px 0 0;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 210, 31, 0.3);
-      padding-bottom: 15px;
-    }
-
-    .logo-area {
-      display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      text-align: center;
+      padding: 0 16mm;
     }
 
-    .logo-area img {
-      height: 40px;
+    .banner-logo {
+      height: 36px;
       width: auto;
+      margin-bottom: 8px;
     }
 
-    .site-name {
-      font-size: 20px;
-      font-weight: bold;
-      color: #FFD21F;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .gift-badge {
+    .banner-badge {
       background: #FFD21F;
       color: #0A173D;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: bold;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      padding: 4px 14px;
+      border-radius: 20px;
     }
 
-    /* Corps principal */
+    /* ── Corps ── */
     .body {
-      display: flex;
-      gap: 30px;
-      flex: 1;
-    }
-
-    /* Colonne gauche */
-    .left-col {
-      flex: 1;
+      padding: 8mm 12mm 6mm;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      gap: 0;
+    }
+
+    /* Titre croisière */
+    .cruise-block {
+      border-left: 4px solid #FFD21F;
+      padding: 4mm 0 4mm 5mm;
+      margin-bottom: 5mm;
     }
 
     .label-small {
-      font-size: 9px;
+      font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 4px;
+      color: #5B6C9F;
+      margin-bottom: 3px;
     }
 
     .cruise-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
-      color: #FFD21F;
-      margin-bottom: 6px;
+      color: #0A173D;
       line-height: 1.2;
+      margin-bottom: 4px;
     }
 
     .season-badge {
       display: inline-block;
-      background: rgba(255, 210, 31, 0.15);
-      border: 1px solid rgba(255, 210, 31, 0.4);
-      color: #FFD21F;
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 10px;
+      background: #FFD21F;
+      color: #0A173D;
+      font-size: 8px;
       font-weight: bold;
-      text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-
-    .details-section {
-      margin-bottom: 12px;
-    }
-
-    .details-title {
-      font-size: 9px;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 6px;
+      padding: 2px 8px;
+      border-radius: 10px;
     }
 
-    .detail-row {
+    /* Détails passagers / options */
+    .details-row {
+      display: flex;
+      gap: 6mm;
+      margin-bottom: 5mm;
+    }
+
+    .details-col {
+      flex: 1;
+      background: #F5F7FC;
+      border-radius: 6px;
+      padding: 4mm;
+    }
+
+    .details-col-title {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #5B6C9F;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .detail-item {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.85);
+      font-size: 10px;
+      color: #0A173D;
       padding: 2px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid #E8ECF5;
     }
 
-    .detail-row:last-child {
+    .detail-item:last-child {
       border-bottom: none;
     }
 
-    .detail-row .qty {
+    .detail-item .qty {
       font-weight: bold;
-      color: #ffffff;
+      color: #1C3787;
     }
 
-    /* Message personnalisé */
+    /* Message */
     .message-box {
-      background: rgba(255, 255, 255, 0.06);
-      border-left: 3px solid #FFD21F;
-      border-radius: 0 8px 8px 0;
-      padding: 10px 14px;
-      margin-top: 12px;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.8);
+      background: #FFFBEA;
+      border: 1px solid #FFD21F;
+      border-radius: 6px;
+      padding: 4mm 5mm;
+      margin-bottom: 5mm;
+      font-size: 10px;
+      color: #5B6C9F;
       font-style: italic;
       line-height: 1.5;
     }
 
-    /* Colonne droite — Code coupon */
-    .right-col {
-      width: 200px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 210, 31, 0.2);
-      border-radius: 16px;
-      padding: 20px 16px;
-      text-align: center;
+    .message-box::before {
+      content: '« ';
+      color: #FFD21F;
+      font-weight: bold;
+      font-style: normal;
     }
 
-    .amount-label {
+    .message-box::after {
+      content: ' »';
+      color: #FFD21F;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    /* Montant libre */
+    .free-block {
+      text-align: center;
+      padding: 6mm 0 4mm;
+      margin-bottom: 5mm;
+    }
+
+    .free-label {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
+      color: #5B6C9F;
       margin-bottom: 4px;
     }
 
-    .amount-value {
-      font-size: 36px;
+    .free-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0A173D;
+    }
+
+    .free-subtitle {
+      font-size: 11px;
+      color: #5B6C9F;
+      margin-top: 3px;
+    }
+
+    /* ── Bloc code coupon ── */
+    .coupon-block {
+      background: #0A173D;
+      border-radius: 10px;
+      padding: 6mm 8mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5mm;
+    }
+
+    .coupon-left {
+      flex: 1;
+    }
+
+    .coupon-amount-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2px;
+    }
+
+    .coupon-amount {
+      font-size: 32px;
       font-weight: bold;
       color: #FFD21F;
       line-height: 1;
-      margin-bottom: 16px;
     }
 
-    .amount-currency {
-      font-size: 18px;
+    .coupon-amount span {
+      font-size: 16px;
     }
 
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: rgba(255, 210, 31, 0.2);
-      margin: 12px 0;
-    }
-
-    .code-label {
+    .coupon-expiry {
       font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+
+    .coupon-expiry strong {
+      color: rgba(255,255,255,0.75);
+    }
+
+    .coupon-divider {
+      width: 1px;
+      height: 40px;
+      background: rgba(255,210,31,0.25);
+      margin: 0 8mm;
+    }
+
+    .coupon-right {
+      text-align: center;
+    }
+
+    .coupon-code-label {
+      font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 8px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 5px;
     }
 
     .coupon-code {
       background: #FFD21F;
       color: #0A173D;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: bold;
       letter-spacing: 2px;
-      word-break: break-all;
-      margin-bottom: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
     }
 
-    .expiry-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: rgba(255, 255, 255, 0.4);
-      margin-bottom: 3px;
-    }
-
-    .expiry-value {
-      font-size: 11px;
-      font-weight: bold;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* Footer */
+    /* ── Footer ── */
     .footer {
-      margin-top: 15px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 9px;
-      color: rgba(255, 255, 255, 0.3);
+      border-top: 1px solid #E8ECF5;
+      padding-top: 4mm;
+      font-size: 8px;
+      color: #9AA7CB;
       text-align: center;
-    }
-
-    /* Mode montant libre */
-    .free-amount-title {
-      font-size: 28px;
-      font-weight: bold;
-      color: #FFD21F;
-      margin-bottom: 8px;
-    }
-
-    .free-subtitle {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 16px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="wave-decoration"></div>
-    <div class="wave-decoration-2"></div>
 
-    {{-- Header --}}
-    <div class="header">
-      <div class="logo-area">
-        @if (!empty($logo_url))
-          <img src="{{ $logo_url }}" alt="{{ $site_name }}" />
-        @else
-          <span class="site-name">{{ $site_name }}</span>
-        @endif
-      </div>
-      <div class="gift-badge">🎁 Carte Cadeau Croisière</div>
+  {{-- Bannière photo --}}
+  <div class="banner">
+    @if (!empty($bg_image_url))
+      <img class="banner-photo" src="{{ $bg_image_url }}" alt="" />
+    @endif
+    <div class="banner-overlay"></div>
+    <div class="banner-content">
+      @if (!empty($logo_url))
+        <img class="banner-logo" src="{{ $logo_url }}" alt="{{ $site_name }}" />
+      @endif
+      <div class="banner-badge">Carte Cadeau Croisière</div>
     </div>
+  </div>
 
-    {{-- Corps --}}
-    <div class="body">
+  {{-- Corps --}}
+  <div class="body">
 
-      {{-- Colonne gauche --}}
-      <div class="left-col">
+    @if ($mode === 'cruise' && !empty($cruise_title))
 
-        @if ($mode === 'cruise' && !empty($cruise_title))
-          {{-- Mode croisière --}}
-          <div class="label-small">Croisière offerte</div>
-          <div class="cruise-title">{{ $cruise_title }}</div>
-          <div class="season-badge">{{ $season_label }}</div>
+      {{-- Croisière --}}
+      <div class="cruise-block">
+        <div class="label-small">Croisière offerte</div>
+        <div class="cruise-title">{!! $cruise_title !!}</div>
+        <div class="season-badge">{{ $season_label }}</div>
+      </div>
 
+      @if (!empty($passengers) || !empty($options))
+        <div class="details-row">
           @if (!empty($passengers))
-            <div class="details-section">
-              <div class="details-title">Passagers</div>
+            <div class="details-col">
+              <div class="details-col-title">Passagers</div>
               @foreach ($passengers as $p)
-                <div class="detail-row">
+                <div class="detail-item">
                   <span>{{ $p['name'] }}</span>
                   <span class="qty">× {{ $p['qty'] }}</span>
                 </div>
@@ -321,62 +336,65 @@
           @endif
 
           @if (!empty($options))
-            <div class="details-section">
-              <div class="details-title">Options incluses</div>
+            <div class="details-col">
+              <div class="details-col-title">Options incluses</div>
               @foreach ($options as $o)
-                <div class="detail-row">
+                <div class="detail-item">
                   <span>{{ $o['name'] }}</span>
                   <span class="qty">× {{ $o['qty'] }}</span>
                 </div>
               @endforeach
             </div>
           @endif
-
-        @else
-          {{-- Mode montant libre --}}
-          <div class="label-small">Carte cadeau</div>
-          <div class="free-amount-title">Bon d'achat</div>
-          <div class="free-subtitle">Valable sur toutes nos croisières</div>
-        @endif
-
-        @if (!empty($recipient_message))
-          <div class="message-box">
-            "{{ $recipient_message }}"
-          </div>
-        @endif
-
-      </div>
-
-      {{-- Colonne droite — Code --}}
-      <div class="right-col">
-        <div class="amount-label">Valeur</div>
-        <div class="amount-value">
-          {{ number_format($amount, 0, ',', ' ') }}<span class="amount-currency"> €</span>
         </div>
+      @endif
 
-        <div class="divider"></div>
+    @else
 
-        <div class="code-label">Votre code</div>
-        <div class="coupon-code">{{ $coupon_code }}</div>
+      {{-- Montant libre --}}
+      <div class="free-block">
+        <div class="free-label">Bon d'achat</div>
+        <div class="free-title">{{ number_format($amount, 0, ',', ' ') }} €</div>
+        <div class="free-subtitle">Valable sur toutes nos croisières</div>
+      </div>
 
+    @endif
+
+    @if (!empty($recipient_message))
+      <div class="message-box">{{ $recipient_message }}</div>
+    @endif
+
+    {{-- Coupon --}}
+    <div class="coupon-block">
+      <div class="coupon-left">
+        <div class="coupon-amount-label">Valeur</div>
+        <div class="coupon-amount">
+          {{ number_format($amount, 0, ',', ' ') }}<span> €</span>
+        </div>
         @if (!empty($expiry_date))
-          <div class="expiry-label">Valable jusqu'au</div>
-          <div class="expiry-value">
-            {{ \DateTime::createFromFormat('Y-m-d', $expiry_date)?->format('d/m/Y') ?? $expiry_date }}
+          <div class="coupon-expiry">
+            Valable jusqu'au <strong>{{ \DateTime::createFromFormat('Y-m-d', $expiry_date)?->format('d/m/Y') ?? $expiry_date }}</strong>
           </div>
         @endif
       </div>
 
+      <div class="coupon-divider"></div>
+
+      <div class="coupon-right">
+        <div class="coupon-code-label">Votre code</div>
+        <div class="coupon-code">{{ $coupon_code }}</div>
+      </div>
     </div>
 
     {{-- Footer --}}
     <div class="footer">
-      Ce code est à usage unique. Saisissez-le lors de votre commande sur {{ $site_name }}.
+      Code à usage unique — À saisir lors de votre commande sur {{ $site_name }}.
       @if (!empty($expiry_date))
-        — Expire le {{ \DateTime::createFromFormat('Y-m-d', $expiry_date)?->format('d/m/Y') ?? $expiry_date }}.
+        Expire le {{ \DateTime::createFromFormat('Y-m-d', $expiry_date)?->format('d/m/Y') ?? $expiry_date }}.
       @endif
     </div>
 
   </div>
+
 </body>
 </html>

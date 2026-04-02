@@ -41,6 +41,17 @@
   @apply mb-5;
 }
 
+.my-account .woocommerce form.woocommerce-form-login .form-row label{
+  @apply text-white
+}
+
+.woocommerce form button[name='update_cart'] {
+  padding-top: 22px !important;
+  padding-bottom: 22px !important;
+  white-space: nowrap;
+
+}
+
 .woocommerce form .form-row label {
   @apply block text-xs font-bold text-primary-600 mb-1.5 uppercase tracking-wider;
 }

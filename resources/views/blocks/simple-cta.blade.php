@@ -1,11 +1,16 @@
 <section class="{{ $block->classes }} {{ $background }} py-12 md:py-20">
-  <div class="container mx-auto px-4 text-center">
+  <div class="container mx-auto px-4 ">
     @if ($title_group)
-      <div class="mx-auto mb-6 max-w-3xl">
+      <div class="mx-auto mb-6 max-w-3xl text-center">
         <x-partials.section-header :group="$title_group" />
       </div>
     @endif
 
+    @if($content)
+      <div class="contentText">
+        {!! $content !!}
+      </div>
+    @endif
     {{-- Boutons alignés --}}
     @if ($button_1 || $button_2)
       <div class="mt-8 flex flex-col items-center justify-center gap-4 md:flex-row">

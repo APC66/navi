@@ -28,6 +28,7 @@ class Socials extends Component
         'pinterest' => 'bi-pinterest',
         'tiktok' => 'bi-tiktok',
         'google' => 'bi-google',
+        'tripadvisor' => 'tripadvisor',
     ];
 
     /**
@@ -65,7 +66,6 @@ class Socials extends Component
         $this->containerClass = $containerClass;
         $this->linkClass = $linkClass;
         $this->icons = $icons;
-
         if (have_rows('social_medias', 'options')) {
             $this->socialsLinks = collect(get_field('social_medias', 'options'));
             $this->setSocialIcons();

@@ -145,6 +145,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'acf/image-carousel',
                 'acf/text-with-icon',
                 'acf/contact',
+                'acf/logo-grid',
             ];
         }, 10, 2);
 
@@ -251,5 +252,67 @@ class ThemeServiceProvider extends SageServiceProvider
             $phpmailer->SMTPSecure = '';
         });
 
+        // Phone mandatory
+        add_filter('woocommerce_billing_fields', function ($fields) {
+            $fields['billing_phone']['required'] = true;
+
+            return $fields;
+        });
+
+        // Duplicate posts
+        add_action('admin_action_duplicate_post', function () {
+            if (empty($_GET['post'])) {
+                return;
+            }
+
+            $post_id = absint($_GET['post']);
+            check_admin_referer('duplicate_post_'.$post_id);
+
+            $post = get_post($post_id);
+            if (! $post) {
+                return;
+            }
+
+            $new_id = wp_insert_post([
+                'post_title' => $post->post_title.' (copie)',
+                'post_content' => $post->post_content,
+                'post_excerpt' => $post->post_excerpt,
+                'post_status' => 'draft',
+                'post_type' => $post->post_type,
+                'post_author' => get_current_user_id(),
+            ]);
+
+            foreach (get_post_meta($post->ID) as $key => $values) {
+                foreach ($values as $value) {
+                    update_post_meta($new_id, $key, maybe_unserialize($value));
+                }
+            }
+
+            foreach (get_object_taxonomies($post->post_type) as $taxonomy) {
+                $terms = wp_get_object_terms($post->ID, $taxonomy, ['fields' => 'ids']);
+                wp_set_object_terms($new_id, $terms, $taxonomy);
+            }
+
+            wp_redirect(admin_url('post.php?action=edit&post='.$new_id));
+            exit;
+        });
+
+        add_filter('post_row_actions', [$this, 'addDuplicateLink'], 10, 2);
+        add_filter('page_row_actions', [$this, 'addDuplicateLink'], 10, 2);
+    }
+
+    public function addDuplicateLink(array $actions, \WP_Post $post): array
+    {
+        if (! current_user_can('edit_posts')) {
+            return $actions;
+        }
+
+        $url = wp_nonce_url(
+            admin_url('admin.php?action=duplicate_post&post='.$post->ID),
+            'duplicate_post_'.$post->ID
+        );
+        $actions['duplicate'] = '<a href="'.$url.'">Dupliquer</a>';
+
+        return $actions;
     }
 }

@@ -1,4 +1,7 @@
 <div class="{{ $block->classes }} bg-primary-900 relative h-screen w-full overflow-hidden">
+  <div class="absolute bottom-10 right-16 z-30">
+    <img class="" src="@asset('resources/images/tampon.svg')" />
+  </div>
   <div class="absolute inset-0 z-0 h-full w-full">
     @if (! empty($video_desktop) && is_array($video_desktop))
       <video

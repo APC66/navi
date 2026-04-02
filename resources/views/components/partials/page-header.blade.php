@@ -4,6 +4,10 @@
     'text-white' => '[&>span]:text-white',
     'danger' => '[&>span]:text-danger',
   ];
+
+  $title = $title ?? get_the_title();
+  $titleFull = trim($highlight . ' ' . $title);
+
 @endphp
 
 <div class="bg-primary-900 relative h-[300px] w-full overflow-hidden md:h-[400px]">
@@ -22,7 +26,7 @@
       <span class="px-4">/</span>
 
       <span class="text-secondary max-w-[200px] truncate md:max-w-none">
-        {!! $title ?? get_the_title()  !!}
+        {!! $tit ?? get_the_title()  !!}
       </span>
     </div>
     @if($showTitle)

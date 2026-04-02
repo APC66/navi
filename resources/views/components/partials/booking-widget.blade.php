@@ -363,6 +363,28 @@
               </span>
             </button>
 
+            @php
+              $giftCardPages = get_posts([
+                'post_type'      => 'page',
+                'posts_per_page' => 1,
+                'meta_query'     => [[
+                  'key'     => '_wp_page_template',
+                  'value'   => 'gift-card',
+                  'compare' => 'LIKE',
+                ]],
+              ]);
+              $giftCardUrl = !empty($giftCardPages) ? get_permalink($giftCardPages[0]->ID) : '';
+            @endphp
+
+            @if($giftCardUrl)
+              <a
+                href="{{ $giftCardUrl }}?cruise_id={{ $cruiseId }}"
+                class="mt-3 flex w-full items-center justify-center rounded-full border-2 border-secondary px-6 py-4 text-xl font-bold text-secondary transition-all hover:-translate-y-1 hover:bg-secondary/10"
+              >
+                Offrir cette croisière
+              </a>
+            @endif
+
             <div
               x-show="message"
               class="mt-4 text-center text-sm font-bold"

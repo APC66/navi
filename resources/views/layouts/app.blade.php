@@ -32,7 +32,7 @@
       @include('sections.reviews')
       @include('sections.footer')
     </div>
-
+    @include('partials.go-to-top')
     @php(do_action('get_footer'))
     @php(wp_footer())
     @include('utils.scripts')

@@ -150,57 +150,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // --- CALENDRIER ---
   const calendar = new Calendar(calendarEl, {
-    plugins: [ dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin ],
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     locale: frLocale,
     initialView: 'dayGridMonth',
     height: 'auto',
     contentHeight: 650,
-    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,listMonth',
+    },
     events: {
       url: config.apiUrl,
       extraParams: { context: 'admin', _wpnonce: config.nonce },
-      failure: function() { console.error('Erreur chargement événements.'); }
+      failure: function () {
+        console.error('Erreur chargement événements.')
+      },
     },
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
 
-    eventClick: function(info) {
-      info.jsEvent.preventDefault();
-      openModal(info.event);
+    eventClick: function (info) {
+      info.jsEvent.preventDefault()
+      openModal(info.event)
     },
 
-    eventContent: function(arg) {
-      const props = arg.event.extendedProps;
-      const available = props.available !== undefined ? props.available : '?';
-      const quota = props.quota !== undefined ? props.quota : '?';
+    eventContent: function (arg) {
+      const props = arg.event.extendedProps
+      const available = props.available !== undefined ? props.available : '?'
+      const quota = props.quota !== undefined ? props.quota : '?'
 
-      let percent = 0;
+      let percent = 0
       if (quota > 0 && props.booked !== undefined) {
-        percent = Math.min(100, (props.booked / quota) * 100);
+        percent = Math.min(100, (props.booked / quota) * 100)
       }
 
-      let barColor = '#a3e635';
-      if (percent > 50) barColor = '#facc15';
-      if (percent > 90) barColor = '#f87171';
-
-      // Gestion visuelle simplifiée, le contrôleur PHP gère déjà titre et couleur
+      let barColor = '#a3e635'
+      if (percent > 50) barColor = '#facc15'
+      if (percent > 90) barColor = '#f87171'
 
       return {
         html: `
-                <div class="fc-content" style="padding: 2px;">
-                    <div style="font-size: 0.85em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${arg.timeText} ${arg.event.title.replace(/\[.*?\]/, '')}
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75em; margin-top: 2px;">
-                        <span>Dispo: <strong>${available}</strong> / ${quota}</span>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.3); height: 4px; border-radius: 2px; margin-top: 2px; overflow: hidden;">
-                        <div style="background: ${barColor}; height: 100%; width: ${percent}%;"></div>
-                    </div>
-                </div>
-            `
-      };
-    }
-  });
+        <div class="fc-content" style="padding: 2px; width:100%">
+          <div style="font-size: 0.85em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${arg.timeText} ${arg.event.title.replace(/\[.*?\]/, '')}
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75em; margin-top: 2px;">
+            <span>Dispo: <strong>${available}</strong> / ${quota}</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.3); height: 4px; border-radius: 2px; margin-top: 2px; overflow: hidden;">
+            <div style="background: ${barColor}; height: 100%; width: ${percent}%;"></div>
+          </div>
+        </div>
+      `,
+      }
+    },
+  })
+
 
   calendar.render();
 });
