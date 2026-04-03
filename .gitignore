@@ -9,6 +9,8 @@ public/content/uploads/*
 !public/content/uploads/.gitkeep
 public/content/cache/*
 public/content/db.php
+AI*.md
+docs
 
 # Asset build
 public/build/*
