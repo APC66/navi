@@ -27,6 +27,17 @@ const bookingWidgetData = (cruiseId, nonce) => ({
         this.sailings = data
         console.log(data);
         this.loading = false
+
+        const params = new URLSearchParams(window.location.search)
+        const sailingParam = params.get('sailing_id')
+        if (sailingParam) {
+          this.selectDate(sailingParam)
+          const matched = this.sailings.find((s) => s.id == sailingParam)
+          if (matched && matched.start) {
+            const d = new Date(matched.start)
+            this.viewDate = new Date(d.getFullYear(), d.getMonth(), 1)
+          }
+        }
       })
   },
 

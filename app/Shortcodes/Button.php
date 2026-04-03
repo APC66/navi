@@ -15,6 +15,7 @@ class Button
             'label' => '',
             'url' => '#',
             'style' => 'primary',
+            'target' => '_self',
         ], $atts, 'button');
 
         return view('partials.custom-button', $atts)->render();

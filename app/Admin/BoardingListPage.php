@@ -499,18 +499,24 @@ class BoardingListPage
         $count = 0;
         foreach ($orderIds as $orderId) {
             $order = wc_get_order($orderId);
-            if ($order) {
-                if ($order->get_meta('_credit_coupon_code')) {
-                    continue;
-                }
-                $amount = $order->get_total();
-                $code = $this->createCouponForOrder($order, $amount, 'Avoir total pour annulation');
-                $order->update_meta_data('_credit_coupon_code', $code);
-                $order->update_meta_data('_boarding_status', 'credited');
-                $order->add_order_note("🎟️ AVOIR GÉNÉRÉ : Coupon créé automatiquement.\nCode : {$code}\nMontant : {$amount}€");
-                $order->save();
-                $count++;
+            if (! $order) {
+                continue;
             }
+
+            if ($order->get_meta('_credit_coupon_code')) {
+                continue;
+            }
+
+            $balance = (float) $order->get_meta('_balance_due', true);
+
+            $amount = $balance < 0 ? abs($balance) : $order->get_total();
+
+            $code = $this->createCouponForOrder($order, $amount, 'Avoir pour annulation');
+            $order->update_meta_data('_credit_coupon_code', $code);
+            $order->update_meta_data('_boarding_status', 'credited');
+            $order->add_order_note("🎟️ AVOIR GÉNÉRÉ : Coupon créé automatiquement.\nCode : {$code}\nMontant : {$amount}€");
+            $order->save();
+            $count++;
         }
 
         return $count;

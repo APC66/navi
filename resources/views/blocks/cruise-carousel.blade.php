@@ -44,7 +44,7 @@
         <div class="swiper-wrapper">
           @if ($cruises->isEmpty())
             <div class="swiper-slide w-full">
-              <p class="text-center text-gray-500 italic">Aucune croisière disponible.</p>
+              <p class="text-center text-white italic">Aucune croisière disponible.</p>
             </div>
           @else
             @foreach ($cruises as $cruise)
@@ -81,11 +81,11 @@
                   @endif
 
                   <div
-                    class="from-primary-800 via-primary-800/70 absolute inset-0 bg-gradient-to-t to-transparent opacity-90 transition-opacity duration-300 group-hover/card:opacity-0"
+                    class="from-primary-900 via-primary-1000/90 absolute inset-0 bg-gradient-to-t to-transparent opacity-90 transition-opacity duration-300 group-hover/card:opacity-0"
                   ></div>
 
                   <div
-                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center"
+                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center group-hover/card:opacity-0 transition"
                   >
                     <h3
                       class="font-heading mb-2 text-xl leading-tight font-bold tracking-wide text-white uppercase drop-shadow-md"
@@ -115,6 +115,8 @@
       </div>
       <div class="swiper-pagination relative !bottom-0 mt-8 flex justify-center md:hidden"></div>
     </div>
+      <div class="contentText">
+      </div>
     @if ($cta)
       <div class="mt-12 text-center">
         <x-partials.button :group="$cta" class="w-full" />
