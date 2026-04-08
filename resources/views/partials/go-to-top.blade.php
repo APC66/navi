@@ -8,7 +8,7 @@
   </a>
 
   <a
-    href="{{get_permalink(get_page_by_path('nous-contacter'))}}"
+    href="{{get_permalink(get_page_by_path('contact'))}}"
     class="flex h-14 w-14 items-center justify-center rounded-full shadow-image-card bg-secondary transition-transform hover:scale-105"
     style=""
   >

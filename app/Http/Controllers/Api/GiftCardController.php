@@ -81,6 +81,9 @@ class GiftCardController
         $optionsRaw = $request->get_param('options') ?: [];
         $amount = floatval($request->get_param('amount') ?? 0);
         $recipientEmail = sanitize_email($request->get_param('recipient_email') ?? '');
+        $recipientFirstName = sanitize_text_field($request->get_param('recipient_first_name') ?? '');
+        $recipientLastName = sanitize_text_field($request->get_param('recipient_last_name') ?? '');
+        $recipientPhone = sanitize_text_field($request->get_param('recipient_phone') ?? '');
         $recipientMessage = sanitize_textarea_field($request->get_param('recipient_message') ?? '');
         $sendToSelf = (bool) $request->get_param('send_to_self');
         $mode = sanitize_text_field($request->get_param('mode') ?? 'cruise'); // 'cruise' ou 'free'
@@ -166,6 +169,9 @@ class GiftCardController
                 '_gc_options' => wp_json_encode($options),
                 '_gc_amount' => $amount,
                 '_gc_recipient_email' => $recipientEmail,
+                '_gc_recipient_first_name' => $recipientFirstName,
+                '_gc_recipient_last_name' => $recipientLastName,
+                '_gc_recipient_phone' => $recipientPhone,
                 '_gc_recipient_message' => $recipientMessage,
                 '_gc_send_to_self' => $sendToSelf ? '1' : '0',
                 '_gc_mode' => $mode,

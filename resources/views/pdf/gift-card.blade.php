@@ -22,8 +22,7 @@
     /* ── Bannière photo ── */
     .banner {
       width: 100%;
-      height: 70mm;
-      position: relative;
+      height: 65mm;
       background: #0A173D;
       overflow: hidden;
     }
@@ -34,28 +33,6 @@
       object-fit: cover;
       display: block;
       opacity: 0.75;
-    }
-
-
-    .banner-content {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0 16mm;
-    }
-
-    .banner-logo {
-      height: 30mm;
-      width: auto;
-      margin-bottom: 8px;
-      position: absolute;
-      top:0;
-      left:50%;
-      transform: translateX(-50%);
     }
 
     .banner-badge {
@@ -77,7 +54,7 @@
 
     /* ── Corps ── */
     .body {
-      padding: 8mm 12mm 6mm;
+      padding: 4mm 6mm 3mm;
       display: flex;
       flex-direction: column;
       gap: 0;
@@ -91,7 +68,7 @@
     }
 
     .label-small {
-      font-size: 8px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: #5B6C9F;
@@ -122,14 +99,14 @@
     .details-row {
       display: flex;
       gap: 6mm;
-      margin-bottom: 5mm;
+      margin-bottom: 2mm;
     }
 
     .details-col {
       flex: 1;
       background: #F5F7FC;
       border-radius: 6px;
-      padding: 4mm;
+      padding: 2mm;
     }
 
     .details-col-title {
@@ -157,6 +134,43 @@
     .detail-item .qty {
       font-weight: bold;
       color: #1C3787;
+    }
+
+    /* Coordonnées */
+    .people-table{
+      width: 100%;
+      margin-bottom: 5mm;
+    }
+
+    .people-row {
+      margin-bottom: 5mm;
+    }
+
+    .people-col {
+      background: #F5F7FC;
+      border-radius: 6px;
+      padding: 3mm 4mm;
+    }
+
+    .people-col-title {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #5B6C9F;
+      margin-bottom: 3px;
+      font-weight: bold;
+    }
+
+    .people-col-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #0A173D;
+    }
+
+    .people-col-email {
+      font-size: 9px;
+      color: #5B6C9F;
+      margin-top: 2px;
     }
 
     /* Message */
@@ -217,11 +231,11 @@
     .coupon-block {
       background: #0A173D;
       border-radius: 10px;
-      padding: 6mm 8mm;
+      padding: 3mm 4mm;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 5mm;
+      margin-bottom: 2mm;
     }
 
     .coupon-left {
@@ -250,7 +264,7 @@
     .coupon-expiry {
       font-size: 9px;
       color: rgba(255,255,255,0.5);
-      margin-top: 4px;
+      margin-top: 1mm;
     }
 
     .coupon-expiry strong {
@@ -261,7 +275,7 @@
       width: 1px;
       height: 40px;
       background: rgba(255,210,31,0.25);
-      margin: 0 8mm;
+      margin: 0 4mm;
     }
 
     .coupon-right {
@@ -273,7 +287,7 @@
       text-transform: uppercase;
       letter-spacing: 2px;
       color: rgba(255,255,255,0.5);
-      margin-bottom: 5px;
+      margin-bottom: 1mm;
     }
 
     .coupon-code {
@@ -282,7 +296,7 @@
       font-size: 15px;
       font-weight: bold;
       letter-spacing: 2px;
-      padding: 5px 12px;
+      padding: 2mm 4mm;
       border-radius: 6px;
       white-space: nowrap;
     }
@@ -298,7 +312,7 @@
     /* ── Footer ── */
     .footer {
       border-top: 1px solid #E8ECF5;
-      padding-top: 4mm;
+      padding-top: 2mm;
       font-size: 8px;
       color: #9AA7CB;
       text-align: center;
@@ -313,16 +327,13 @@
     @if (!empty($bg_image_url))
       <img class="banner-photo" src="{{ $bg_image_url }}" alt="" />
     @endif
-    <img class="banner-logo" src="{{asset('resources/images/logo-mail.png')}}" alt="Logo Navivoile" />
   </div>
   <div class="banner-badge"><span>Carte</span> Cadeau</div>
 
 
   {{-- Corps --}}
   <div class="body">
-
     @if ($mode === 'cruise' && !empty($cruise_title))
-
       {{-- Croisière --}}
       <div class="cruise-block">
         <div class="label-small">Croisière offerte</div>
@@ -369,6 +380,23 @@
 
     @endif
 
+    {{-- Coordonnées bénéficiaire & offrant --}}
+    <table class="people-table" style="width: 100%">
+      <tr class="people-row">
+        <td colspan="1" class="people-col">
+          <div class="people-col-title">Pour</div>
+          <div class="people-col-name">{{ trim($recipient_first_name.' '.$recipient_last_name) ?: '—' }}</div>
+          @if (!empty($recipient_phone))
+            <div class="people-col-email">{{ $recipient_phone }}</div>
+          @endif
+        </td>
+        <td colspan="1" class="people-col">
+          <div class="people-col-title">Offert par</div>
+          <div class="people-col-name">{{ trim($buyer_first_name.' '.$buyer_last_name) }}</div>
+        </td>
+      </tr>
+    </table>
+
     @if (!empty($recipient_message))
       <div class="message-box">{{ $recipient_message }}</div>
     @endif
@@ -397,13 +425,15 @@
         Comment utiliser ma carte cadeau ?
       </div>
       <div class="mentions-legales-content">
-        À saisir lors de votre commande sur Navivoile, vous pouvez l’utiliser sur n’importe quelle croisière. Le complément sera à
-        régler lors du passage de votre commande en ligne.
-        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
-        dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen
-        book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It
-        was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with
-        desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+          Veuillez-vous référer au "Planning & Réservation" du menu principal de notre site web wwww.navivoile.com pour connaître les dates des sorties en mer.
+          Pour profiter de cette carte cadeau, utilisez le code inscrit ci-dessus.
+          Vous devrez utiliser ce code lorsque vous réserverez votre croisière sur notre site web wwww.navivoile.com (onglet "Planning & Réservation") en l'insérant dans le champ "code promo" (puis le valider).
+          Vous pourrez si vous le souhaitez commander n'importe quelle autre croisière avec ce même code.
+          Le montant de cette carte cadeau sera déduit sur la nouvelle commande (valable uniquement pour toute commande supérieure ou égale au montant total du bon cadeau offert).
+          Nous vous conseillons vivement de réserver au plus vite votre croisière si elle est déjà en ligne.
+          Aucun remboursement de carte cadeau ne sera accepté quel que soit le motif, sauf en cas de problème technique ou d'avarie avec impossibilité pour NAVIVOILE d'assurer la croisière.
+          Lorsque vous réserverez prochainement votre croisière sur notre site web, toutes les informations relatives au point d'embarquement et horaires vous seront précisées sur votre bon de commande. Nous vous remercions pour votre confiance et à très bientôt!
+          Pour tout renseignement complémentaire : Tél. 06 23 20 69 76 - Courriel contact@navivoile.com
       </div>
     </div>
 

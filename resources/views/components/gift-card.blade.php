@@ -290,17 +290,49 @@
             </div>
           @endauth
 
-          {{-- Email destinataire --}}
-          <div class="mb-6" x-show="!sendToSelf">
-            <label class="block text-primary-900 font-bold mb-2">Email du destinataire <span class="text-red-500">*</span></label>
-            <input
-              type="email"
-              x-model="recipientEmail"
-              placeholder="prenom.nom@email.com"
-              class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
-              :class="recipientEmailError ? 'border-red-400' : ''"
-            />
-            <p x-show="recipientEmailError" class="text-red-500 text-sm mt-1" x-text="recipientEmailError"></p>
+          {{-- Coordonnées du bénéficiaire (toujours visibles) --}}
+          <div class="mb-6">
+            <h3 class="text-primary-900 font-bold text-base mb-4 uppercase tracking-wide border-b border-primary-100 pb-2">Coordonnées du bénéficiaire</h3>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-primary-900 font-bold mb-2">Prénom <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  x-model="recipientFirstName"
+                  placeholder="Prénom"
+                  class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-primary-900 font-bold mb-2">Nom <span class="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  x-model="recipientLastName"
+                  placeholder="Nom"
+                  class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+                />
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="block text-primary-900 font-bold mb-2">Téléphone</label>
+              <input
+                type="tel"
+                x-model="recipientPhone"
+                placeholder="+33 6 00 00 00 00"
+                class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+              />
+            </div>
+            <div x-show="!sendToSelf">
+              <label class="block text-primary-900 font-bold mb-2">Email <span class="text-red-500">*</span></label>
+              <input
+                type="email"
+                x-model="recipientEmail"
+                placeholder="prenom.nom@email.com"
+                class="w-full rounded-xl border border-primary-100 bg-gray-50 px-4 py-3 text-primary-900 font-medium focus:ring-2 focus:ring-secondary focus:outline-none"
+                :class="recipientEmailError ? 'border-red-400' : ''"
+              />
+              <p x-show="recipientEmailError" class="text-red-500 text-sm mt-1" x-text="recipientEmailError"></p>
+            </div>
           </div>
 
           {{-- Message personnalisé --}}

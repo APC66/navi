@@ -54,17 +54,17 @@
               </div>
             @endif
           </a>
-          @if ($cruise->tags)
-            <div class="absolute top-4 left-4 inline-flex space-x-2">
-              @foreach ($cruise->tags as $tag)
-                <span
-                  class="text-primary-900 z-10 flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-bold shadow-xl backdrop-blur"
-                >
-                  {{ $tag['name'] }}
-                </span>
-              @endforeach
-            </div>
-          @endif
+{{--          @if ($cruise->tags)--}}
+{{--            <div class="absolute top-4 left-4 inline-flex space-x-2">--}}
+{{--              @foreach ($cruise->tags as $tag)--}}
+{{--                <span--}}
+{{--                  class="text-primary-900 z-10 flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-bold shadow-xl backdrop-blur"--}}
+{{--                >--}}
+{{--                  {{ $tag['name'] }}--}}
+{{--                </span>--}}
+{{--              @endforeach--}}
+{{--            </div>--}}
+{{--          @endif--}}
         </div>
 
         <div

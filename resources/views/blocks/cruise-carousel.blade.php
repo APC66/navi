@@ -115,8 +115,6 @@
       </div>
       <div class="swiper-pagination relative !bottom-0 mt-8 flex justify-center md:hidden"></div>
     </div>
-      <div class="contentText">
-      </div>
     @if ($cta)
       <div class="mt-12 text-center">
         <x-partials.button :group="$cta" class="w-full" />

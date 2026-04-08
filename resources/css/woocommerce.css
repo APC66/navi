@@ -41,7 +41,7 @@
   @apply mb-5;
 }
 
-.my-account .woocommerce form.woocommerce-form-login .form-row label{
+html body.woocommerce-account .woocommerce form .form-row label{
   @apply text-white
 }
 

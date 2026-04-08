@@ -104,6 +104,9 @@ class GiftCardService
         $passengersJson = $item->get_meta('_gc_passengers');
         $optionsJson = $item->get_meta('_gc_options');
         $amount = floatval($item->get_meta('_gc_amount'));
+        $recipientFirstName = $item->get_meta('_gc_recipient_first_name');
+        $recipientLastName = $item->get_meta('_gc_recipient_last_name');
+        $recipientPhone = $item->get_meta('_gc_recipient_phone');
         $recipientMessage = $item->get_meta('_gc_recipient_message');
         $expiryDate = $item->get_meta('_gc_coupon_expiry');
 
@@ -145,7 +148,14 @@ class GiftCardService
             'amount' => $amount,
             'coupon_code' => $couponCode,
             'expiry_date' => $expiryDate,
+            'recipient_first_name' => $recipientFirstName,
+            'recipient_last_name' => $recipientLastName,
+            'recipient_phone' => $recipientPhone,
             'recipient_message' => $recipientMessage,
+            'buyer_first_name' => $order->get_billing_first_name(),
+            'buyer_last_name' => $order->get_billing_last_name(),
+            'buyer_email' => $order->get_billing_email(),
+            'buyer_phone' => $order->get_billing_phone(),
             'logo_url' => get_theme_file_uri('public/images/logo.png'),
             'site_name' => get_bloginfo('name'),
             'bg_image_url' => get_field('gift_card_bg_image', 'option') ?: '',
@@ -176,7 +186,11 @@ class GiftCardService
             get_bloginfo('name')
         );
 
-        $headers = ['Content-Type: text/plain; charset=UTF-8'];
+        $ccEmail = 'contact@navivoile.com';
+        $headers = [
+            'Content-Type: text/plain; charset=UTF-8',
+            'Cc: '.$ccEmail,
+        ];
         $attachments = [$pdfPath];
 
         wp_mail($recipientEmail, $subject, $body, $headers, $attachments);

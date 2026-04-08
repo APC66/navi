@@ -47,6 +47,8 @@ return [
             'supports' => ['title'],
             'show_in_rest' => false,
             'menu_position' => 21,
+            'has_archive' => false,
+            'publicly_queryable' => false,
             'names' => [
                 'singular' => 'Départ',
                 'plural' => 'Départs',
@@ -65,7 +67,6 @@ return [
                     'title' => 'Quota',
                     'meta_key' => 'quota',
                 ],
-                // Ajout de la colonne statut pour voir l'état rapidement
                 'sailing_status' => [
                     'title' => 'Statut',
                     'taxonomy' => 'sailing_status',
@@ -96,6 +97,7 @@ return [
         'harbor' => [
             'post_types' => ['cruise'],
             'meta_box' => 'radio',
+            'public' => false,
             'names' => [
                 'singular' => 'Port de départ',
                 'plural' => 'Ports',
@@ -104,6 +106,7 @@ return [
         ],
         'cruise_type' => [
             'post_types' => ['cruise'],
+            'public' => false,
             'names' => [
                 'singular' => 'Type de Croisière',
                 'plural' => 'Types de Croisières',
@@ -112,6 +115,7 @@ return [
         ],
         'cruise_tag' => [
             'post_types' => ['cruise'],
+            'public' => false,
             'names' => [
                 'singular' => 'Tag de Croisière',
                 'plural' => 'Tags de Croisières',
@@ -121,6 +125,7 @@ return [
         'passenger_type' => [
             'post_types' => ['cruise', 'sailing'],
             'meta_box' => false,
+            'public' => false,
             'show_in_rest' => true,
             'names' => [
                 'singular' => 'Type de Passager',
@@ -128,10 +133,10 @@ return [
                 'slug' => 'type-passager',
             ],
         ],
-        // Taxonomie : Types d'Options
         'extra_option_type' => [
             'post_types' => ['cruise', 'sailing'],
-            'meta_box' => false, // Masquer la métabox standard
+            'meta_box' => false,
+            'public' => false,
             'show_in_rest' => true,
             'names' => [
                 'singular' => 'Type d\'Option',
@@ -139,10 +144,10 @@ return [
                 'slug' => 'type-option',
             ],
         ],
-        // NOUVELLE TAXONOMIE : Statut du Départ (Annulé, Confirmé, etc.)
         'sailing_status' => [
             'post_types' => ['sailing'],
-            'meta_box' => false, // Masqué pour gestion via ACF
+            'meta_box' => false,
+            'public' => false,
             'show_ui' => true,
             'show_in_rest' => true,
             'show_admin_column' => true,

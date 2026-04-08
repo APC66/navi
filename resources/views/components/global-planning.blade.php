@@ -175,26 +175,26 @@
             </div>
 
             {{-- Filtre Types --}}
-            <div class="mb-6">
-              <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">
-                Types de croisière
-              </p>
-              <div class="flex flex-wrap gap-2">
-                @php
-                  $types = get_terms(['taxonomy' => 'cruise_type', 'hide_empty' => false]);
-                @endphp
+{{--            <div class="mb-6">--}}
+{{--              <p class="text-primary-400 mb-3 text-xs font-bold tracking-widest uppercase">--}}
+{{--                Types de croisière--}}
+{{--              </p>--}}
+{{--              <div class="flex flex-wrap gap-2">--}}
+{{--                @php--}}
+{{--                  $types = get_terms(['taxonomy' => 'cruise_type', 'hide_empty' => false]);--}}
+{{--                @endphp--}}
 
-                @foreach ($types as $type)
-                  <button
-                    @click="toggleFilter('types', {{ $type->term_id }})"
-                    class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
-                    :class="filters.types.includes({{ $type->term_id }}) ? 'bg-primary-900 border-primary-900 text-white shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-primary-400'"
-                  >
-                    {{ $type->name }}
-                  </button>
-                @endforeach
-              </div>
-            </div>
+{{--                @foreach ($types as $type)--}}
+{{--                  <button--}}
+{{--                    @click="toggleFilter('types', {{ $type->term_id }})"--}}
+{{--                    class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"--}}
+{{--                    :class="filters.types.includes({{ $type->term_id }}) ? 'bg-primary-900 border-primary-900 text-white shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-primary-400'"--}}
+{{--                  >--}}
+{{--                    {{ $type->name }}--}}
+{{--                  </button>--}}
+{{--                @endforeach--}}
+{{--              </div>--}}
+{{--            </div>--}}
 
             {{-- Filtre Tags (Nouveau) --}}
             <div>

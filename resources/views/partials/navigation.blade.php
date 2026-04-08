@@ -90,16 +90,16 @@
         <div
           class="absolute inset-0 overflow-y-auto  transition-all duration-500 ease-in-out"
           :class="{'translate-x-0 opacity-100 z-20 pointer-events-auto': activePanel === 'main','-translate-x-1/4 opacity-0 pointer-events-none z-10': panelStack.includes('main') && activePanel !== 'main', 'translate-x-full opacity-0 pointer-events-none z-20': !panelStack.includes('main') }" >
-          <ul class="flex flex-col space-y-8 px-10">
+          <ul class="flex flex-col space-y-8 px-4 lg:px-10">
             @if (!empty($menuItems))
               @foreach ($menuItems as $item)
-                <li>
+                <li class="{{$item->classes ?? ''}} px-4 lg:px-8 py-4">
                   @if (!empty($item->children))
                     <button
                       @click="openSubPanel('panel-{{ $item->id }}')"
-                      class="w-full flex items-center justify-between font-medium tracking-wider px-8 py-2 hover:text-secondary transition-colors group"
+                      class="w-full flex items-center justify-between font-medium tracking-wider hover:text-secondary transition-colors group"
                     >
-                      <span>{{ $item->label }}</span>
+                      <span>{!! $item->label  !!}</span>
                       <span class="w-5 h-5 flex items-center justify-center ">
                           <svg
                             class="group-hover:text-secondary text-white transform group-hover:translate-x-1 transition-transform"
@@ -111,8 +111,8 @@
                     </button>
                   @else
                     <a href="{{ $item->url }}"
-                       class="block px-8 py-2 font-medium tracking-wider hover:text-secondary transition-colors">
-                      {{ $item->label }}
+                       class="block font-medium tracking-wider hover:text-secondary transition-colors">
+                      {!! $item->label !!}
                     </a>
                   @endif
                 </li>
@@ -148,15 +148,15 @@
 
                 <ul class="flex flex-col py-4 space-y-4 flex-1">
                   @foreach ($item->children as $child)
-                    <li>
+                    <li class="{{$child->classes ?? ''}} px-4 lg:px-8 py-4">
                       {{-- S'il y a un Niveau 2 (Sous-sous-menu) --}}
                       @if (!empty($child->children))
                         <button
                           @click="openSubPanel('panel-{{ $child->id }}')"
-                          class="w-full flex items-center justify-between px-8 py-4 text-left font-medium  hover:text-secondary transition-colors group"
+                          class="w-full flex items-center justify-between text-left font-medium  hover:text-secondary transition-colors group"
                         >
-                          {{ $child->label }}
-                          <svg class="w-5 h-5  group-hover:text-secondary" fill="none"
+                          {!! $child->label !!}
+                          <svg class="w-5 h-5 group-hover:text-secondary" fill="none"
                                stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M9 5l7 7-7 7"></path>
@@ -164,8 +164,8 @@
                         </button>
                       @else
                         <a href="{{ $child->url }}"
-                           class="block px-8 py-4 font-medium hover:text-secondary transition-colors">
-                          {{ $child->label }}
+                           class="block font-medium hover:text-secondary transition-colors">
+                          {!! $child->label !!}
                         </a>
                       @endif
                     </li>
@@ -196,10 +196,10 @@
 
                     <ul class="flex flex-col py-4 space-y-4 flex-1">
                       @foreach ($child->children as $grandChild)
-                        <li>
+                        <li class="{{$grandChild->classes ?? ''}} px-4 lg:px-8 py-4">
                           <a href="{{ $grandChild->url }}"
-                             class="block px-8 py-4 font-medium hover:text-secondary transition-colors">
-                            {{ $grandChild->label }}
+                             class="block font-medium hover:text-secondary transition-colors">
+                            {!! $grandChild->label !!}
                           </a>
                         </li>
                       @endforeach
@@ -214,7 +214,7 @@
       </div>
 
       {{-- Pied du Menu --}}
-      <div class="px-8 py-12 bg-primary-1000">
+      <div class="px-4 lg:px-8 py-12 bg-primary-1000">
         <hr class="w-24 border-b border-b-primary-200 mx-auto my-12">
         <x-partials.socials container-class="flex justify-center items-center gap-4 " />
       </div>

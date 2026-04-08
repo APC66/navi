@@ -14,7 +14,7 @@ class SimpleCta extends Block
      *
      * @var string
      */
-    public $name = 'Simple bloc';
+    public $name = 'Simple cta';
 
     /**
      * The block description.

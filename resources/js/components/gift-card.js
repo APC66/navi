@@ -29,6 +29,9 @@ const giftCardData = (nonce, buyerEmail) => ({
   buyerEmail: buyerEmail || '',
   recipientEmail: '',
   recipientEmailError: '',
+  recipientFirstName: '',
+  recipientLastName: '',
+  recipientPhone: '',
   recipientMessage: '',
 
   // Panier
@@ -80,6 +83,7 @@ const giftCardData = (nonce, buyerEmail) => ({
 
   get canAddToCart() {
     if (this.finalAmount <= 0) return false
+    if (!this.recipientFirstName || !this.recipientLastName) return false
     if (this.sendToSelf) return !!this.buyerEmail
     return this.isValidEmail(this.recipientEmail)
   },
@@ -229,6 +233,9 @@ const giftCardData = (nonce, buyerEmail) => ({
       options: this.mode === 'cruise' ? this.options : {},
       amount: this.mode === 'free' ? parseFloat(this.freeAmount) : 0,
       recipient_email: this.sendToSelf ? '' : this.recipientEmail,
+      recipient_first_name: this.recipientFirstName,
+      recipient_last_name: this.recipientLastName,
+      recipient_phone: this.recipientPhone,
       recipient_message: this.recipientMessage,
       send_to_self: this.sendToSelf,
     }

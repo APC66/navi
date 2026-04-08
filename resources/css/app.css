@@ -48,10 +48,25 @@
     strong{
       @apply font-bold;
     }
-
   }
 }
 
+.new-item{
+  position:relative;
+  display: inline-flex;
+  align-items:center;
+
+  &::before{
+    content:'NEW';
+    border-radius:50px;
+    color: var(--color-primary-800);
+    padding:4px 8px;
+    background-color: white;
+    font-weight:bold;
+    font-size:12px;
+    margin-right:8px;
+  }
+}
 
 .rpi-header{
   @apply hidden;
