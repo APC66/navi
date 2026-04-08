@@ -23,7 +23,8 @@ class OptionsGiftCard extends Field
                 'instructions' => 'Image affichée en bannière en haut du PDF. Format paysage recommandé (ex: 1200×400px).',
                 'return_format' => 'url',
                 'preview_size' => 'medium',
-            ]);
+            ])
+            ->addTextArea('gift_card_footer', ['label' => 'Footer carte cadeau']);
 
         return $options->build();
     }

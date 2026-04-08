@@ -425,15 +425,7 @@
         Comment utiliser ma carte cadeau ?
       </div>
       <div class="mentions-legales-content">
-          Veuillez-vous référer au "Planning & Réservation" du menu principal de notre site web wwww.navivoile.com pour connaître les dates des sorties en mer.
-          Pour profiter de cette carte cadeau, utilisez le code inscrit ci-dessus.
-          Vous devrez utiliser ce code lorsque vous réserverez votre croisière sur notre site web wwww.navivoile.com (onglet "Planning & Réservation") en l'insérant dans le champ "code promo" (puis le valider).
-          Vous pourrez si vous le souhaitez commander n'importe quelle autre croisière avec ce même code.
-          Le montant de cette carte cadeau sera déduit sur la nouvelle commande (valable uniquement pour toute commande supérieure ou égale au montant total du bon cadeau offert).
-          Nous vous conseillons vivement de réserver au plus vite votre croisière si elle est déjà en ligne.
-          Aucun remboursement de carte cadeau ne sera accepté quel que soit le motif, sauf en cas de problème technique ou d'avarie avec impossibilité pour NAVIVOILE d'assurer la croisière.
-          Lorsque vous réserverez prochainement votre croisière sur notre site web, toutes les informations relatives au point d'embarquement et horaires vous seront précisées sur votre bon de commande. Nous vous remercions pour votre confiance et à très bientôt!
-          Pour tout renseignement complémentaire : Tél. 06 23 20 69 76 - Courriel contact@navivoile.com
+        {!! $footer_content !!}
       </div>
     </div>
 
