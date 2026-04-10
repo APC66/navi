@@ -32,7 +32,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      opacity: 0.75;
     }
 
     .banner-badge {
@@ -338,7 +337,9 @@
       <div class="cruise-block">
         <div class="label-small">Croisière offerte</div>
         <div class="cruise-title">{!! $cruise_title !!}</div>
-        <div class="season-badge">{{ $season_label }}</div>
+        @if (!empty($season_label))
+          <div class="season-badge">{{ $season_label }}</div>
+        @endif
       </div>
 
       @if (!empty($passengers) || !empty($options))

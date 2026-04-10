@@ -27,17 +27,29 @@ class AcfGiftCardPricing extends Field
                 'wrapper' => ['width' => '100'],
             ])
 
+            ->addTrueFalse('gc_no_seasonality', [
+                'label' => 'Tarifs sans saisonnalité',
+                'ui' => 1,
+                'ui_on_text' => 'Oui',
+                'ui_off_text' => 'Non',
+                'instructions' => 'Activez cette option si les tarifs sont identiques toute l\'année. Le sélecteur de saison sera masqué sur le formulaire. Seule la colonne "Prix unique" sera utilisée.',
+                'wrapper' => ['width' => '100'],
+                'default_value' => 0,
+            ])
+
             ->addText('low_season_label', [
                 'label' => 'Période Basse Saison',
                 'instructions' => 'Ex : Octobre → Avril',
                 'placeholder' => 'Ex : Octobre → Avril',
                 'wrapper' => ['width' => '50'],
+                'conditional_logic' => [[['field' => 'gc_no_seasonality', 'operator' => '!=', 'value' => '1']]],
             ])
             ->addText('high_season_label', [
                 'label' => 'Période Haute Saison',
                 'instructions' => 'Ex : Mai → Septembre',
                 'placeholder' => 'Ex : Mai → Septembre',
                 'wrapper' => ['width' => '50'],
+                'conditional_logic' => [[['field' => 'gc_no_seasonality', 'operator' => '!=', 'value' => '1']]],
             ])
 
             ->addRepeater('pricing_rows', [
@@ -53,19 +65,20 @@ class AcfGiftCardPricing extends Field
                 'add_term' => 0,
                 'save_terms' => 0,
                 'return_format' => 'id',
-                'wrapper' => ['width' => '40'],
+                'wrapper' => ['width' => '34'],
             ])
             ->addNumber('price_low_season', [
-                'label' => 'Prix Basse Saison (€)',
+                'label' => 'Prix unique / Basse Saison (€)',
+                'instructions' => 'Sert de prix unique si la saisonnalité est désactivée.',
                 'min' => 0,
                 'step' => 0.01,
-                'wrapper' => ['width' => '30'],
+                'wrapper' => ['width' => '33'],
             ])
             ->addNumber('price_high_season', [
                 'label' => 'Prix Haute Saison (€)',
                 'min' => 0,
                 'step' => 0.01,
-                'wrapper' => ['width' => '30'],
+                'wrapper' => ['width' => '33'],
             ])
             ->endRepeater()
 
@@ -82,19 +95,20 @@ class AcfGiftCardPricing extends Field
                 'add_term' => 0,
                 'save_terms' => 0,
                 'return_format' => 'id',
-                'wrapper' => ['width' => '40'],
+                'wrapper' => ['width' => '34'],
             ])
             ->addNumber('option_price_low', [
-                'label' => 'Prix Basse Saison (€)',
+                'label' => 'Prix unique / Basse Saison (€)',
+                'instructions' => 'Sert de prix unique si la saisonnalité est désactivée.',
                 'min' => 0,
                 'step' => 0.01,
-                'wrapper' => ['width' => '30'],
+                'wrapper' => ['width' => '33'],
             ])
             ->addNumber('option_price_high', [
                 'label' => 'Prix Haute Saison (€)',
                 'min' => 0,
                 'step' => 0.01,
-                'wrapper' => ['width' => '30'],
+                'wrapper' => ['width' => '33'],
             ])
             ->endRepeater();
 

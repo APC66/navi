@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modal-title').innerText = event.title;
     document.getElementById('modal-content').innerHTML = `
         <p><strong>Date :</strong> ${event.start.toLocaleString()}</p>
-        <p><strong>Remplissage :</strong> ${props.booked} / ${props.quota}</p>
+        <p><strong>Places Restantes :</strong> ${props.available} / ${props.quota}</p>
         <p><strong>Statut actuel :</strong> ${props.status}</p>
         <p><a href="${event.url}" target="_blank" class="button">Modifier le départ (WP) ↗</a></p>
     `;
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ${arg.timeText} ${arg.event.title.replace(/\[.*?\]/, '')}
           </div>
           <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75em; margin-top: 2px;">
-            <span>Dispo: <strong>${available}</strong> / ${quota}</span>
+            <span>Places restantes: <strong>${available}</strong> / ${quota}</span>
           </div>
           <div style="background: rgba(255,255,255,0.3); height: 4px; border-radius: 2px; margin-top: 2px; overflow: hidden;">
             <div style="background: ${barColor}; height: 100%; width: ${percent}%;"></div>

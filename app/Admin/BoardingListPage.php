@@ -306,7 +306,10 @@ class BoardingListPage
             // On prend le nouveau quota total sur la nouvelle date
             $this->updateSailingBookedCount($targetSailingId, $newTotalPax);
 
-            $order->add_order_note("📝 ÉDITION : Départ changé (#$originalSailingId -> #$targetSailingId). Pax : $oldTotalPax -> $newTotalPax.");
+            $oldSailingTitle = html_entity_decode(get_the_title($originalSailingId), ENT_QUOTES);
+            $newSailingTitle = html_entity_decode(get_the_title($targetSailingId), ENT_QUOTES);
+            $order->add_order_note("📝 ÉDITION : Départ changé ($oldSailingTitle → $newSailingTitle). Pax : $oldTotalPax -> $newTotalPax.");
+
         } elseif ($newTotalPax !== $oldTotalPax) {
             $diff = $newTotalPax - $oldTotalPax;
             $this->updateSailingBookedCount($originalSailingId, $diff);
@@ -431,7 +434,9 @@ class BoardingListPage
             }
 
             if ($orderProcessed) {
-                $note = "🔄 REPROGRAMMATION (Admin) : Client déplacé du départ #$oldSailingId au #$newSailingId.";
+                $oldSailingTitle = html_entity_decode(get_the_title($oldSailingId), ENT_QUOTES);
+                $newSailingTitle = html_entity_decode(get_the_title($newSailingId), ENT_QUOTES);
+                $note = "🔄 REPROGRAMMATION (Admin) : Client déplacé de \"$oldSailingTitle\" vers \"$newSailingTitle\".";
                 if ($paxToRemove > 0) {
                     $note .= "\n⚠️ MODIFICATION : $paxToRemove passager(s) supprimé(s).";
                 }

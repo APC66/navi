@@ -163,7 +163,7 @@ class CruiseManagement
                             $full_arrival_date = $arrival_dt->format('Y-m-d').' '.$return_time;
                         }
 
-                        $title = get_the_title($post_id).' - '.$dt->format('d/m/Y H:i');
+                        $title = wp_specialchars_decode(get_the_title($post_id), ENT_QUOTES).' - '.$dt->format('d/m/Y');
 
                         $sailing_id = wp_insert_post([
                             'post_type' => 'sailing',

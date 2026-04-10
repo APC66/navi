@@ -148,8 +148,8 @@
           <h2 class="text-primary-900 text-2xl font-bold mb-1" x-text="'Croisière : ' + cruiseTitle"></h2>
           <p class="text-primary-400 mb-8">Configurez votre carte cadeau.</p>
 
-          {{-- Choix de la saison --}}
-          <div class="mb-8">
+          {{-- Choix de la saison (masqué si tarifs sans saisonnalité) --}}
+          <div class="mb-8" x-show="!noSeasonality">
             <h3 class="text-primary-900 font-bold text-lg mb-4 tracking-wide uppercase">Saison</h3>
             <div class="grid grid-cols-2 gap-4">
               <button
@@ -359,7 +359,7 @@
                 <span class="text-primary-400 font-medium">Croisière</span>
                 <span class="text-primary-900 font-bold" x-text="cruiseTitle"></span>
               </div>
-              <div class="flex justify-between" x-show="mode === 'cruise'">
+              <div class="flex justify-between" x-show="mode === 'cruise' && !noSeasonality">
                 <span class="text-primary-400 font-medium">Saison</span>
                 <span class="text-primary-900 font-bold" x-text="season === 'high' ? 'Haute Saison' : 'Basse Saison'"></span>
               </div>

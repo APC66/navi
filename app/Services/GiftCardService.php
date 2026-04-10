@@ -101,6 +101,7 @@ class GiftCardService
         $mode = $item->get_meta('_gc_mode') ?: 'cruise';
         $cruiseId = absint($item->get_meta('_gc_cruise_id'));
         $season = $item->get_meta('_gc_season');
+        $noSeasonality = $item->get_meta('_gc_no_seasonality') === '1';
         $passengersJson = $item->get_meta('_gc_passengers');
         $optionsJson = $item->get_meta('_gc_options');
         $amount = floatval($item->get_meta('_gc_amount'));
@@ -141,8 +142,8 @@ class GiftCardService
 
         $viewData = [
             'mode' => $mode,
-            'cruise_title' => $cruiseId ? get_the_title($cruiseId) : '',
-            'season_label' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+            'cruise_title' => $cruiseId ? html_entity_decode(get_the_title($cruiseId), ENT_QUOTES) : '',
+            'season_label' => $noSeasonality ? '' : ($season === 'high' ? 'Haute Saison' : 'Basse Saison'),
             'passengers' => $passengersData,
             'options' => $optionsData,
             'amount' => $amount,

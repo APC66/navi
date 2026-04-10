@@ -12,6 +12,13 @@ Le système de fidélité permet de récompenser les clients pour leurs achats e
 - Les points sont attribués **uniquement** lorsque la commande passe au statut **"Terminée"** (`wc-completed`)
 - Les points sont **toujours attribués au client final** (`$order->get_customer_id()`), jamais à l'agent qui a passé la commande
 
+### Retrait des points en cas de remboursement
+- Lorsqu'une commande passe au statut **"Remboursée"** (`wc-refunded`), les points attribués pour cette commande sont **automatiquement déduits**
+- Seules les commandes pour lesquelles des points ont été attribués (`_loyalty_points_awarded`) sont concernées
+- Le solde ne peut jamais être négatif (plancher à 0)
+- Une protection contre les doublons empêche une deuxième déduction sur la même commande (`_loyalty_points_refunded`)
+- L'opération est enregistrée dans l'historique avec le type `refunded`
+
 ### Compatibilité avec le système Agence
 Le système de fidélité est **100% compatible** avec le système de commandes pour compte tiers :
 - Les points sont attribués au `customer_id` de la commande (client final)

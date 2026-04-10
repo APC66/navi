@@ -279,7 +279,7 @@
         <button
           @click="loadMore()"
           :disabled="loadingMore"
-          class="btn-secondary flex items-center rounded-full px-8 py-3 disabled:opacity-50"
+          class="inline-flex items-center !no-underline justify-center px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-button bg-secondary !text-primary-900 hover:bg-white"
         >
           <span x-show="!loadingMore">Voir plus de croisières</span>
           <span x-show="loadingMore" class="flex items-center">

@@ -76,7 +76,7 @@ class CalendarController
             $booked = (int) get_post_meta($sailing->ID, 'sailing_config_booked_count', true);
             $remaining = $quota - $booked;
 
-            $title = $sailing->post_title;
+            $title = html_entity_decode($sailing->title, ENT_QUOTES);
 
             // --- RÉCUPÉRATION DONNÉES COMMERCIALES ---
             $fares = $sailing->fares ?: [];

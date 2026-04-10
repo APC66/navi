@@ -56,15 +56,17 @@ class GiftCardController
         $lowSeasonLabel = get_field('low_season_label', $id) ?: '';
         $highSeasonLabel = get_field('high_season_label', $id) ?: '';
         $giftCardDescription = get_field('gift_card_description', $id) ?: '';
+        $noSeasonality = (bool) get_field('gc_no_seasonality', $id);
 
         return [
             'success' => true,
-            'cruise_title' => get_the_title($id),
+            'cruise_title' => html_entity_decode(get_the_title($id), ENT_QUOTES),
             'pricing_rows' => $passengers,
             'options_pricing' => $options,
             'low_season_label' => $lowSeasonLabel,
             'high_season_label' => $highSeasonLabel,
             'gift_card_description' => $giftCardDescription,
+            'no_seasonality' => $noSeasonality,
         ];
     }
 
@@ -112,9 +114,15 @@ class GiftCardController
             if (! $post || $post->post_type !== 'cruise') {
                 return ['success' => false, 'message' => 'Croisière invalide.'];
             }
-            if (! in_array($season, ['low', 'high'], true)) {
+
+            $noSeasonality = (bool) get_field('gc_no_seasonality', $cruiseId);
+
+            if ($noSeasonality) {
+                $season = 'low'; // Prix unique = colonne basse saison
+            } elseif (! in_array($season, ['low', 'high'], true)) {
                 return ['success' => false, 'message' => 'Saison invalide.'];
             }
+
             if (empty($passengers) || array_sum($passengers) <= 0) {
                 return ['success' => false, 'message' => 'Veuillez sélectionner au moins un passager.'];
             }
@@ -165,6 +173,7 @@ class GiftCardController
             'gift_card_data' => [
                 '_gc_cruise_id' => $cruiseId ?: 0,
                 '_gc_season' => $season,
+                '_gc_no_seasonality' => isset($noSeasonality) && $noSeasonality ? '1' : '0',
                 '_gc_passengers' => wp_json_encode($passengers),
                 '_gc_options' => wp_json_encode($options),
                 '_gc_amount' => $amount,

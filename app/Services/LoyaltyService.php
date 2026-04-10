@@ -23,6 +23,9 @@ class LoyaltyService
         // Attribution des points lors du passage au statut "Terminée"
         add_action('woocommerce_order_status_completed', [$this, 'awardPointsOnOrderComplete'], 10, 1);
 
+        // Déduction des points lors d'un remboursement
+        add_action('woocommerce_order_status_refunded', [$this, 'deductPointsOnOrderRefunded'], 10, 1);
+
         // Affichage du solde de points dans le compte client (optionnel)
         add_action('woocommerce_account_dashboard', [$this, 'displayPointsBalance']);
     }
@@ -68,6 +71,50 @@ class LoyaltyService
 
         // Vérifier si le client atteint le palier pour générer un coupon
         $this->checkAndGenerateReward($customer_id);
+    }
+
+    /**
+     * Déduit les points de fidélité lorsqu'une commande est remboursée.
+     */
+    public function deductPointsOnOrderRefunded(int $order_id): void
+    {
+        $order = wc_get_order($order_id);
+
+        if (! $order) {
+            return;
+        }
+
+        // Seulement si des points ont été attribués pour cette commande
+        if (! $order->get_meta('_loyalty_points_awarded')) {
+            return;
+        }
+
+        // Protection contre les doubles déductions
+        if ($order->get_meta('_loyalty_points_refunded')) {
+            return;
+        }
+
+        $customer_id = $order->get_customer_id();
+
+        if (! $customer_id || $customer_id <= 0) {
+            return;
+        }
+
+        $points_to_deduct = (int) $order->get_meta('_loyalty_points_amount');
+
+        if ($points_to_deduct <= 0) {
+            return;
+        }
+
+        // Déduire les points et loguer comme 'refunded'
+        $current_points = $this->getCustomerPoints($customer_id);
+        $new_total = max(0, $current_points - $points_to_deduct);
+        update_user_meta($customer_id, '_loyalty_points', $new_total);
+        $this->logPointsHistory($customer_id, -$points_to_deduct, 'refunded', $order_id);
+
+        // Marquer la commande pour éviter les doublons
+        $order->update_meta_data('_loyalty_points_refunded', '1');
+        $order->save();
     }
 
     /**

@@ -21,6 +21,7 @@ const giftCardData = (nonce, buyerEmail) => ({
 
   // Étape 2 — Configuration croisière
   season: 'low',
+  noSeasonality: false,
   passengers: {},
   options: {},
 
@@ -78,7 +79,8 @@ const giftCardData = (nonce, buyerEmail) => ({
   get canGoToStep3() {
     if (this.mode !== 'cruise') return false
     const totalPassengers = Object.values(this.passengers).reduce((a, b) => a + b, 0)
-    return totalPassengers > 0 && !!this.season && this.totalPrice > 0
+    const seasonOk = this.noSeasonality || !!this.season
+    return totalPassengers > 0 && seasonOk && this.totalPrice > 0
   },
 
   get canAddToCart() {
@@ -136,6 +138,10 @@ const giftCardData = (nonce, buyerEmail) => ({
           this.highSeasonLabel = data.high_season_label || ''
           this.pricingRows = data.pricing_rows || []
           this.optionsPricing = data.options_pricing || []
+          this.noSeasonality = !!data.no_seasonality
+          if (this.noSeasonality) {
+            this.season = 'low' // prix unique = colonne basse saison
+          }
         }
       })
       .catch(() => {

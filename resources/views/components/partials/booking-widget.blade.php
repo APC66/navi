@@ -378,6 +378,7 @@
 
             @if($giftCardUrl)
               <a
+                target="_blank"
                 href="{{ $giftCardUrl }}?cruise_id={{ $cruiseId }}"
                 class="mt-3 flex w-full bg-white items-center justify-center rounded-full border-2 border-secondary px-6 py-4 text-xl font-bold text-secondary transition-all hover:-translate-y-1 hover:bg-secondary hover:text-primary-800"
               >

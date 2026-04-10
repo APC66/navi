@@ -292,7 +292,7 @@
 
                       {{-- Bouton Réserver (masqué si non sélectionnable) --}}
                       <a
-                        :href="sailing.cruise_url + '?sailing_id=' + sailing.id"
+                        :href="sailing.cruise_url + '?sailing_id=' + sailing.id + '#booking-area'"
                         x-show="getCardStyle(sailing).isSelectable"
                         class="z-10 mb-2 w-full rounded bg-white py-2 text-xs font-bold shadow-md transition-shadow hover:shadow hover:bg-secondary"
                         :class="getCardStyle(sailing).btnText"

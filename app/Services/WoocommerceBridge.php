@@ -36,6 +36,9 @@ class WoocommerceBridge
 
         add_action('manage_posts_extra_tablenav', [$this, 'addCleanupGiftCardButton']);
         add_action('admin_action_cleanup_gift_card_products', [$this, 'cleanupGiftCardProducts']);
+
+        // Masquer les images produits dans les emails de récapitulatif de commande
+        add_filter('woocommerce_email_order_items_args', [$this, 'hideProductImagesInEmail']);
     }
 
     /**
@@ -46,6 +49,7 @@ class WoocommerceBridge
         return array_merge($hidden, [
             '_gc_cruise_id',
             '_gc_season',
+            '_gc_no_seasonality',
             '_gc_passengers',
             '_gc_options',
             '_gc_amount',
@@ -92,6 +96,7 @@ class WoocommerceBridge
         if ($mode === 'cruise') {
             $cruiseId = absint($item->get_meta('_gc_cruise_id'));
             $season = $item->get_meta('_gc_season');
+            $noSeasonality = $item->get_meta('_gc_no_seasonality') === '1';
 
             if ($cruiseId) {
                 $inject[] = (object) [
@@ -103,13 +108,15 @@ class WoocommerceBridge
                 ];
             }
 
-            $inject[] = (object) [
-                'id' => $idBase++,
-                'key' => '_gc_display_season',
-                'display_key' => 'Saison',
-                'value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
-                'display_value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
-            ];
+            if (! $noSeasonality) {
+                $inject[] = (object) [
+                    'id' => $idBase++,
+                    'key' => '_gc_display_season',
+                    'display_key' => 'Saison',
+                    'value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+                    'display_value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
+                ];
+            }
 
             // Passagers
             $passengersRaw = $item->get_meta('_gc_passengers');
@@ -487,13 +494,19 @@ class WoocommerceBridge
         }
     }
 
+    /**
+     * Rend la quantité non modifiable dans le panier pour tous les articles.
+     * Les cartes cadeaux affichent toujours 1 (quantité forcée).
+     */
     public function set_quantity_to_unique_product($quantity, $cart_item_key, $cart_item)
     {
         if (isset($cart_item['gift_card_data'])) {
             return '<span class="text-white">1</span>';
         }
 
-        return $quantity;
+        $qty = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 1;
+
+        return '<span class="cart-item-qty">'.$qty.'</span>';
     }
 
     public function addCompanyFields($fields): array
@@ -537,6 +550,16 @@ class WoocommerceBridge
             }
             echo '</div>';
         }
+    }
+
+    /**
+     * Masque les images produits dans les emails de récapitulatif de commande.
+     */
+    public function hideProductImagesInEmail(array $args): array
+    {
+        $args['show_image'] = false;
+
+        return $args;
     }
 
     public function addCleanupGiftCardButton(string $which): void

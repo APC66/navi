@@ -128,7 +128,7 @@ class PlanningController
                 'id' => $sailing->ID,
                 'datetime' => $sailing->start,
                 'return_time' => $sailing->end ?? get_post_meta($sailing->ID, 'sailing_config_return_date', true),
-                'cruise_title' => $cruise->title,
+                'cruise_title' => html_entity_decode($cruise->title, ENT_QUOTES),
                 'cruise_url' => $cruise->permalink,
                 'port' => $harborName,
                 'port_id' => $harborId,

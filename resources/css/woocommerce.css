@@ -171,7 +171,13 @@ html body.woocommerce-account .woocommerce form .form-row label{
 .woocommerce table.cart th.product-name,
 .woocommerce table.cart td.product-name {
   width: auto !important;
+  font-weight: 700;
 }
+
+.woocommerce table.cart td.product-name dl{
+  font-weight:400;
+}
+
 
 /* Bouton supprimer */
 .woocommerce table.shop_table .product-remove a.remove {
@@ -203,6 +209,16 @@ html body.woocommerce-account .woocommerce form .form-row label{
 
 .woocommerce table.shop_table .product-thumbnail img {
   @apply w-14 h-14 object-cover rounded-xl shadow-sm;
+}
+
+/* Titre produit en gras dans le panier */
+.woocommerce table.cart td.product-name a {
+  @apply font-bold;
+}
+
+/* Quantité statique (non modifiable) */
+.woocommerce table.cart td.product-quantity .cart-item-qty {
+  @apply font-bold text-primary-900;
 }
 
 /* Input quantité dans le panier */
@@ -301,6 +317,10 @@ html body.woocommerce-account .woocommerce form .form-row label{
   @apply w-full text-lg py-4;
 }
 
+.woocommerce-checkout-payment a{
+  @apply text-secondary;
+}
+
 /* Champs radio agency */
 .agency-client-type-field .woocommerce-input-wrapper {
   @apply grid grid-cols-[auto_1fr];
@@ -363,4 +383,10 @@ html body.woocommerce-account .woocommerce form .form-row label{
 }
 .woocommerce-account .addresses .title .edit {
   @apply text-xs font-bold text-secondary hover:underline;
+}
+
+/* ThankYou */
+
+.woocommerce-checkout .woocommerce-thankyou-order-received{
+  @apply text-4xl text-center font-medium mb-16;
 }

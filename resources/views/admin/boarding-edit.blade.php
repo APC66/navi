@@ -134,12 +134,12 @@
               </label>
               <select name="sailing_id" id="sailing_id" style="width: 100%; max-width: 400px">
                 <option value="{{ $currentSailing->ID }}" selected>
-                  (Actuel) {{ $currentSailing->start }} - {{ $currentSailing->title }}
+                  (Actuel) {{ $currentSailing->start }} - {{ html_entity_decode($currentSailing->title, ENT_QUOTES) }}
                 </option>
                 @foreach ($futureSailings as $sailing)
                   @if ($sailing->ID != $currentSailing->ID)
                     <option value="{{ $sailing->ID }}">
-                      {{ $sailing->start }} - {{ $sailing->title }} ({{ $sailing->quota }}
+                      {{ (new \DateTime($sailing->start))->format('d-m-Y H:i:s') }} - {{ html_entity_decode($sailing->title, ENT_QUOTES) }} ({{ $sailing->quota }}
                       places)
                     </option>
                   @endif

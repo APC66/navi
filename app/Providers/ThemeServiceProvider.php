@@ -272,6 +272,7 @@ class ThemeServiceProvider extends SageServiceProvider
                 'logo_url' => get_theme_file_uri('public/images/logo.png'),
                 'site_name' => get_bloginfo('name'),
                 'bg_image_url' => get_field('gift_card_bg_image', 'option') ?: '',
+                'footer_content' => get_field('gift_card_footer', 'option') ?: '',
             ];
 
             $html = \Roots\view('pdf.gift-card', $viewData)->render();

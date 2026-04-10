@@ -21,7 +21,7 @@
                 value="{{ $sailing->ID }}"
                 {{ $selectedSailingId == $sailing->ID ? 'selected' : '' }}
               >
-                {{ $sailing->start }} - {{ $sailing->title }}
+                {{ (new \DateTime($sailing->start))->format('Y/m/d H:i:s') }} - {{ html_entity_decode($sailing->title, ENT_QUOTES) }}
               </option>
             @endforeach
           </select>
@@ -53,10 +53,11 @@
         "
       >
         <div>
-          <h2 style="margin: 0">{{ $currentSailing->title }}</h2>
+          <h2 style="margin: 0">{{ html_entity_decode($currentSailing->title, ENT_QUOTES)}}</h2>
           <p style="margin: 5px 0">
             <strong>Date :</strong>
             {{ date_i18n('l d F Y', strtotime($currentSailing->start)) }} |
+            <strong>Heure :</strong>
             <strong>Heure :</strong>
             {{ date('H:i', strtotime($currentSailing->start)) }} |
             <strong>Total Passagers :</strong>
@@ -337,7 +338,7 @@
           @foreach ($futureSailings as $sailing)
             @if ($sailing->ID != $selectedSailingId)
               <option value="{{ $sailing->ID }}">
-                {{ $sailing->start }} - {{ $sailing->title }} ({{ $sailing->quota }} places)
+                {{ (new \DateTime($sailing->start))->format('d-m-Y H:i:s') }} - {{ html_entity_decode($sailing->title, ENT_QUOTES) }} ({{ $sailing->quota }} places)
               </option>
             @endif
           @endforeach
@@ -353,7 +354,7 @@
       <p class="description" style="font-size: 12px; margin-top: 2px; color: #666">
         Positif = Supplément à payer.
         <br />
-        Négatif = Avoir à générer.
+        Négatif = Avoir à générer. (coupon généré automatiquement)
         <br />
         0 = Pas de changement.
       </p>

@@ -29,6 +29,10 @@ class LoyaltySettingsPage
         // Ajouter une colonne "Points de fidélité" dans la liste des utilisateurs
         add_filter('manage_users_columns', [$this, 'addLoyaltyPointsColumn']);
         add_filter('manage_users_custom_column', [$this, 'displayLoyaltyPointsColumn'], 10, 3);
+
+        // Afficher les points sur la fiche client dans l'admin
+        add_action('show_user_profile', [$this, 'displayPointsOnUserProfile']);
+        add_action('edit_user_profile', [$this, 'displayPointsOnUserProfile']);
     }
 
     /**
@@ -172,6 +176,77 @@ class LoyaltySettingsPage
         $stats .= '</div>';
 
         return $stats;
+    }
+
+    /**
+     * Affiche le solde de points de fidélité sur la fiche client dans l'admin.
+     */
+    public function displayPointsOnUserProfile(\WP_User $user): void
+    {
+        $points = (int) (get_user_meta($user->ID, '_loyalty_points', true) ?: 0);
+        $threshold = (int) get_option('loyalty_points_threshold', 500);
+        $history = get_user_meta($user->ID, '_loyalty_points_history', true);
+        $history = is_array($history) ? array_reverse(array_slice($history, -5)) : [];
+        ?>
+        <h2>Programme de Fidélité</h2>
+        <table class="form-table">
+            <tr>
+                <th><label>Solde de points</label></th>
+                <td>
+                    <strong style="font-size: 1.3em;"><?php echo esc_html($points); ?> pts</strong>
+                    <p class="description">
+                        <?php if ($points >= $threshold) { ?>
+                            <span style="color: #2e7d32;">Palier atteint — un coupon sera généré à la prochaine commande terminée.</span>
+                        <?php } else { ?>
+                            <?php echo esc_html($threshold - $points); ?> pts restants avant la prochaine récompense (palier : <?php echo esc_html($threshold); ?> pts).
+                        <?php } ?>
+                    </p>
+                </td>
+            </tr>
+            <?php if (! empty($history)) { ?>
+            <tr>
+                <th><label>Historique récent</label></th>
+                <td>
+                    <table style="border-collapse: collapse; min-width: 400px;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 1px solid #ccd0d4;">
+                                <th style="padding: 4px 12px 4px 0;">Date</th>
+                                <th style="padding: 4px 12px 4px 0;">Points</th>
+                                <th style="padding: 4px 12px 4px 0;">Type</th>
+                                <th style="padding: 4px 0;">Commande</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($history as $entry) {
+                                $type_labels = [
+                                    'earned' => '<span style="color:#2e7d32;">Gagné</span>',
+                                    'redeemed' => '<span style="color:#b71c1c;">Utilisé</span>',
+                                    'refunded' => '<span style="color:#e65100;">Remboursé</span>',
+                                ];
+                                $label = $type_labels[$entry['type']] ?? esc_html($entry['type']);
+                                $sign = $entry['points'] > 0 ? '+' : '';
+                                ?>
+                            <tr style="border-bottom: 1px solid #f0f0f1;">
+                                <td style="padding: 4px 12px 4px 0;"><?php echo esc_html($entry['date']); ?></td>
+                                <td style="padding: 4px 12px 4px 0;"><?php echo $sign.esc_html($entry['points']); ?></td>
+                                <td style="padding: 4px 12px 4px 0;"><?php echo $label; ?></td>
+                                <td style="padding: 4px 0;">
+                                    <?php if (! empty($entry['order_id'])) { ?>
+                                        <a href="<?php echo esc_url(get_edit_post_link($entry['order_id'])); ?>">#<?php echo esc_html($entry['order_id']); ?></a>
+                                    <?php } else { ?>
+                                        —
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                    <p class="description">5 dernières opérations.</p>
+                </td>
+            </tr>
+            <?php } ?>
+        </table>
+        <?php
     }
 
     /**
