@@ -10,10 +10,12 @@
 
   <div class="relative mx-auto max-w-[1920px] px-4">
     @if (! empty($title_group['highlight']) || ! empty($title_group['suffix']))
-      <x-partials.section-header :group="$title_group" />
+      <div data-aos="fade-up" data-aos-duration="600">
+        <x-partials.section-header :group="$title_group" />
+      </div>
     @endif
 
-    <div class="relative mx-10">
+    <div class="relative mx-10" data-aos="fade-up" data-aos-duration="700" data-aos-delay="150">
       <button
         class="swiper-button-prev-custom text-primary-1000 bg-secondary absolute top-1/2 -left-4 z-20 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-white disabled:invisible disabled:opacity-0 md:-left-6 lg:-left-12"
       >
@@ -85,7 +87,7 @@
                   ></div>
 
                   <div
-                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center group-hover/card:opacity-0 transition"
+                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center transition group-hover/card:opacity-0"
                   >
                     <h3
                       class="font-heading mb-2 text-xl leading-tight font-bold tracking-wide text-white uppercase drop-shadow-md"
@@ -115,8 +117,14 @@
       </div>
       <div class="swiper-pagination relative !bottom-0 mt-8 flex justify-center md:hidden"></div>
     </div>
+
     @if ($cta)
-      <div class="mt-12 text-center">
+      <div
+        class="mt-12 text-center"
+        data-aos="fade-up"
+        data-aos-duration="600"
+        data-aos-delay="200"
+      >
         <x-partials.button :group="$cta" class="w-full" />
       </div>
     @endif

@@ -1,5 +1,5 @@
 <div
-  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative min-h-screen bg-gradient-to-b from-[#182646] from-20% via-20% font-sans pb-16"
+  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative bg-gradient-to-b from-[#182646] from-20% via-20% font-sans pb-16"
   x-data="giftCard('{{ wp_create_nonce('wp_rest') }}', '{{ $buyerEmail }}')"
 >
   <img

@@ -15,7 +15,7 @@
   @endif
 
   <div class="relative z-10 container mx-auto px-4">
-    <div class="mb-16 text-center">
+    <div class="mb-16 text-center" data-aos="fade-up" data-aos-duration="600">
       @if ($title_group)
         <x-partials.section-header :group="$title_group" :is-dark="true" />
       @endif
@@ -42,9 +42,12 @@
       @endphp
 
       <div class="{{ $gridClass }} grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-3">
-        @foreach ($items as $item)
+        @foreach ($items as $index => $item)
           <div
             class="group/item flex flex-col items-center text-center transition-transform duration-300 hover:-translate-y-1"
+            data-aos="fade-up"
+            data-aos-duration="500"
+            data-aos-delay="{{ ($index % 3) * 100 }}"
           >
             @if ($item['icon'])
               <div class="mb-4 flex h-24 w-24 items-center justify-center">
@@ -68,8 +71,9 @@
           </div>
         @endforeach
       </div>
-      @if($content)
-        <div class="contentText">
+
+      @if ($content)
+        <div class="contentText" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
           {!! $content !!}
         </div>
       @endif

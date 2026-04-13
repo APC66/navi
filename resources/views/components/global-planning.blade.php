@@ -1,5 +1,5 @@
 <div
-  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative min-h-screen bg-gradient-to-b from-[#182646] from-20% via-20% font-sans"
+  class="bg-primary-1000 via-primary-1000 to-primary-1000 relative pb-32 bg-gradient-to-b from-[#182646] from-20% via-20% font-sans"
 >
   <img
     src="@asset('resources/images/waves.svg')"

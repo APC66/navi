@@ -11,33 +11,40 @@
 
   <div class="relative z-10 container mx-auto px-4 py-12">
     <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-24">
-
-      {{-- Images en premier sur mobile --}}
-      <div class="relative flex min-h-[260px] justify-center order-1 md:min-h-[400px] lg:min-h-[500px] lg:order-1 lg:ml-10 lg:justify-start">
+      {{-- Colonne images --}}
+      <div
+        class="relative order-1 flex min-h-[260px] justify-center md:min-h-[400px] lg:order-1 lg:ml-10 lg:min-h-[500px] lg:justify-start"
+      >
         @if ($image_2)
-          <div class="shadow-image-card rounded-card absolute top-1/2 left-1/2 z-20
-            h-[340px] w-[215px]
-            md:h-[500px] md:w-[320px]
-            lg:h-[660px] lg:w-[420px]
-            -translate-1/2 -rotate-6 transform overflow-hidden">
+          <div
+            class="shadow-image-card rounded-card absolute top-1/2 left-1/2 z-20 h-[340px] w-[215px] -translate-1/2 -rotate-6 transform overflow-hidden md:h-[500px] md:w-[320px] lg:h-[660px] lg:w-[420px]"
+            data-aos="fade-right"
+            data-aos-duration="700"
+            data-aos-delay="100"
+          >
             <img src="{{ $image_2 }}" alt="Image décor" class="h-full w-full object-cover" />
           </div>
         @endif
 
         @if ($image_1)
-          <div class="shadow-image-card rounded-card absolute top-1/2 left-[calc(50%-3rem)] z-10
-            h-[340px] w-[215px]
-            md:h-[500px] md:w-[320px]
-            lg:h-[660px] lg:w-[420px]
-            lg:left-[calc(50%-5rem)]
-            -translate-1/2 -rotate-20 transform overflow-hidden">
+          <div
+            class="shadow-image-card rounded-card absolute top-1/2 left-[calc(50%-3rem)] z-10 h-[340px] w-[215px] -translate-1/2 -rotate-20 transform overflow-hidden md:h-[500px] md:w-[320px] lg:left-[calc(50%-5rem)] lg:h-[660px] lg:w-[420px]"
+            data-aos="fade-right"
+            data-aos-duration="700"
+            data-aos-delay="250"
+          >
             <img src="{{ $image_1 }}" alt="Image principale" class="h-full w-full object-cover" />
           </div>
         @endif
       </div>
 
-      {{-- Texte en second sur mobile --}}
-      <div class="text-left order-2 lg:order-2">
+      {{-- Colonne texte --}}
+      <div
+        class="order-2 text-left lg:order-2"
+        data-aos="fade-left"
+        data-aos-duration="700"
+        data-aos-delay="200"
+      >
         @if ($title_group)
           <x-partials.section-header :group="$title_group" />
         @endif
@@ -52,7 +59,6 @@
           </div>
         @endif
       </div>
-
     </div>
   </div>
 </section>

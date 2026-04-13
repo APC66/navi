@@ -46,7 +46,12 @@
         class="-z-10 h-auto max-h-[360px] w-full"
       />
     </div>
-    <div class="relative container mx-auto flex items-center justify-between px-2 py-4">
+
+    <div
+      class="relative container mx-auto flex items-center justify-between px-2 py-4"
+      data-aos="fade-down"
+      data-aos-duration="600"
+    >
       <span class="text-sm font-medium tracking-wider text-white">
         <span class="text-primary-100">Résultats :</span>
         <span x-text="totalCount"></span>
@@ -54,6 +59,9 @@
       </span>
       <button
         @click="filterOpen = true"
+        data-aos="fade-left"
+        data-aos-delay="200"
+        data-aos-duration="600"
         class="hover:text-secondary inline-flex cursor-pointer items-center font-bold tracking-wide transition-colors"
       >
         Filtrer par
@@ -68,6 +76,7 @@
       </button>
     </div>
 
+    {{-- Drawer filtres — animations gérées par Alpine x-transition --}}
     <div
       class="fixed inset-0 z-[60] flex justify-end"
       role="dialog"
@@ -134,7 +143,6 @@
                   Tarif ordre croissant
                 </span>
               </label>
-
               <label class="group flex cursor-pointer items-center">
                 <input
                   type="radio"
@@ -151,7 +159,6 @@
                   Tarif ordre décroissant
                 </span>
               </label>
-
               <label class="group flex cursor-pointer items-center">
                 <input
                   type="radio"
@@ -171,7 +178,6 @@
             </div>
           </div>
 
-          {{-- 2. TAGS (Filtres) --}}
           <div>
             <h3 class="mb-4 font-bold tracking-wide uppercase">FILTRES</h3>
             <div class="flex flex-wrap gap-3">
@@ -187,7 +193,6 @@
             </div>
           </div>
 
-          {{-- 3. CATÉGORIES --}}
           <div>
             <h3 class="mb-4 font-bold tracking-wide uppercase">CATÉGORIES</h3>
             <div class="divide-primary-600 space-y-4 divide-y">
@@ -211,7 +216,6 @@
                   ></span>
                 </div>
               </div>
-
               @foreach ($categories as $cat)
                 <div
                   class="flex cursor-pointer items-center justify-between pb-4"
@@ -239,6 +243,7 @@
         </div>
       </div>
     </div>
+
     <div class="relative container mx-auto min-h-[400px] px-4 py-6">
       {{-- Loader --}}
       <div
@@ -268,18 +273,32 @@
       </div>
 
       <div id="cruise-results-container">
-        <div x-show="gridHtml === ''" x-ref="phpGrid">
+        {{-- Grille PHP initiale : x-show remplacé par :style pour que AOS puisse observer l'élément --}}
+        <div
+          x-ref="phpGrid"
+          :style="gridHtml !== '' ? 'display:none' : ''"
+          data-aos="fade-up"
+          data-aos-duration="700"
+          data-aos-delay="100"
+        >
           @include('partials.cruise-grid', ['query' => $initialQuery])
         </div>
 
+        {{-- Grille dynamique JS — animée via cruise-filters.js --}}
         <div x-html="gridHtml" x-show="gridHtml !== ''" x-ref="jsGrid"></div>
       </div>
 
-      <div class="mt-16 flex justify-center" x-show="currentPage < maxPages">
+      <div
+        class="mt-16 flex justify-center"
+        x-show="currentPage < maxPages"
+        data-aos="fade-up"
+        data-aos-duration="600"
+        data-aos-offset="50"
+      >
         <button
           @click="loadMore()"
           :disabled="loadingMore"
-          class="inline-flex items-center !no-underline justify-center px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-button bg-secondary !text-primary-900 hover:bg-white"
+          class="shadow-button bg-secondary !text-primary-900 inline-flex items-center justify-center rounded-full px-8 py-3 font-bold !no-underline transition-all duration-300 hover:bg-white"
         >
           <span x-show="!loadingMore">Voir plus de croisières</span>
           <span x-show="loadingMore" class="flex items-center">

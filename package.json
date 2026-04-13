@@ -38,6 +38,7 @@
     "@fullcalendar/list": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
     "alpinejs": "^3.15.0",
+    "aos": "^2.3.4",
     "swiper": "^12.1.0"
   }
 }

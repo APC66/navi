@@ -155,6 +155,8 @@
                     {{ $pax['phone'] }}
                     <br />
                     <a href="mailto:{{ $pax['customer_email'] }}">{{ $pax['customer_email'] }}</a>
+                    <br />
+                    {{$pax['country'] ?? ''}}
                   </td>
                   <td>{!! $pax['passengers_summary'] !!}</td>
                   <td>{{ $pax['options_summary'] ?: '-' }}</td>

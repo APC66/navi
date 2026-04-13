@@ -74,12 +74,12 @@
               </radialGradient>
             </defs>
           </svg>
-          <img
-            src="@asset('resources/images/logo-blanc.svg')"
-            alt="Logo Blanc"
-            class="absolute top-2 md:top-4 left-1/2 z-50 h-auto w-[54px] md:w-[108px] -translate-x-1/2 object-cover"
-          />
         </a>
+        <img
+          src="@asset('resources/images/logo-blanc.svg')"
+          alt="Logo Blanc"
+          class="absolute pointer-events-none top-2 md:top-4 left-1/2 z-50 h-auto w-[54px] md:w-[108px] -translate-x-1/2 object-cover"
+        />
       </div>
     </div>
 
