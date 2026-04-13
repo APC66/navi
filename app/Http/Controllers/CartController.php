@@ -110,6 +110,13 @@ class CartController
             // Force le rechargement de la session sinon le panier se met pas a jour avec le nouvel item
             WC()->cart->get_cart();
 
+            // Écraser un éventuel item existant pour le même départ
+            foreach (WC()->cart->get_cart() as $key => $item) {
+                if (isset($item['booking_data']['sailing_id']) && (int) $item['booking_data']['sailing_id'] === $sailingId) {
+                    WC()->cart->remove_cart_item($key);
+                }
+            }
+
             $cartKey = WC()->cart->add_to_cart($productId, 1, 0, [], $cartItemData);
             WC()->session->save_data();
 

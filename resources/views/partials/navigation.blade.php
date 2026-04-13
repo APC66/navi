@@ -63,16 +63,16 @@
       <div class="py-10 mx-auto">
         <hr class="w-24 border-b border-primary-200 mx-auto ">
       </div>
-      <div class="flex items-center justify-center gap-4 pb-6">
+      <div class="flex md:hidden items-center justify-center gap-4 pb-6">
         <a
           href="{{ get_permalink(get_option('woocommerce_myaccount_page_id')) }}"
-          class="hidden bg-secondary text-primary-1000 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+          class="bg-secondary text-primary-1000 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
         >
           @svg('user', 'h-6 w-6')
         </a>
         <a
           href="{{ get_permalink(get_option('woocommerce_cart_page_id')) }}"
-          class="hidden bg-secondary text-primary-1000 relative mr-2 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
+          class="bg-secondary text-primary-1000 relative mr-2 md:inline-flex items-center justify-center rounded-full p-2 hover:bg-white"
         >
           @svg('cart', 'h-6 w-6')
           <div
@@ -90,10 +90,10 @@
         <div
           class="absolute inset-0 overflow-y-auto  transition-all duration-500 ease-in-out"
           :class="{'translate-x-0 opacity-100 z-20 pointer-events-auto': activePanel === 'main','-translate-x-1/4 opacity-0 pointer-events-none z-10': panelStack.includes('main') && activePanel !== 'main', 'translate-x-full opacity-0 pointer-events-none z-20': !panelStack.includes('main') }" >
-          <ul class="flex flex-col space-y-8 px-4 lg:px-10">
+          <ul class="flex flex-col space-y-2 md:space-y-4 lg:space-y-8 px-4 lg:px-10">
             @if (!empty($menuItems))
               @foreach ($menuItems as $item)
-                <li class="{{$item->classes ?? ''}} px-4 lg:px-8 py-4">
+                <li class="{{$item->classes ?? ''}} px-4 py-4 lg:px-8">
                   @if (!empty($item->children))
                     <button
                       @click="openSubPanel('panel-{{ $item->id }}')"
@@ -146,7 +146,7 @@
                 </div>
 
 
-                <ul class="flex flex-col py-4 space-y-4 flex-1">
+                <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                   @foreach ($item->children as $child)
                     <li class="{{$child->classes ?? ''}} px-4 lg:px-8 py-4">
                       {{-- S'il y a un Niveau 2 (Sous-sous-menu) --}}
@@ -194,7 +194,7 @@
                       </button>
                     </div>
 
-                    <ul class="flex flex-col py-4 space-y-4 flex-1">
+                    <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                       @foreach ($child->children as $grandChild)
                         <li class="{{$grandChild->classes ?? ''}} px-4 lg:px-8 py-4">
                           <a href="{{ $grandChild->url }}"
@@ -214,7 +214,7 @@
       </div>
 
       {{-- Pied du Menu --}}
-      <div class="px-4 lg:px-8 py-12 bg-primary-1000">
+      <div class="px-4 lg:px-8 py-4 bg-primary-1000">
         <hr class="w-24 border-b border-b-primary-200 mx-auto my-12">
         <x-partials.socials container-class="flex justify-center items-center gap-4 " />
       </div>

@@ -294,6 +294,10 @@ html body.woocommerce-account .woocommerce form .form-row label{
   @apply border-primary-200 text-primary-800;
 }
 
+.woocommerce-checkout .woocommerce-terms-and-conditions-checkbox-text {
+  @apply text-white;
+}
+
 /* Zone de paiement */
 .woocommerce-checkout #payment {
   @apply bg-primary-900 text-white rounded-2xl p-6 mt-4 border border-primary-800;
@@ -382,7 +386,6 @@ html body.woocommerce-account .woocommerce form .form-row label{
   @apply bg-white p-6 md:p-8 rounded-2xl border border-primary-200 not-italic leading-relaxed text-primary-800 shadow-sm;
 }
 .woocommerce-account .addresses .title .edit {
-  @apply text-xs font-bold text-secondary hover:underline;
 }
 
 /* ThankYou */

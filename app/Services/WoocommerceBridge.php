@@ -27,6 +27,8 @@ class WoocommerceBridge
         add_filter('woocommerce_cart_item_quantity', [$this, 'set_quantity_to_unique_product'], 10, 3);
 
         add_filter('woocommerce_checkout_fields', [$this, 'addCompanyFields']);
+        add_filter('woocommerce_default_address_fields', [$this, 'setDefaultField']);
+
         add_action('woocommerce_checkout_create_order', [$this, 'saveCompanyFields'], 10, 2);
         add_action('woocommerce_admin_order_data_after_billing_address', [$this, 'displayCompanyFieldsInAdmin'], 10, 1);
 
@@ -524,6 +526,18 @@ class WoocommerceBridge
             'class' => ['form-row-wide'],
             'priority' => 35,
         ];
+
+        return $fields;
+    }
+
+    public function setDefaultField($fields)
+    {
+        $optional = ['address_1', 'address_2', 'city', 'state', 'postcode'];
+        foreach ($optional as $key) {
+            if (isset($fields[$key])) {
+                $fields[$key]['required'] = false;
+            }
+        }
 
         return $fields;
     }

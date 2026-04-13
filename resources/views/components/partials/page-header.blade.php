@@ -26,7 +26,7 @@
       <span class="px-4">/</span>
 
       <span class="text-secondary max-w-[200px] truncate md:max-w-none">
-        {!! $title ?? get_the_title()  !!}
+        {!! $titleFull ?? get_the_title()  !!}
       </span>
     </div>
     @if($showTitle)

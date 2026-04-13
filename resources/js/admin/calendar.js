@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnConfirmCancel.addEventListener('click', function() {
       // Récupération du statut choisi dans le selecteur (ajouté dans la vue précédemment)
       const statusSelect = document.getElementById('cancel-status-select');
-      const newStatus = statusSelect ? statusSelect.value : 'Annulé'; // Fallback
+      const newStatus = statusSelect ? statusSelect.value : 'Annulé'; // FallbackNon a
 
       if (!confirm('Confirmer le passage au statut "' + newStatus + '" ?')) return;
 
@@ -167,7 +167,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Erreur chargement événements.')
       },
     },
+    eventDisplay: 'block',
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false },
+
+    eventDidMount: function (info) {
+      const start = info.event.start
+      const end = info.event.end
+      const isMultiDay = end && (end - start) > 24 * 60 * 60 * 1000
+      if (isMultiDay) {
+        info.el.style.backgroundImage = 'repeating-linear-gradient(135deg, transparent, transparent 5px, rgba(0,0,0,0.08) 5px, rgba(0,0,0,0.08) 10px)'
+        info.el.style.opacity = '0.85'
+      }
+    },
 
     eventClick: function (info) {
       info.jsEvent.preventDefault()

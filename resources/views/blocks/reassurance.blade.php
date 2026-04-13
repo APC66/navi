@@ -68,6 +68,11 @@
           </div>
         @endforeach
       </div>
+      @if($content)
+        <div class="contentText">
+          {!! $content !!}
+        </div>
+      @endif
     @endif
   </div>
 </section>

@@ -24,6 +24,7 @@ class Reassurance extends Block
             'subheader' => get_field('subheader_group'),
             'items' => get_field('items'),
             'bg_image' => get_field('bg_image'),
+            'content' => get_field('content'),
         ];
     }
 
@@ -50,6 +51,7 @@ class Reassurance extends Block
             ->addText('title', ['label' => 'Titre (Jaune)', 'wrapper' => ['width' => '40']])
             ->addTextarea('text', ['label' => 'Description (Blanc)', 'rows' => 2, 'wrapper' => ['width' => '40']])
             ->endRepeater()
+            ->addWysiwyg('content', ['label' => 'Contenu'])
 
             ->addTab('style', ['label' => 'Apparence'])
             ->addImage('bg_image', ['label' => 'Image de fond', 'return_format' => 'url']);
