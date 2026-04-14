@@ -350,6 +350,49 @@ class BoardingListPage
 
         $order->save();
 
+        // Notification email au client si la date a changé
+        if ($dateChanged) {
+            $clientEmail = $order->get_billing_email();
+            if ($clientEmail) {
+                $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
+                $oldDateFormatted = '';
+                try {
+                    $oldSailingObj = Sailing::find($originalSailingId);
+                    $oldDateFormatted = $oldSailingObj ? (new \DateTime($oldSailingObj->start))->format('d/m/Y à H:i') : '';
+                } catch (\Exception $e) {
+                }
+                $newDateFormatted = '';
+                try {
+                    $newDateFormatted = (new \DateTime($newSailing->start))->format('d/m/Y à H:i');
+                } catch (\Exception $e) {
+                    $newDateFormatted = $newSailing->start;
+                }
+                $siteName = get_bloginfo('name');
+
+                $subject = "[$siteName] Votre réservation a été reprogrammée — $newSailingTitle";
+
+                $body = "Bonjour $clientName,\n\n";
+                $body .= "Votre réservation (commande #{$order->get_id()}) a été reprogrammée.\n\n";
+                $body .= "--- RÉCAPITULATIF ---\n\n";
+                if ($oldDateFormatted) {
+                    $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
+                }
+                $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
+                if ($newTotalPax !== $oldTotalPax) {
+                    $body .= "\nNombre de passagers : $oldTotalPax → $newTotalPax\n";
+                }
+                if ($manualPriceAdj > 0) {
+                    $body .= "\n💰 Un supplément de {$manualPriceAdj}€ reste à régler. Nous vous contacterons prochainement.\n";
+                } elseif ($manualPriceAdj < 0) {
+                    $body .= "\n💰 Un remboursement de ".abs($manualPriceAdj)."€ sera effectué prochainement.\n";
+                }
+                $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                $body .= "Bonne navigation !\n$siteName";
+
+                wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
+            }
+        }
+
         // Redirection vers la liste
         wp_redirect(admin_url('admin.php?page=navi-boarding-list&sailing_id='.$targetSailingId.'&message=Réservation mise à jour'));
         exit;
@@ -382,6 +425,7 @@ class BoardingListPage
         if (! $newSailing) {
             return 0;
         }
+        $oldSailing = Sailing::find($oldSailingId);
         $processedCount = 0;
 
         foreach ($orderIds as $orderId) {
@@ -440,16 +484,59 @@ class BoardingListPage
                 if ($paxToRemove > 0) {
                     $note .= "\n⚠️ MODIFICATION : $paxToRemove passager(s) supprimé(s).";
                 }
+                $couponCode = null;
                 if ($priceAdjustment > 0) {
                     $note .= "\n💰 AJUSTEMENT : Supplément de {$priceAdjustment}€ dû.";
                     $order->update_meta_data('_balance_due', $priceAdjustment);
                 } elseif ($priceAdjustment < 0) {
                     $refundAmount = abs($priceAdjustment);
-                    $code = $this->createCouponForOrder($order, $refundAmount, 'Avoir partiel');
-                    $note .= "\n🎟️ AJUSTEMENT : Avoir de {$refundAmount}€ généré (Code : {$code})";
+                    $couponCode = $this->createCouponForOrder($order, $refundAmount, 'Avoir partiel');
+                    $note .= "\n🎟️ AJUSTEMENT : Avoir de {$refundAmount}€ généré (Code : {$couponCode})";
                 }
                 $order->add_order_note($note);
                 $order->save();
+
+                // Notification email au client
+                $clientEmail = $order->get_billing_email();
+                if ($clientEmail) {
+                    $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
+                    $oldDateFormatted = '';
+                    try {
+                        $oldDateFormatted = $oldSailing ? (new \DateTime($oldSailing->start))->format('d/m/Y à H:i') : '';
+                    } catch (\Exception $e) {
+                    }
+                    $newDateFormatted = '';
+                    try {
+                        $newDateFormatted = (new \DateTime($newSailing->start))->format('d/m/Y à H:i');
+                    } catch (\Exception $e) {
+                        $newDateFormatted = $newSailing->start;
+                    }
+                    $siteName = get_bloginfo('name');
+
+                    $subject = "[$siteName] Votre réservation a été reprogrammée — $newSailingTitle";
+
+                    $body = "Bonjour $clientName,\n\n";
+                    $body .= "Votre réservation (commande #{$order->get_id()}) a été reprogrammée.\n\n";
+                    $body .= "--- RÉCAPITULATIF ---\n\n";
+                    if ($oldDateFormatted) {
+                        $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
+                    }
+                    $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
+                    if ($paxToRemove > 0) {
+                        $body .= "\n⚠ Modification : $paxToRemove passager(s) retiré(s) de votre réservation.\n";
+                    }
+                    if ($priceAdjustment > 0) {
+                        $body .= "\n Un supplément de {$priceAdjustment}€ reste à régler. Nous vous contacterons prochainement.\n";
+                    } elseif ($priceAdjustment < 0 && $couponCode) {
+                        $refundAmount = abs($priceAdjustment);
+                        $body .= "\n Un avoir de {$refundAmount}€ a été généré pour vous. Code : {$couponCode}\n";
+                    }
+                    $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                    $body .= "Bonne navigation !\n$siteName";
+
+                    wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
+                }
+
                 $processedCount++;
             }
         }

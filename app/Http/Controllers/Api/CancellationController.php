@@ -95,6 +95,8 @@ class CancellationController
             return new \WP_Error('not_found', 'Nouveau départ introuvable');
         }
 
+        $oldSailing = Sailing::find($oldSailingId);
+
         $processed = 0;
 
         foreach ($orderIds as $orderId) {
@@ -131,6 +133,42 @@ class CancellationController
             if ($changed) {
                 $order->add_order_note("🔄 REPROGRAMMATION : Client déplacé vers le départ #$newSailingId (".$newSailing->start.').');
                 $order->save();
+
+                // Notification email au client
+                $clientEmail = $order->get_billing_email();
+                if ($clientEmail) {
+                    $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
+                    $newDateFormatted = '';
+                    try {
+                        $newDateFormatted = (new \DateTime($newSailing->start))->format('d/m/Y à H:i');
+                    } catch (\Exception $e) {
+                        $newDateFormatted = $newSailing->start;
+                    }
+                    $newSailingTitle = $newSailing->title ?: "Départ #$newSailingId";
+                    $siteName = get_bloginfo('name');
+
+                    $oldDateFormatted = '';
+                    try {
+                        $oldDateFormatted = $oldSailing ? (new \DateTime($oldSailing->start))->format('d/m/Y à H:i') : '';
+                    } catch (\Exception $e) {
+                    }
+                    $oldSailingTitle = $oldSailing ? ($oldSailing->title ?: "Départ #$oldSailingId") : '';
+
+                    $subject = "[$siteName] Votre réservation a été reprogrammée — $newSailingTitle";
+
+                    $body = "Bonjour $clientName,\n\n";
+                    $body .= "Votre réservation (commande #{$order->get_id()}) a été reprogrammée.\n\n";
+                    $body .= "--- RÉCAPITULATIF ---\n\n";
+                    if ($oldDateFormatted) {
+                        $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
+                    }
+                    $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
+                    $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                    $body .= "Bonne navigation !\n$siteName";
+
+                    wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
+                }
+
                 $processed++;
             }
         }

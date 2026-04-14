@@ -1,7 +1,12 @@
 <section class="{{ $block->classes }} group/section relative overflow-hidden py-12 md:py-20">
   @if ($bg_image)
     <div class="absolute inset-0 z-0">
-      <img src="{{ $bg_image }}" alt="" class="h-full w-full object-cover" />
+      <img   decoding="sync"
+             fetchpriority="high"
+             loading="eager"
+             src="{{ $bg_image }}"
+             alt=""
+             class="h-full w-full object-cover" />
     </div>
     <div class="absolute right-0 bottom-20 left-0">
       <img src="@asset('resources/images/waves.svg')" alt="" class="z-10 h-auto w-full" />
