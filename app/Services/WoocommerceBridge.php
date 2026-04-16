@@ -35,6 +35,7 @@ class WoocommerceBridge
         // Affichage lisible des metas carte cadeau dans le backoffice
         add_filter('woocommerce_hidden_order_itemmeta', [$this, 'hideRawGiftCardMeta']);
         add_filter('woocommerce_order_item_get_formatted_meta_data', [$this, 'formatGiftCardMeta'], 10, 2);
+        add_filter('woocommerce_order_item_get_formatted_meta_data', [$this, 'formatBookingMeta'], 10, 2);
 
         add_action('manage_posts_extra_tablenav', [$this, 'addCleanupGiftCardButton']);
         add_action('admin_action_cleanup_gift_card_products', [$this, 'cleanupGiftCardProducts']);
@@ -210,6 +211,21 @@ class WoocommerceBridge
         return array_merge($formattedMeta, $inject);
     }
 
+    public function formatBookingMeta(array $formattedMeta, $item): array
+    {
+        foreach ($formattedMeta as $meta) {
+            if ($meta->display_key === 'Date de départ' && $meta->value) {
+                try {
+                    $dt = new \DateTime($meta->value);
+                    $meta->display_value = $dt->format('d/m/Y à H:i');
+                } catch (\Exception $e) {
+                }
+            }
+        }
+
+        return $formattedMeta;
+    }
+
     public function validateCartAvailability()
     {
         if (is_admin() && ! defined('DOING_AJAX')) {
@@ -333,12 +349,12 @@ class WoocommerceBridge
                 try {
                     $dt = new \DateTime($data['date']);
                     $formattedDate = $dt->format('d/m/Y à H:i');
-                    $item_data[] = ['key' => '📅 Date de départ', 'value' => $formattedDate, 'display' => $formattedDate];
+                    $item_data[] = ['key' => 'Date de départ', 'value' => $formattedDate, 'display' => $formattedDate];
                 } catch (\Exception $e) {
                 }
             }
             if (! empty($data['details_string'])) {
-                $item_data[] = ['key' => '👥 Détails', 'value' => $data['details_string'], 'display' => $data['details_string']];
+                $item_data[] = ['key' => 'Détails', 'value' => $data['details_string'], 'display' => $data['details_string']];
             }
         }
 
@@ -349,6 +365,7 @@ class WoocommerceBridge
     {
         if (isset($values['booking_data'])) {
             $data = $values['booking_data'];
+
             if (! empty($data['date'])) {
                 $item->add_meta_data('Date de départ', $data['date']);
             }
