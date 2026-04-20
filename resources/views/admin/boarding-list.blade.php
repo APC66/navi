@@ -348,7 +348,7 @@
       </select>
     </div>
 
-    <div style="margin: 15px 0">
+    <div class="hidden "style="margin: 15px 0">
       <label for="modal-price-adjust" style="font-weight: bold; display: block; margin-bottom: 5px">
         Ajustement Prix (€) :
       </label>
@@ -366,7 +366,7 @@
 
     <div style="display: flex; gap: 15px">
       <!-- Champ Passagers à annuler -->
-      <div style="flex: 1">
+      <div class="hidden" style="flex: 1">
         <label
           for="modal-pax-remove"
           style="font-weight: bold; display: block; margin-bottom: 5px; color: #d63638"

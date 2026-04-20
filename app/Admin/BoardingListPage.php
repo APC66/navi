@@ -384,9 +384,9 @@ class BoardingListPage
                 if ($manualPriceAdj > 0) {
                     $body .= "\n💰 Un supplément de {$manualPriceAdj}€ reste à régler. Nous vous contacterons prochainement.\n";
                 } elseif ($manualPriceAdj < 0) {
-                    $body .= "\n💰 Un remboursement de ".abs($manualPriceAdj)."€ sera effectué prochainement.\n";
+                    $body .= "\n💰 Un remboursement de ".abs($manualPriceAdj)."€ sera effectué prochainement. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";
                 }
-                $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                $body .= "\nPour toute question, n'hésitez pas à nous contacter par mail : contact@navivoile.com ou par téléphone au +33 (0)6 23 20 69 76.\n\n";
                 $body .= "Bonne navigation !\n$siteName";
 
                 wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
@@ -529,9 +529,9 @@ class BoardingListPage
                         $body .= "\n Un supplément de {$priceAdjustment}€ reste à régler. Nous vous contacterons prochainement.\n";
                     } elseif ($priceAdjustment < 0 && $couponCode) {
                         $refundAmount = abs($priceAdjustment);
-                        $body .= "\n Un avoir de {$refundAmount}€ a été généré pour vous. Code : {$couponCode}\n";
+                        $body .= "\n Un avoir de {$refundAmount}€ a été généré pour vous. Code : {$couponCode}. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";
                     }
-                    $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                    $body .= "\nPour toute question, n'hésitez pas à nous contacter par mail : contact@navivoile.com ou par téléphone au +33 (0)6 23 20 69 76.\n\n";
                     $body .= "Bonne navigation !\n$siteName";
 
                     wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
@@ -555,12 +555,14 @@ class BoardingListPage
     {
         $code = 'AV-'.strtoupper(substr(md5(uniqid().$order->get_id()), 0, 6));
         $email = $order->get_billing_email();
+        $expiry_date = strtotime('+18 months');
         $coupon = new WC_Coupon;
         $coupon->set_code($code);
         $coupon->set_discount_type('fixed_cart');
         $coupon->set_amount($amount);
         $coupon->set_individual_use(true);
         $coupon->set_usage_limit(1);
+        $coupon->set_date_expires($expiry_date);
         if ($email) {
             $coupon->set_email_restrictions([$email]);
         }

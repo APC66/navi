@@ -83,7 +83,6 @@ class CancellationController
         ];
     }
 
-    // ... (reschedule inchangé) ...
     public function reschedule(WP_REST_Request $request)
     {
         $oldSailingId = (int) $request->get_param('old_sailing_id');
@@ -163,7 +162,7 @@ class CancellationController
                         $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
                     }
                     $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
-                    $body .= "\nPour toute question, n'hésitez pas à nous contacter.\n\n";
+                    $body .= "\nPour toute question, n'hésitez pas à nous contacter par mail : contact@navivoile.com ou par téléphone au +33 (0)6 23 20 69 76.\n\n";
                     $body .= "Bonne navigation !\n$siteName";
 
                     wp_mail($clientEmail, $subject, $body, ['Content-Type: text/plain; charset=UTF-8']);
