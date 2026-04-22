@@ -55,23 +55,31 @@ body, html{
   @apply overflow-x-hidden;
 }
 
+.exclu-item,
 .new-item{
   position:relative;
   display: inline-flex;
   align-items:center;
 
   &::before{
-    content:'NEW';
     border-radius:50px;
-    color: var(--color-primary-800);
     padding:4px 8px;
-    background-color: white;
     font-weight:bold;
     font-size:12px;
     margin-right:8px;
   }
 }
+.new-item::before{
+  content:'NEW';
+  color: var(--color-primary-800);
+  background-color: white;
+}
 
+.exclu-item::before{
+  content:'EXCLU';
+  color: var(--color-primary-800);
+  background-color: var(--color-secondary);
+}
 .rpi-header{
   @apply hidden;
 }

@@ -4,7 +4,7 @@
 @endphp
 
 @if ($mapUrl)
-  <div class="overflow-hidden shadow-lg">
-    <img src="{{ $mapUrl }}" alt="{{ $mapAlt }}" class="h-auto w-full object-cover" />
+  <div class="overflow-hidden">
+    <img src="{{ $mapUrl }}" alt="{{ $mapAlt }}" class="h-[600px] w-auto mx-auto object-cover shadow-lg" />
   </div>
 @endif

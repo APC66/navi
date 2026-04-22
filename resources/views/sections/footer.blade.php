@@ -118,7 +118,7 @@
                   <img
                     src="{{ $partner['logo'] }}"
                     alt="Partenaire"
-                    class="h-22 w-auto object-contain"
+                    class="!h-22 w-auto object-contain"
                   />
                 @endif
               </div>

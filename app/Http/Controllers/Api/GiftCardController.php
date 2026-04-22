@@ -153,8 +153,19 @@ class GiftCardController
             $productTitle = 'Carte Cadeau – Montant libre';
         }
 
+        $category = get_term_by('slug', 'carte-cadeau', 'product_cat');
+        if (! $category) {
+            $result = wp_insert_term('Carte Cadeau', 'product_cat', ['slug' => 'carte-cadeau']);
+            $categoryId = is_wp_error($result) ? null : $result['term_id'];
+        } else {
+            $categoryId = $category->term_id;
+        }
+
         // --- Création du produit WC virtuel à la volée ---
         $product = new \WC_Product_Simple;
+        if ($categoryId) {
+            $product->set_category_ids([$categoryId]);
+        }
         $product->set_name($productTitle);
         $product->set_status('publish');
         $product->set_virtual(true);

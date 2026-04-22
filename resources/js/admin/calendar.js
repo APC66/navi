@@ -22,10 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('modal-title').innerText = event.title;
     document.getElementById('modal-content').innerHTML = `
         <p><strong>Date :</strong> ${event.start.toLocaleString()}</p>
+        <p><strong>Retour :</strong> ${event.end.toLocaleString()}</p>
         <p><strong>Places Restantes :</strong> ${props.available} / ${props.quota}</p>
         <p><strong>Statut actuel :</strong> ${props.status}</p>
         <p><a href="${event.url}" target="_blank" class="button">Modifier le départ (WP) ↗</a></p>
-    `;
+    `
 
     // Lien Liste embarquement
     const btnBoarding = document.getElementById('btn-boarding');
@@ -189,6 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const props = arg.event.extendedProps
       const available = props.available !== undefined ? props.available : '?'
       const quota = props.quota !== undefined ? props.quota : '?'
+
 
       let percent = 0
       if (quota > 0 && props.booked !== undefined) {

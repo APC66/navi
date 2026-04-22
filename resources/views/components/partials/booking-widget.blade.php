@@ -138,7 +138,7 @@
         </div>
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#FFA632] shadow-sm"></span>
-          <span class="shrink-1">Dernièr places disponibles</span>
+          <span class="shrink-1">Dernières places disponibles</span>
         </div>
         <div class="flex items-center">
           <span class="mr-3 h-4 w-4 rounded bg-[#FBF166] shadow-sm"></span>

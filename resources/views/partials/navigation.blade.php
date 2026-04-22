@@ -90,10 +90,10 @@
         <div
           class="absolute inset-0 overflow-y-auto  transition-all duration-500 ease-in-out"
           :class="{'translate-x-0 opacity-100 z-20 pointer-events-auto': activePanel === 'main','-translate-x-1/4 opacity-0 pointer-events-none z-10': panelStack.includes('main') && activePanel !== 'main', 'translate-x-full opacity-0 pointer-events-none z-20': !panelStack.includes('main') }" >
-          <ul class="flex flex-col space-y-2 md:space-y-4 lg:space-y-8 px-4 lg:px-10">
+          <ul class="flex flex-col space-y-2 md:space-y-4 lg:space-y-8 px-2 lg:px-10">
             @if (!empty($menuItems))
               @foreach ($menuItems as $item)
-                <li class="{{$item->classes ?? ''}} px-4 py-4 lg:px-8">
+                <li class="{{$item->classes ?? ''}} px-4 py-2 lg:px-8">
                   @if (!empty($item->children))
                     <button
                       @click="openSubPanel('panel-{{ $item->id }}')"
@@ -148,7 +148,7 @@
 
                 <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                   @foreach ($item->children as $child)
-                    <li class="{{$child->classes ?? ''}} px-4 lg:px-8 py-4">
+                    <li class="{{$child->classes ?? ''}} px-2 lg:px-8 py-4">
                       {{-- S'il y a un Niveau 2 (Sous-sous-menu) --}}
                       @if (!empty($child->children))
                         <button
@@ -196,7 +196,7 @@
 
                     <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                       @foreach ($child->children as $grandChild)
-                        <li class="{{$grandChild->classes ?? ''}} px-4 lg:px-8 py-4">
+                        <li class="{{$grandChild->classes ?? ''}} px-2 lg:px-8 py-4">
                           <a href="{{ $grandChild->url }}"
                              class="block font-medium hover:text-secondary transition-colors">
                             {!! $grandChild->label !!}

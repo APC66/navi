@@ -187,7 +187,7 @@
                   class="rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all"
                   :class="filters.tags.includes({{ $tag->term_id }}) ? 'bg-secondary text-primary-1000 border-secondary' : 'border-white hover:border-secondary hover:bg-secondary hover:text-primary-1000'"
                 >
-                  {{ $tag->name }}
+                  {{ htmlspecialchars_decode($tag->name) }}
                 </button>
               @endforeach
             </div>
@@ -225,7 +225,7 @@
                     class="w-[180px]"
                     :class="filters.categories.includes({{ $cat->term_id }}) ? 'text-white' : 'text-primary-100'"
                   >
-                    {{ $cat->name }}
+                    {{htmlspecialchars_decode($cat->name )}}
                   </span>
                   <div
                     class="relative h-6 w-12 rounded-full transition-colors duration-300"

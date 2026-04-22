@@ -31,13 +31,13 @@
       <article
         class="group flex h-full flex-col overflow-hidden rounded-[20px] shadow-lg transition-all duration-300 hover:shadow-xl"
       >
-        <div class="relative h-[280px] overflow-hidden">
+        <div class="relative h-[230px] md:h-[280px] overflow-hidden">
           <a href="{{ $cruise->permalink }}" class="block h-full">
             @if ($cruise->thumbnail_url)
               <img
                 src="{{ $cruise->thumbnail_url }}"
                 alt="{!! $cruise->title !!}"
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                class="h-full w-full object-cover !object-center transition-transform duration-700 group-hover:scale-105"
               />
             @else
               <div

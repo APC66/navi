@@ -21,11 +21,7 @@ export const initCruiseCarousel = () => {
       slidesPerView: 1.2,
       spaceBetween: 20,
       loop: false,
-      autoplay: {
-        delay: 5000,
-        disableOnInteraction: true,
-        pauseOnMouseEnter: true
-      },
+      autoplay: false,
       pagination: {
         el: pagination,
         clickable: true,
@@ -46,7 +42,6 @@ export const initCruiseCarousel = () => {
         1280: {
           slidesPerView: 4.9,
           spaceBetween: 32,
-          autoplay: false
         }
         },
       on: {

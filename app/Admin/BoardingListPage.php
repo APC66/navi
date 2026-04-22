@@ -382,9 +382,9 @@ class BoardingListPage
                     $body .= "\nNombre de passagers : $oldTotalPax → $newTotalPax\n";
                 }
                 if ($manualPriceAdj > 0) {
-                    $body .= "\n💰 Un supplément de {$manualPriceAdj}€ reste à régler. Nous vous contacterons prochainement.\n";
+                    $body .= "\nUn supplément de {$manualPriceAdj}€ sera à régler à l'embarquement (par CB ou espèces).\n";
                 } elseif ($manualPriceAdj < 0) {
-                    $body .= "\n💰 Un remboursement de ".abs($manualPriceAdj)."€ sera effectué prochainement. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";
+                    $body .= "\nUn avoir de ".abs($manualPriceAdj)."€ sera effectué prochainement. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";
                 }
                 $body .= "\nPour toute question, n'hésitez pas à nous contacter par mail : contact@navivoile.com ou par téléphone au +33 (0)6 23 20 69 76.\n\n";
                 $body .= "Bonne navigation !\n$siteName";
@@ -526,7 +526,7 @@ class BoardingListPage
                         $body .= "\n⚠ Modification : $paxToRemove passager(s) retiré(s) de votre réservation.\n";
                     }
                     if ($priceAdjustment > 0) {
-                        $body .= "\n Un supplément de {$priceAdjustment}€ reste à régler. Nous vous contacterons prochainement.\n";
+                        $body .= "\n Un supplément de {$priceAdjustment}€ sera à régler à l'embarquement (par CB ou espèces).\n";
                     } elseif ($priceAdjustment < 0 && $couponCode) {
                         $refundAmount = abs($priceAdjustment);
                         $body .= "\n Un avoir de {$refundAmount}€ a été généré pour vous. Code : {$couponCode}. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";

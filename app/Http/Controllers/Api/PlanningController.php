@@ -127,6 +127,7 @@ class PlanningController
             $sailingsData[] = [
                 'id' => $sailing->ID,
                 'datetime' => $sailing->start,
+                'end' => $sailing->end,
                 'return_time' => $sailing->end ?? get_post_meta($sailing->ID, 'sailing_config_return_date', true),
                 'cruise_title' => html_entity_decode($cruise->title, ENT_QUOTES),
                 'cruise_url' => $cruise->permalink,

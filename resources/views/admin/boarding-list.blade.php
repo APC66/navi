@@ -243,6 +243,7 @@
                         href="{{ $pax['edit_booking_url'] }}"
                         class="button button-small"
                         style="text-align: center"
+                        target="_blank"
                       >
                         ✏️ Modifier
                       </a>
