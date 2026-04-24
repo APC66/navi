@@ -74,7 +74,8 @@ class BoardingListPage
 
         // Liste des futurs départs pour le sélecteur de changement de date
         $futureSailings = Sailing::fetch([
-            'posts_per_page' => 50,
+            'posts_per_page' => -1,
+            'cache_results' => false,
             'meta_query' => [
                 [
                     'key' => 'sailing_config_departure_date',
@@ -113,8 +114,8 @@ class BoardingListPage
             }
         }
 
-        $allSailings = Sailing::fetch(['posts_per_page' => 100, 'meta_key' => 'sailing_config_departure_date', 'orderby' => 'meta_value', 'order' => 'DESC']);
-        $futureSailings = Sailing::fetch(['posts_per_page' => 50, 'meta_query' => [['key' => 'sailing_config_departure_date', 'value' => date('Y-m-d H:i:s'), 'compare' => '>=']], 'orderby' => 'meta_value', 'meta_key' => 'sailing_config_departure_date', 'order' => 'ASC']);
+        $allSailings = Sailing::fetch(['posts_per_page' => -1, 'meta_key' => 'sailing_config_departure_date', 'orderby' => 'meta_value', 'order' => 'DESC']);
+        $futureSailings = Sailing::fetch(['posts_per_page' => -1, 'meta_query' => [['key' => 'sailing_config_departure_date', 'value' => date('Y-m-d H:i:s'), 'compare' => '>=']], 'orderby' => 'meta_value', 'meta_key' => 'sailing_config_departure_date', 'order' => 'ASC']);
 
         if (isset($_GET['message'])) {
             echo '<div class="notice notice-'.($_GET['msg_type'] ?? 'success').' is-dismissible"><p>'.esc_html($_GET['message']).'</p></div>';
@@ -341,14 +342,16 @@ class BoardingListPage
 
         $item->save();
 
+        // Sauvegarde l'ordre avant les actions spéciales pour que _balance_due
+        // soit à jour en BDD (processCreditNote/processRefund recharge l'ordre)
+        $order->save();
+
         // --- TRAITEMENT ACTIONS SPÉCIALES ---
         if ($specialAction === 'refund') {
             $this->processRefund([$orderId]);
         } elseif ($specialAction === 'credit') {
             $this->processCreditNote([$orderId]);
         }
-
-        $order->save();
 
         // Notification email au client si la date a changé
         if ($dateChanged) {

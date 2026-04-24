@@ -158,8 +158,8 @@ const globalPlanningData = (nonce) => ({
 
   fetchWeekData() {
     this.loading = true;
-    const startStr = this.weekDays[0].toISOString().split('T')[0];
-    const endStr = this.weekDays[6].toISOString().split('T')[0];
+    const startStr = this.formatDateForPicker(this.weekDays[0]);
+    const endStr = this.formatDateForPicker(this.weekDays[6]);
 
     fetch(`/wp-json/radicle/v1/planning/week?start=${startStr}&end=${endStr}`, {
       headers: { 'X-WP-Nonce': this.apiNonce }

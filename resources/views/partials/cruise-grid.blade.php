@@ -71,7 +71,7 @@
           class="from-primary-1000 to-primary-900 flex flex-1 flex-col bg-gradient-to-b p-6 text-left"
         >
           <h3
-            class="font-heading mb-2 line-clamp-2 text-center text-xl leading-snug font-bold uppercase"
+            class="font-heading mb-2 text-center text-xl leading-snug font-bold uppercase"
           >
             <a href="{{ $cruise->permalink }}" class="hover:text-secondary transition-colors">
               {!! $cruise->title !!}
