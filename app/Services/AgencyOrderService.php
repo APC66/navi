@@ -123,7 +123,7 @@ class AgencyOrderService
             'class' => ['form-row-wide'],
             'label' => 'Email du nouveau client',
             'placeholder' => 'client@example.com',
-            'required' => false,
+            'required' => true,
         ], $checkout->get_value('agency_new_client_email'));
         echo '<p class="text-sm text-gray-600 mt-2">ℹ️ Un compte client sera créé automatiquement avec les informations de facturation saisies ci-dessous.</p>';
         echo '</div>';
@@ -132,7 +132,7 @@ class AgencyOrderService
     }
 
     /**
-     * Helper "Anti-faille" : Cherche une valeur peu importe comment WooCommerce l'a postée.
+     * Cherche une valeur peu importe comment WooCommerce l'a postée.
      */
     protected function getCheckoutFieldValue(string $field_name): string
     {
@@ -212,6 +212,8 @@ class AgencyOrderService
             $client_id = (int) $this->getCheckoutFieldValue('agency_existing_client_id');
             if ($client_id > 0) {
                 $order->set_customer_id($client_id);
+                $order->update_meta_data('_agency_final_customer_id', $client_id);
+                $this->updateExistingCustomerBilling($client_id, $data);
             }
         } elseif ($client_type === 'new') {
             $email = sanitize_email($this->getCheckoutFieldValue('agency_new_client_email'));
@@ -219,8 +221,45 @@ class AgencyOrderService
                 $client_id = $this->createNewCustomer($email, $data);
                 if ($client_id > 0) {
                     $order->set_customer_id($client_id);
+                    $order->update_meta_data('_agency_final_customer_id', $client_id);
                 }
             }
+        }
+    }
+
+    /**
+     * Met à jour les données de facturation d'un client existant.
+     */
+    protected function updateExistingCustomerBilling(int $client_id, array $data): void
+    {
+        $billing_fields = [
+            'first_name' => $data['billing_first_name'] ?? '',
+            'last_name' => $data['billing_last_name'] ?? '',
+            'company' => $data['billing_company'] ?? '',
+            'address_1' => $data['billing_address_1'] ?? '',
+            'address_2' => $data['billing_address_2'] ?? '',
+            'city' => $data['billing_city'] ?? '',
+            'postcode' => $data['billing_postcode'] ?? '',
+            'country' => $data['billing_country'] ?? '',
+            'state' => $data['billing_state'] ?? '',
+            'phone' => $data['billing_phone'] ?? '',
+            'email' => $data['billing_email'] ?? '',
+        ];
+
+        foreach ($billing_fields as $key => $value) {
+            if (! empty($value)) {
+                update_user_meta($client_id, 'billing_'.$key, sanitize_text_field($value));
+            }
+        }
+
+        $display_name = trim(($billing_fields['first_name']).' '.($billing_fields['last_name']));
+        if (! empty($display_name)) {
+            wp_update_user([
+                'ID' => $client_id,
+                'display_name' => $display_name,
+                'first_name' => $billing_fields['first_name'],
+                'last_name' => $billing_fields['last_name'],
+            ]);
         }
     }
 
@@ -283,11 +322,20 @@ class AgencyOrderService
 
     /**
      * Enregistre l'ID de l'agent créateur dans les meta-données de la commande.
+     * Ré-applique également le customer_id du client final pour garantir qu'il
+     * n'a pas été écrasé par WooCommerce entre les deux hooks.
      */
     public function trackAgencyCreator(\WC_Order $order): void
     {
         if (! $this->currentUserCanPlaceAgencyOrders()) {
             return;
+        }
+
+        // Ré-appliquer le customer_id du client final (protection contre écrasement WooCommerce)
+        $final_customer_id = (int) $order->get_meta('_agency_final_customer_id');
+        if ($final_customer_id > 0) {
+            $order->set_customer_id($final_customer_id);
+            $order->delete_meta_data('_agency_final_customer_id');
         }
 
         $current_user_id = get_current_user_id();
