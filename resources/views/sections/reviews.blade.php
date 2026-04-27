@@ -1,6 +1,11 @@
 <section class="from-primary-900 to-primary-1000 bg-gradient-to-b pt-16 pb-32 md:pt-20">
   <div class="container mx-auto px-4">
-    <div data-aos="fade-up" data-aos-duration="600">
+    <div
+      @if(!is_singular('cruise'))
+        data-aos="fade-up"
+        data-aos-duration="600"
+      @endif
+    >
       <x-partials.section-header
         highlight="Que disent"
         suffix="nos clients"
@@ -11,15 +16,23 @@
       />
     </div>
 
-    <div data-aos="fade-up" data-aos-duration="700" data-aos-delay="150">
+    <div
+      @if(!is_singular('cruise'))
+        data-aos="fade-up"
+        data-aos-duration="700"
+        data-aos-delay="150"
+      @endif
+    >
       {!! do_shortcode('[brb_collection id=334]') !!}
     </div>
 
     <div
       class="mt-8 flex flex-wrap justify-center gap-4 md:gap-8"
-      data-aos="fade-up"
-      data-aos-duration="600"
-      data-aos-delay="250"
+      @if(!is_singular('cruise'))
+        data-aos="fade-up"
+        data-aos-duration="600"
+        data-aos-delay="250"
+      @endif
     >
       <div class="flex items-center justify-center gap-4 md:justify-end">
         <x-partials.button

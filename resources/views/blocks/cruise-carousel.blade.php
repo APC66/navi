@@ -15,12 +15,22 @@
 
   <div class="relative mx-auto max-w-[1920px] px-4">
     @if (! empty($title_group['highlight']) || ! empty($title_group['suffix']))
-      <div data-aos="fade-up" data-aos-duration="600">
-        <x-partials.section-header :group="$title_group" />
+      <div
+        @if(!is_singular('cruise'))
+          data-aos="fade-up" data-aos-duration="600"
+        @endif
+      >
+        <x-partials.section-header :group="$title_group"
+        />
       </div>
     @endif
-
-    <div class="relative mx-10" data-aos="fade-up" data-aos-duration="700" data-aos-delay="150">
+    <div class="relative mx-10"
+       @if(!is_singular('cruise'))
+         data-aos="fade-up"
+         data-aos-duration="700"
+         data-aos-delay="150"
+       @endif
+    >
       <button
         class="swiper-button-prev-custom text-primary-1000 bg-secondary absolute top-1/2 -left-4 z-20 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-white disabled:invisible disabled:opacity-0 md:-left-6 lg:-left-12"
       >
@@ -126,9 +136,11 @@
     @if ($cta)
       <div
         class="mt-12 text-center"
-        data-aos="fade-up"
-        data-aos-duration="600"
-        data-aos-delay="200"
+        @if(!is_singular('cruise'))
+          data-aos="fade-up"
+          data-aos-duration="600"
+          data-aos-delay="200"
+        @endif
       >
         <x-partials.button :group="$cta" class="w-full" />
       </div>

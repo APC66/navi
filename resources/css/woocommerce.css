@@ -40,7 +40,7 @@
 .woocommerce form .form-row {
   @apply mb-5;
 }
-
+.woocommerce-checkout form #order_review_heading,
 html body.woocommerce-account .woocommerce form .form-row label{
   @apply text-white
 }

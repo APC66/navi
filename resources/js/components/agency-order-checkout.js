@@ -129,9 +129,12 @@ jQuery(document).ready(function($) {
 
                     // Préremplir tous les champs de facturation
                     $.each(billingData, function(key, value) {
-                        var field = $('#' + key);
+                        var field = $('[name="' + key + '"]');
+                        if (!field.length) {
+                            field = $('#' + key);
+                        }
                         if (field.length) {
-                            field.val(value).trigger('change');
+                            field.val(value).trigger('input').trigger('change');
                         }
                     });
 
@@ -165,9 +168,12 @@ jQuery(document).ready(function($) {
         ];
 
         billingFields.forEach(function(fieldName) {
-            var field = $('#' + fieldName);
+            var field = $('[name="' + fieldName + '"]');
+            if (!field.length) {
+                field = $('#' + fieldName);
+            }
             if (field.length) {
-                field.val('').trigger('change');
+                field.val('').trigger('input').trigger('change');
             }
         });
 

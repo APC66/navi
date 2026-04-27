@@ -6,14 +6,16 @@
   >
     <x-bi-telephone class="h-6 w-6 text-primary-900" />
   </a>
-
+  @if(get_field('contact_link', 'option'))
   <a
-    href="{{get_permalink(get_page_by_path('contact'))}}"
+    href="{{get_field('contact_link', 'option')['url']}}"
     class="flex h-14 w-14 items-center justify-center rounded-full shadow-image-card bg-secondary transition-transform hover:scale-105"
     style=""
   >
     <x-bi-send class="h-6 w-6 text-primary-900" />
   </a>
+  @endif
+
 
   <button
     onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"

@@ -75,7 +75,7 @@ class SearchController
                 'taxonomy' => 'cruise_tag',
                 'field' => 'term_id',
                 'terms' => $tags,
-                'operator' => 'IN',
+                'operator' => 'AND',
             ];
         }
 

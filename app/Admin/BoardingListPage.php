@@ -175,8 +175,13 @@ class BoardingListPage
                 $paxToRemove = isset($_POST['pax_to_remove']) ? (int) $_POST['pax_to_remove'] : 0;
 
                 if ($newSailingId) {
-                    $count = $this->processReschedule($orderIds, $sailingId, $newSailingId, $priceAdjustment, $paxToRemove);
-                    $message = $count.' commandes reprogrammées.';
+                    $result = $this->processReschedule($orderIds, $sailingId, $newSailingId, $priceAdjustment, $paxToRemove);
+                    if (! empty($result['error'])) {
+                        $message = $result['error'];
+                        $type = 'error';
+                    } else {
+                        $message = $result['processed'].' commandes reprogrammées.';
+                    }
                 } else {
                     $message = 'ID manquant.';
                     $type = 'error';
@@ -252,10 +257,16 @@ class BoardingListPage
         $order->update_meta_data('_private_boarding_note', $privateNote);
 
         // Gestion de l'ajustement de prix manuel
+        $manualAdjCouponCode = null;
         if ($manualPriceAdj != 0) {
             $currentBalance = (float) $order->get_meta('_balance_due', true);
             $order->update_meta_data('_balance_due', $currentBalance + $manualPriceAdj);
-            $order->add_order_note('💰 AJUSTEMENT MANUEL : '.($manualPriceAdj > 0 ? "+{$manualPriceAdj}€ à payer" : "{$manualPriceAdj}€ à rembourser"));
+            if ($manualPriceAdj < 0) {
+                $manualAdjCouponCode = $this->createCouponForOrder($order, abs($manualPriceAdj), 'Avoir partiel');
+                $order->add_order_note("💰 AJUSTEMENT MANUEL : {$manualPriceAdj}€ à rembourser. Coupon : {$manualAdjCouponCode}");
+            } else {
+                $order->add_order_note("💰 AJUSTEMENT MANUEL : +{$manualPriceAdj}€ à payer");
+            }
         }
 
         // Mise à jour des données JSON
@@ -347,48 +358,79 @@ class BoardingListPage
         $order->save();
 
         // --- TRAITEMENT ACTIONS SPÉCIALES ---
+        $creditCouponCode = null;
         if ($specialAction === 'refund') {
             $this->processRefund([$orderId]);
         } elseif ($specialAction === 'credit') {
-            $this->processCreditNote([$orderId]);
+            $creditCouponCode = $this->processCreditNote([$orderId]);
         }
 
-        // Notification email au client si la date a changé
-        if ($dateChanged) {
+        // Notification email au client si la date a changé ou si un avoir a été généré
+        if ($dateChanged || $creditCouponCode || $manualAdjCouponCode) {
             $clientEmail = $order->get_billing_email();
             if ($clientEmail) {
                 $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
-                $oldDateFormatted = '';
-                try {
-                    $oldSailingObj = Sailing::find($originalSailingId);
-                    $oldDateFormatted = $oldSailingObj ? (new \DateTime($oldSailingObj->start))->format('d/m/Y à H:i') : '';
-                } catch (\Exception $e) {
-                }
-                $newDateFormatted = '';
-                try {
-                    $newDateFormatted = (new \DateTime($newSailing->start))->format('d/m/Y à H:i');
-                } catch (\Exception $e) {
-                    $newDateFormatted = $newSailing->start;
-                }
                 $siteName = get_bloginfo('name');
 
-                $subject = "[$siteName] Votre réservation a été reprogrammée — $newSailingTitle";
+                if ($dateChanged) {
+                    $oldDateFormatted = '';
+                    try {
+                        $oldSailingObj = Sailing::find($originalSailingId);
+                        $oldDateFormatted = $oldSailingObj ? (new \DateTime($oldSailingObj->start))->format('d/m/Y à H:i') : '';
+                    } catch (\Exception $e) {
+                    }
+                    $newDateFormatted = '';
+                    try {
+                        $newDateFormatted = (new \DateTime($newSailing->start))->format('d/m/Y à H:i');
+                    } catch (\Exception $e) {
+                        $newDateFormatted = $newSailing->start;
+                    }
 
-                $body = "Bonjour $clientName,\n\n";
-                $body .= "Votre réservation (commande #{$order->get_id()}) a été reprogrammée.\n\n";
-                $body .= "--- RÉCAPITULATIF ---\n\n";
-                if ($oldDateFormatted) {
-                    $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
+                    $subject = "[$siteName] Votre réservation a été reprogrammée — $newSailingTitle";
+                    $body = "Bonjour $clientName,\n\n";
+                    $body .= "Votre réservation (commande #{$order->get_id()}) a été reprogrammée.\n\n";
+                    $body .= "--- RÉCAPITULATIF ---\n\n";
+                    if ($oldDateFormatted) {
+                        $body .= "Ancienne date : $oldDateFormatted ($oldSailingTitle)\n";
+                    }
+                    $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
+                    if ($newTotalPax !== $oldTotalPax) {
+                        $body .= "\nNombre de passagers : $oldTotalPax → $newTotalPax\n";
+                    }
+                    if ($manualPriceAdj > 0) {
+                        $body .= "\nUn supplément de {$manualPriceAdj}€ sera à régler à l'embarquement (par CB ou espèces).\n";
+                    } elseif ($manualPriceAdj < 0 && $manualAdjCouponCode) {
+                        $body .= "\nUn avoir de ".abs($manualPriceAdj)."€ a été généré pour vous. Code : {$manualAdjCouponCode}. Valable 18 mois sur https://navivoile.com/\n";
+                    }
+                    if ($creditCouponCode) {
+                        $creditAmount = (float) wc_get_coupon_id_by_code($creditCouponCode) ? (new \WC_Coupon($creditCouponCode))->get_amount() : '';
+                        $body .= "\nUn avoir";
+                        if ($creditAmount) {
+                            $body .= " de {$creditAmount}€";
+                        }
+                        $body .= " a été généré pour vous. Code : {$creditCouponCode}. Valable 18 mois sur https://navivoile.com/\n";
+                    }
+                } else {
+                    // Email uniquement pour l'avoir (credit action ou ajustement négatif)
+                    $subject = "[$siteName] Votre avoir — Commande #{$order->get_id()}";
+                    $body = "Bonjour $clientName,\n\n";
+                    $body .= "Suite à votre réservation (commande #{$order->get_id()}), un avoir a été généré pour vous.\n\n";
+                    if ($creditCouponCode) {
+                        $couponId = wc_get_coupon_id_by_code($creditCouponCode);
+                        $creditAmount = $couponId ? (new \WC_Coupon($creditCouponCode))->get_amount() : '';
+                        if ($creditAmount) {
+                            $body .= "Montant : {$creditAmount}€\n";
+                        }
+                        $body .= "Code : {$creditCouponCode}\n";
+                        $body .= "Valable 18 mois sur https://navivoile.com/\n";
+                    }
+                    if ($manualAdjCouponCode) {
+                        $body .= 'Montant : '.abs($manualPriceAdj)."€\n";
+                        $body .= "Code : {$manualAdjCouponCode}\n";
+                        $body .= "Valable 18 mois sur https://navivoile.com/\n";
+                    }
                 }
-                $body .= "Nouvelle date : $newDateFormatted ($newSailingTitle)\n";
-                if ($newTotalPax !== $oldTotalPax) {
-                    $body .= "\nNombre de passagers : $oldTotalPax → $newTotalPax\n";
-                }
-                if ($manualPriceAdj > 0) {
-                    $body .= "\nUn supplément de {$manualPriceAdj}€ sera à régler à l'embarquement (par CB ou espèces).\n";
-                } elseif ($manualPriceAdj < 0) {
-                    $body .= "\nUn avoir de ".abs($manualPriceAdj)."€ sera effectué prochainement. Avoir à utiliser sous 18 mois sur notre site https://navivoile.com/ .\n";
-                }
+
                 $body .= "\nPour toute question, n'hésitez pas à nous contacter par mail : contact@navivoile.com ou par téléphone au +33 (0)6 23 20 69 76.\n\n";
                 $body .= "Bonne navigation !\n$siteName";
 
@@ -426,9 +468,40 @@ class BoardingListPage
     {
         $newSailing = Sailing::find($newSailingId);
         if (! $newSailing) {
-            return 0;
+            return ['processed' => 0, 'error' => 'Nouveau départ introuvable.'];
         }
         $oldSailing = Sailing::find($oldSailingId);
+
+        // Calcul des places disponibles sur le nouveau sailing
+        $newSailingQuota = $newSailing->quota;
+        $newSailingBooked = (int) get_post_meta($newSailingId, 'sailing_config_booked_count', true);
+        $availableSpots = $newSailingQuota - $newSailingBooked;
+
+        // Calcul du total de pax à déplacer (avant de toucher quoi que ce soit)
+        if ($newSailingQuota > 0) {
+            $totalPaxToMove = 0;
+            foreach ($orderIds as $orderId) {
+                $order = wc_get_order($orderId);
+                if (! $order) {
+                    continue;
+                }
+                foreach ($order->get_items() as $item) {
+                    if ($item->get_meta('_sailing_id') == $oldSailingId) {
+                        $data = json_decode($item->get_meta('_booking_data_raw'), true) ?: [];
+                        $currentPax = isset($data['passengers']) ? array_sum($data['passengers']) : 0;
+                        $totalPaxToMove += max(0, $currentPax - $paxToRemove);
+                    }
+                }
+            }
+
+            if ($totalPaxToMove > $availableSpots) {
+                return [
+                    'processed' => 0,
+                    'error' => "Pas assez de places sur le nouveau départ : {$availableSpots} dispo, {$totalPaxToMove} nécessaires. Aucune commande déplacée.",
+                ];
+            }
+        }
+
         $processedCount = 0;
 
         foreach ($orderIds as $orderId) {
@@ -544,7 +617,7 @@ class BoardingListPage
             }
         }
 
-        return $processedCount;
+        return ['processed' => $processedCount];
     }
 
     private function updateSailingBookedCount($sailingId, $change)
@@ -614,9 +687,11 @@ class BoardingListPage
             $order->add_order_note("🎟️ AVOIR GÉNÉRÉ : Coupon créé automatiquement.\nCode : {$code}\nMontant : {$amount}€");
             $order->save();
             $count++;
+            $lastCode = $code;
         }
 
-        return $count;
+        // Retourne le code si appelé pour une seule commande, sinon le nombre traité
+        return count($orderIds) === 1 ? ($lastCode ?? null) : $count;
     }
 
     public function handleCsvExport()

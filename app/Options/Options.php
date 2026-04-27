@@ -73,6 +73,10 @@ class Options extends Field
             ->addText('email', [
                 'label' => __('Email', 'radicle'),
             ])
+            ->addText('contact_link', [
+                'label' => __('Lien contact', 'radicle'),
+                'type' => 'link',
+            ])
             ->addGroup('contact_address')
             ->addText('company', [
                 'label' => __('Nom', 'radicle'),
@@ -90,6 +94,7 @@ class Options extends Field
                 'label' => __('Pays', 'radicle'),
             ])
             ->endGroup()
+
             ->addTab('scripts')
             ->addTextarea('header_scripts', [
                 'label' => __('Scripts dans le head', 'radicle'),
