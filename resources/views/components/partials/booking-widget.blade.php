@@ -4,10 +4,11 @@
   x-data="bookingWidget({{ $cruiseId }}, '{{ wp_create_nonce('wp_rest') }}')"
   x-init="init()"
 >
-  <h3 class="text-center text-3xl text-white uppercase font-medium my-12 ">
+  <h3 class="text-center text-3xl text-white uppercase font-medium my-8 ">
     Réserver votre
     <span class="text-secondary">croisière</span>
   </h3>
+  <p class="text-center text-2xl text-white font-medium pb-8">{!! get_the_title($cruiseId) !!}</p>
   <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
     <div
       class="calendar-section bg-primary-50 flex h-full flex-col rounded-2xl p-6 shadow-sm lg:p-10"
