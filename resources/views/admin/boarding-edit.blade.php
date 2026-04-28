@@ -57,31 +57,31 @@
             </div>
 
             <!-- Actions Rapides -->
-            <div style="margin-bottom: 20px">
-              <h3 style="margin-top: 0; font-size: 1.1em">⚡ Actions Rapides</h3>
-              <div style="display: flex; gap: 10px; flex-wrap: wrap">
-                <button
-                  type="button"
-                  class="button action-trigger"
-                  data-action="credit"
-                  title="Générer un avoir du montant total"
-                >
-                  🎟️ Générer Avoir
-                </button>
-                <button
-                  type="button"
-                  class="button action-trigger"
-                  data-action="refund"
-                  style="color: #b32d2e; border-color: #b32d2e"
-                  title="Marquer comme remboursé"
-                >
-                  💸 Rembourser
-                </button>
-              </div>
-              <p class="description" style="margin-top: 8px; font-size: 11px">
-                Ces actions s'exécutent lors de la sauvegarde.
-              </p>
-            </div>
+{{--            <div style="margin-bottom: 20px">--}}
+{{--              <h3 style="margin-top: 0; font-size: 1.1em">⚡ Actions Rapides</h3>--}}
+{{--              <div style="display: flex; gap: 10px; flex-wrap: wrap">--}}
+{{--                <button--}}
+{{--                  type="button"--}}
+{{--                  class="button action-trigger"--}}
+{{--                  data-action="credit"--}}
+{{--                  title="Générer un avoir du montant total"--}}
+{{--                >--}}
+{{--                  🎟️ Générer Avoir--}}
+{{--                </button>--}}
+{{--                <button--}}
+{{--                  type="button"--}}
+{{--                  class="button action-trigger"--}}
+{{--                  data-action="refund"--}}
+{{--                  style="color: #b32d2e; border-color: #b32d2e"--}}
+{{--                  title="Marquer comme remboursé"--}}
+{{--                >--}}
+{{--                  💸 Rembourser--}}
+{{--                </button>--}}
+{{--              </div>--}}
+{{--              <p class="description" style="margin-top: 8px; font-size: 11px">--}}
+{{--                Ces actions s'exécutent lors de la sauvegarde.--}}
+{{--              </p>--}}
+{{--            </div>--}}
 
             <!-- Notes -->
             <h3 style="font-size: 1.1em">📝 Notes</h3>
@@ -153,7 +153,7 @@
             <div style="display: flex; gap: 30px">
               <!-- PASSAGERS -->
               <div style="flex: 1">
-                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 5px">👥 Passagers</h3>
+                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 5px">👥 Passagers a reporter</h3>
                 <div class="passenger-list">
                   @php
                     $passengers = $bookingData['passengers'] ?? [];
@@ -197,7 +197,7 @@
 
               <!-- OPTIONS -->
               <div style="flex: 1">
-                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 5px">➕ Options</h3>
+                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 5px">➕ Options à reporter</h3>
                 <div class="options-list">
                   @php
                     // Normalisation des options (Ancien format [id] vs Nouveau [id=>qty])

@@ -257,15 +257,15 @@
                       >
                         📅 Reporter
                       </button>
-                      <button
-                        type="button"
-                        class="button button-small action-btn"
-                        data-action="credit"
-                        data-order="{{ $pax['order_id'] }}"
-                        title="Générer un avoir"
-                      >
-                        🎟️ Avoir (Coupon)
-                      </button>
+{{--                      <button--}}
+{{--                        type="button"--}}
+{{--                        class="button button-small action-btn"--}}
+{{--                        data-action="credit"--}}
+{{--                        data-order="{{ $pax['order_id'] }}"--}}
+{{--                        title="Générer un avoir"--}}
+{{--                      >--}}
+{{--                        🎟️ Avoir (Coupon)--}}
+{{--                      </button>--}}
                       <button
                         type="button"
                         class="button button-small action-btn"

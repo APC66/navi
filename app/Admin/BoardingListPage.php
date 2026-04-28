@@ -722,8 +722,10 @@ class BoardingListPage
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
         fputcsv($output, [
+
             'ID Commande',
             'Client',
+            'Croisiere',
             'Email',
             'Téléphone',
             'Pays',
@@ -744,6 +746,7 @@ class BoardingListPage
             fputcsv($output, [
                 $pax['order_id'],
                 $pax['customer_name'],
+                get_the_title($sailing->ID),
                 $pax['customer_email'],
                 $pax['phone'],
                 $pax['country'] ?? '',

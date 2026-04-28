@@ -481,6 +481,9 @@ class BoardingListPage
         $output = fopen('php://output', 'w');
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
+        fputcsv($output, [get_the_title($sailing->ID)], ';');
+        fputcsv($output, [], ';');
+
         fputcsv($output, [
             'ID Commande', 'Client', 'Email', 'Téléphone',
             'Détail Passagers', 'Options', 'Total Pers.',
