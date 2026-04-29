@@ -43,7 +43,7 @@
       <div x-show="step === 1" x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
         <div class="p-8 md:p-12">
           <h2 class="text-primary-900 text-2xl font-bold mb-2">Quel type de carte cadeau ?</h2>
-          <p class="text-primary-400 mb-8">Choisissez entre une croisière spécifique ou un montant libre.</p>
+          <p class="text-primary-400 mb-8">Choisissez entre une croisière spécifique ou un montant libre&nbsp;-&nbsp;<strong>Validité 18 mois.</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {{-- Option : Croisière --}}
