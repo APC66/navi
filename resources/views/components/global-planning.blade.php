@@ -168,7 +168,7 @@
                     class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
                     :class="filters.ports.includes({{ $port->term_id }}) ? 'bg-primary-900 border-primary-900 text-white shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-primary-400'"
                   >
-                    {{ $port->name }}
+                    {{ html_entity_decode($port->name) }}
                   </button>
                 @endforeach
               </div>
@@ -212,7 +212,7 @@
                     class="rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200"
                     :class="filters.tags.includes({{ $tag->term_id }}) ? 'bg-secondary border-secondary text-primary-900 shadow-md' : 'bg-white border-gray-200 text-primary-600 hover:border-secondary'"
                   >
-                    {{ $tag->name }}
+                    {{ html_entity_decode($tag->name) }}
                   </button>
                 @endforeach
               </div>

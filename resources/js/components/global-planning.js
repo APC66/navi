@@ -192,7 +192,7 @@ const globalPlanningData = (nonce) => ({
       // Pour les tags (le sailing.tags est un tableau, on vérifie si au moins un correspond)
       if (this.filters.tags.length > 0) {
         const sailingTags = sailing.tags || [];
-        const hasMatchingTag = this.filters.tags.some(tagId => sailingTags.includes(tagId));
+        const hasMatchingTag = this.filters.tags.every(tagId => sailingTags.includes(tagId));
         if (!hasMatchingTag) return false;
       }
 
