@@ -37,7 +37,7 @@
       <div class="flex items-center justify-center gap-4 md:justify-end">
         <x-partials.button
           title="Voir tous nos avis"
-          url="https://search.google.com/local/reviews?placeid=ChIJowQyHRCAsBIRKT2kP09WyyE"
+          url="https://search.google.com/local/reviews?placeid=ChIJmZqbmqpXsBIROqfQvrjwUVU"
           target="_blank"
           variant="secondary"
         />
@@ -45,7 +45,7 @@
       <div class="flex items-center justify-center gap-4 md:justify-start">
         <x-partials.button
           title="Laisser un avis"
-          url="https://search.google.com/local/writereview?placeid=ChIJowQyHRCAsBIRKT2kP09WyyE"
+          url="https://search.google.com/local/writereview?placeid=ChIJmZqbmqpXsBIROqfQvrjwUVU"
           target="_blank"
           variant="outline"
         />
