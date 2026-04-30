@@ -128,9 +128,9 @@
       </div>
     @endif
   </div>
-  <div class="bg-primary-900 text-primary-200 flex flex-wrap items-center justify-center gap-x-20">
-    <p class="mt-4">&copy; {{ date('Y') }} {{ get_bloginfo('name') }}. Tous droits réservés.</p>
-    <p class="mt-4">
+  <div class="bg-primary-900 text-primary-200 flex flex-wrap items-center justify-center gap-x-20 py-4">
+    <p>&copy; {{ date('Y') }} {{ get_bloginfo('name') }}. Tous droits réservés.</p>
+    <p>
       Site réalisé avec ♡ par
       <a
         href="https://agencepoint.com"
