@@ -36,7 +36,7 @@
 
       $relatedPosts = get_posts([
           'post_type'      => 'cruise',
-          'posts_per_page' => 8,
+          'posts_per_page' => -1,
           'orderby'        => 'rand',
           'post__not_in'   => [get_the_ID()],
           'post_status'    => 'publish',
