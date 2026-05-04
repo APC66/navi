@@ -133,7 +133,7 @@
     <p>
       Site réalisé avec ♡ par
       <a
-        href="https://agencepoint.com"
+        href="{{ get_permalink(4170) }}"
         target="_blank"
         class="text-primary-300 hover:text-primary-100 transition"
       >
