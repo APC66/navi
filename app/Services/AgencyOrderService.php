@@ -51,6 +51,12 @@ class AgencyOrderService
 
         // AJAX endpoint pour récupérer les données de facturation d'un client
         add_action('wp_ajax_agency_get_customer_billing', [$this, 'ajaxGetCustomerBillingData']);
+
+        // CC de l'agent créateur sur les emails de commande
+        add_filter('woocommerce_email_headers', [$this, 'addAgencyCreatorCcToOrderEmail'], 10, 4);
+
+        // Bypass de la vérification d'identité WooCommerce pour les agents créateurs
+        add_filter('woocommerce_order_received_verify_known_shoppers', [$this, 'bypassOrderReceivedVerificationForAgency'], 10, 1);
     }
 
     /**
@@ -556,5 +562,89 @@ class AgencyOrderService
         }
 
         return $tag;
+    }
+
+    /**
+     * Bypasse la vérification d'identité WooCommerce sur la page order-received pour
+     * les agents créateurs. Sans ce bypass, WooCommerce affiche un formulaire de connexion
+     * au lieu du récapitulatif car l'agent ≠ client propriétaire de la commande.
+     */
+    public function bypassOrderReceivedVerificationForAgency(bool $verify): bool
+    {
+        if (! $this->currentUserCanPlaceAgencyOrders()) {
+            return $verify;
+        }
+
+        $order_id = absint($GLOBALS['wp']->query_vars['order-received'] ?? 0);
+        if ($order_id <= 0) {
+            return $verify;
+        }
+
+        $order = wc_get_order($order_id);
+        if (! $order instanceof \WC_Order) {
+            return $verify;
+        }
+
+        if ((int) $order->get_meta('_agency_creator_id') > 0) {
+            return false;
+        }
+
+        return $verify;
+    }
+
+    /**
+     * Ajoute l'agent créateur en CC sur les emails de confirmation de commande.
+     *
+     * @param  \WC_Order|mixed  $order
+     * @param  \WC_Email|mixed  $email
+     */
+    public function addAgencyCreatorCcToOrderEmail(string $headers, string $email_id, $order, $email): string
+    {
+        $watched_emails = ['new_order', 'customer_processing_order', 'customer_on_hold_order'];
+
+        if (! in_array($email_id, $watched_emails, true)) {
+            return $headers;
+        }
+
+        if (! $order instanceof \WC_Order) {
+            return $headers;
+        }
+
+        $creator_id = (int) $order->get_meta('_agency_creator_id');
+        if ($creator_id <= 0) {
+            return $headers;
+        }
+
+        $creator = get_user_by('id', $creator_id);
+        if (! $creator || empty($creator->user_email)) {
+            return $headers;
+        }
+
+        $headers .= 'Cc: '.$creator->user_email."\r\n";
+
+        return $headers;
+    }
+
+    /**
+     * Affiche le résumé de commande sur la page de confirmation pour l'agent créateur.
+     * Nécessaire car WooCommerce masque les détails quand l'agent n'est pas
+     * le propriétaire de la commande (attribuée au client final).
+     * L'accès est déjà protégé par la clé de commande dans l'URL.
+     */
+    public function displayOrderSummaryForAgencyCreator(int $order_id): void
+    {
+        $order = wc_get_order($order_id);
+        if (! $order) {
+            return;
+        }
+
+        if ((int) $order->get_meta('_agency_creator_id') <= 0) {
+            return;
+        }
+
+        wc_get_template('order/order-details.php', [
+            'order_id' => $order_id,
+            'show_downloads' => false,
+        ]);
     }
 }
