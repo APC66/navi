@@ -69,6 +69,7 @@ body, html{
     margin-right:8px;
   }
 }
+
 .new-item::before{
   content:'NEW';
   color: var(--color-primary-800);
@@ -80,6 +81,14 @@ body, html{
   color: var(--color-primary-800);
   background-color: var(--color-secondary);
 }
+
 .rpi-header{
   @apply hidden;
+}
+
+.gtranslate_wrapper{
+  a{
+    border-radius:30px;
+    padding-inline:8px;
+  }
 }

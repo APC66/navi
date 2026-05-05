@@ -59,6 +59,10 @@
         </a>
       </div>
       {{--  Drapeaux pour plus tard --}}
+      <div class="pt-10 mx-auto">
+        {!! do_shortcode('[gtranslate]') !!}
+      </div>
+
 
       <div class="py-10 mx-auto">
         <hr class="w-24 border-b border-primary-200 mx-auto ">
