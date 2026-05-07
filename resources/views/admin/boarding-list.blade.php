@@ -225,7 +225,7 @@
                   <td>
                     <span
                       style="
-                        color: {{ $pax['status'] == 'completed' ? 'green' : 'orange' }};
+                        color: {{ in_array($pax['status'], ['completed', 'processing']) ? 'green' : 'orange' }};
                         font-weight: bold;
                       "
                     >

@@ -359,12 +359,16 @@ class AgencyOrderService
      */
     public function customizeOrderColumns(array $columns): array
     {
-        // Supprimer la colonne "Livré à"
+        // Supprimer "Livré à" et remplacer "Facturation" par notre version avec téléphone
         unset($columns['shipping_address']);
 
         $new_columns = [];
         foreach ($columns as $key => $value) {
-            $new_columns[$key] = $value;
+            if ($key === 'billing_address') {
+                $new_columns['navi_billing'] = $value; // même label, contenu enrichi
+            } else {
+                $new_columns[$key] = $value;
+            }
             if ($key === 'order_status') {
                 $new_columns['navi_cruise_name'] = '⛵ Croisière(s)';
                 $new_columns['navi_passengers'] = '👥 Nb personnes';
@@ -405,6 +409,27 @@ class AgencyOrderService
     {
         if ($column === 'agency_creator') {
             $this->renderAgencyCreatorCell($order);
+
+            return;
+        }
+
+        if ($column === 'navi_billing') {
+            $address = $order->get_formatted_billing_address();
+            $phone = $order->get_billing_phone();
+
+            if ($address) {
+                echo esc_html(preg_replace('#<br\s*/?>#i', ', ', $address));
+            } else {
+                echo '&ndash;';
+            }
+
+            if ($phone) {
+                echo '<br><a href="tel:'.esc_attr($phone).'">'.esc_html($phone).'</a>';
+            }
+
+            if ($order->get_payment_method()) {
+                echo '<span class="description"> via '.esc_html($order->get_payment_method_title()).'</span>';
+            }
 
             return;
         }
