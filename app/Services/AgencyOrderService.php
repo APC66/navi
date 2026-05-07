@@ -32,13 +32,13 @@ class AgencyOrderService
         // Enregistrement de l'agent créateur dans les meta-données
         add_action('woocommerce_checkout_order_created', [$this, 'trackAgencyCreator'], 10, 1);
 
-        // Ajout d'une colonne admin pour afficher l'agent créateur
-        add_filter('manage_edit-shop_order_columns', [$this, 'addAgencyCreatorColumn'], 20);
-        add_action('manage_shop_order_posts_custom_column', [$this, 'displayAgencyCreatorColumn'], 10, 2);
+        // Ajout de colonnes admin dans la liste des commandes
+        add_filter('manage_edit-shop_order_columns', [$this, 'customizeOrderColumns'], 20);
+        add_action('manage_shop_order_posts_custom_column', [$this, 'displayCustomColumn'], 10, 2);
 
         // Support HPOS (High-Performance Order Storage)
-        add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'addAgencyCreatorColumn'], 20);
-        add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'displayAgencyCreatorColumnHPOS'], 10, 2);
+        add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'customizeOrderColumns'], 20);
+        add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'displayCustomColumnHPOS'], 10, 2);
 
         // Enqueue des scripts pour le checkout
         add_action('wp_enqueue_scripts', [$this, 'enqueueCheckoutScripts']);
@@ -352,14 +352,22 @@ class AgencyOrderService
     }
 
     /**
-     * Ajoute une colonne "Agent Créateur" dans la liste des commandes (admin).
+     * Personalise les colonnes de la liste des commandes (admin) :
+     * - Supprime "Livré à"
+     * - Ajoute "Croisière(s)" et "Nb personnes" après le statut
+     * - Ajoute "Agent Créateur" après le statut
      */
-    public function addAgencyCreatorColumn(array $columns): array
+    public function customizeOrderColumns(array $columns): array
     {
+        // Supprimer la colonne "Livré à"
+        unset($columns['shipping_address']);
+
         $new_columns = [];
         foreach ($columns as $key => $value) {
             $new_columns[$key] = $value;
             if ($key === 'order_status') {
+                $new_columns['navi_cruise_name'] = '⛵ Croisière(s)';
+                $new_columns['navi_passengers'] = '👥 Nb personnes';
                 $new_columns['agency_creator'] = '🏢 Agent Créateur';
             }
         }
@@ -368,14 +376,10 @@ class AgencyOrderService
     }
 
     /**
-     * Affiche le contenu de la colonne "Agent Créateur" (legacy).
+     * Affiche les colonnes personnalisées (legacy).
      */
-    public function displayAgencyCreatorColumn(string $column, int $post_id): void
+    public function displayCustomColumn(string $column, int $post_id): void
     {
-        if ($column !== 'agency_creator') {
-            return;
-        }
-
         $order = wc_get_order($post_id);
         if (! $order) {
             echo '—';
@@ -383,19 +387,59 @@ class AgencyOrderService
             return;
         }
 
-        $this->renderAgencyCreatorCell($order);
+        $this->renderCustomColumn($column, $order);
     }
 
     /**
-     * Affiche le contenu de la colonne "Agent Créateur" (HPOS).
+     * Affiche les colonnes personnalisées (HPOS).
      */
-    public function displayAgencyCreatorColumnHPOS(string $column, \WC_Order $order): void
+    public function displayCustomColumnHPOS(string $column, \WC_Order $order): void
     {
-        if ($column !== 'agency_creator') {
+        $this->renderCustomColumn($column, $order);
+    }
+
+    /**
+     * Rendu des cellules des colonnes personnalisées.
+     */
+    protected function renderCustomColumn(string $column, \WC_Order $order): void
+    {
+        if ($column === 'agency_creator') {
+            $this->renderAgencyCreatorCell($order);
+
             return;
         }
 
-        $this->renderAgencyCreatorCell($order);
+        if ($column === 'navi_cruise_name') {
+            $names = [];
+            foreach ($order->get_items() as $item) {
+                if ($item->get_meta('_sailing_id')) {
+                    $names[] = esc_html($item->get_name());
+                }
+            }
+            echo $names ? implode('<br>', $names) : '—';
+
+            return;
+        }
+
+        if ($column === 'navi_passengers') {
+            $parts = [];
+            foreach ($order->get_items() as $item) {
+                if ($item->get_meta('_sailing_id')) {
+                    $raw = $item->get_meta('_booking_data_raw');
+                    $data = $raw ? json_decode($raw, true) : [];
+                    foreach ($data['passengers'] ?? [] as $typeId => $qty) {
+                        if ($qty > 0) {
+                            $term = get_term($typeId, 'passenger_type');
+                            $name = ($term && ! is_wp_error($term)) ? $term->name : 'Passager';
+                            $parts[] = '<strong>'.(int) $qty.'</strong> × '.esc_html($name);
+                        }
+                    }
+                }
+            }
+            echo $parts ? implode('<br>', $parts) : '—';
+
+            return;
+        }
     }
 
     /**
