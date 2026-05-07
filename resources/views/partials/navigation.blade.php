@@ -64,7 +64,7 @@
       </div>
 
 
-      <div class="py-10 mx-auto">
+      <div class="py-6 mx-auto">
         <hr class="w-24 border-b border-primary-200 mx-auto ">
       </div>
       <div class="flex md:hidden items-center justify-center gap-4 pb-6">
@@ -97,7 +97,7 @@
           <ul class="flex flex-col space-y-2 md:space-y-4 lg:space-y-8 px-2 lg:px-10">
             @if (!empty($menuItems))
               @foreach ($menuItems as $item)
-                <li class="{{$item->classes ?? ''}} px-4 py-2 lg:px-8">
+                <li class="{{$item->classes ?? ''}} mb-4 px-4 py-2 lg:px-8">
                   @if (!empty($item->children))
                     <button
                       @click="openSubPanel('panel-{{ $item->id }}')"
