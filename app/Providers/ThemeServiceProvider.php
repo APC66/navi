@@ -208,13 +208,13 @@ class ThemeServiceProvider extends SageServiceProvider
             return $init;
         });
 
-        //        add_filter('user_has_cap', function ($allcaps, $caps, $args, $user) {
-        //            if (isset($user->user_email) && $user->user_email === 'julien@agencepoint.com') {
-        //                $allcaps['place_agency_orders'] = false;
-        //            }
-        //
-        //            return $allcaps;
-        //        }, 999, 4);
+        add_filter('user_has_cap', function ($allcaps, $caps, $args, $user) {
+            if (isset($user->user_email) && $user->user_email === 'julien@agencepoint.com') {
+                $allcaps['place_agency_orders'] = false;
+            }
+
+            return $allcaps;
+        }, 999, 4);
 
         add_action('pre_get_posts', function ($query) {
             if (! is_admin() && $query->is_main_query() && is_post_type_archive('cruise')) {
