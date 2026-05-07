@@ -55,13 +55,13 @@ class OrdersExportPage
     {
         global $wpdb;
 
-        // Récupération des agents ayant créé des commandes
+        // Récupération des agents ayant créé des commandes (table HPOS)
         $agents = $wpdb->get_results("
-            SELECT DISTINCT pm.meta_value as user_id, u.display_name, u.user_login
-            FROM {$wpdb->prefix}postmeta pm
-            INNER JOIN {$wpdb->users} u ON pm.meta_value = u.ID
-            WHERE pm.meta_key = '_agency_creator_id'
-            AND pm.meta_value != ''
+            SELECT DISTINCT om.meta_value as user_id, u.display_name, u.user_login
+            FROM {$wpdb->prefix}wc_orders_meta om
+            INNER JOIN {$wpdb->users} u ON om.meta_value = u.ID
+            WHERE om.meta_key = '_agency_creator_id'
+            AND om.meta_value != ''
             ORDER BY u.display_name ASC
         ");
 
