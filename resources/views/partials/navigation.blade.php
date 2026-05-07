@@ -90,7 +90,7 @@
 
       {{-- Zone des panneaux dynamiques --}}
       <div class="relative flex-1 overflow-hidden ">
-        {{-- PANNEAU PRINCIPAL (Niveau 0)  --}}
+        {{-- PANNEAU PRINCIPAL (Niveau 0) --}}
         <div
           class="absolute inset-0 overflow-y-auto  transition-all duration-500 ease-in-out"
           :class="{'translate-x-0 opacity-100 z-20 pointer-events-auto': activePanel === 'main','-translate-x-1/4 opacity-0 pointer-events-none z-10': panelStack.includes('main') && activePanel !== 'main', 'translate-x-full opacity-0 pointer-events-none z-20': !panelStack.includes('main') }" >
@@ -152,7 +152,7 @@
 
                 <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                   @foreach ($item->children as $child)
-                    <li class="{{$child->classes ?? ''}} px-2 lg:px-8 py-4">
+                    <li class="{{$child->classes ?? ''}} mb-4 px-2 lg:px-8 py-4">
                       {{-- S'il y a un Niveau 2 (Sous-sous-menu) --}}
                       @if (!empty($child->children))
                         <button
@@ -200,7 +200,7 @@
 
                     <ul class="flex flex-col py-4 space-y-2 lg:space-y-4 flex-1">
                       @foreach ($child->children as $grandChild)
-                        <li class="{{$grandChild->classes ?? ''}} px-2 lg:px-8 py-4">
+                        <li class="{{$grandChild->classes ?? ''}} mb-4 px-2 lg:px-8 py-4">
                           <a href="{{ $grandChild->url }}"
                              class="block font-medium hover:text-secondary transition-colors">
                             {!! $grandChild->label !!}
@@ -219,7 +219,7 @@
 
       {{-- Pied du Menu --}}
       <div class="px-4 lg:px-8 py-4 bg-primary-1000">
-        <hr class="w-24 border-b border-b-primary-200 mx-auto my-12">
+        <hr class="w-24 border-b border-b-primary-200 mx-auto my-6">
         <x-partials.socials container-class="flex justify-center items-center gap-4 " />
       </div>
 
