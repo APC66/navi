@@ -23,7 +23,7 @@
         data-aos-delay="150"
       @endif
     >
-      {!! do_shortcode('[brb_collection id=334]') !!}
+      {!! do_shortcode('[brb_collection id=4213]') !!}
     </div>
 
     <div
