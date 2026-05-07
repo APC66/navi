@@ -219,7 +219,7 @@
 
       {{-- Pied du Menu --}}
       <div class="px-4 lg:px-8 py-4 bg-primary-1000">
-        <hr class="w-24 border-b border-b-primary-200 mx-auto my-12 mb-4">
+        <hr class="w-24 border-b border-b-primary-200 mx-auto my-6 mb-4">
         <x-partials.socials container-class="flex justify-center items-center gap-4 " />
       </div>
 
