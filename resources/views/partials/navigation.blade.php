@@ -90,7 +90,7 @@
 
       {{-- Zone des panneaux dynamiques --}}
       <div class="relative flex-1 overflow-hidden ">
-        {{-- PANNEAU PRINCIPAL (Niveau 0) --}}
+        {{-- PANNEAU PRINCIPAL (Niveau 0)  --}}
         <div
           class="absolute inset-0 overflow-y-auto  transition-all duration-500 ease-in-out"
           :class="{'translate-x-0 opacity-100 z-20 pointer-events-auto': activePanel === 'main','-translate-x-1/4 opacity-0 pointer-events-none z-10': panelStack.includes('main') && activePanel !== 'main', 'translate-x-full opacity-0 pointer-events-none z-20': !panelStack.includes('main') }" >
