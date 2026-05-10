@@ -369,7 +369,7 @@ class BoardingListPage
         if ($dateChanged || $creditCouponCode || $manualAdjCouponCode) {
             $clientEmail = $order->get_billing_email();
             if ($clientEmail) {
-                $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
+                $clientName = $this->formatCustomerName($order) ?: 'Client';
                 $siteName = get_bloginfo('name');
 
                 if ($dateChanged) {
@@ -575,7 +575,7 @@ class BoardingListPage
                 // Notification email au client
                 $clientEmail = $order->get_billing_email();
                 if ($clientEmail) {
-                    $clientName = $order->get_formatted_billing_full_name() ?: 'Client';
+                    $clientName = $this->formatCustomerName($order) ?: 'Client';
                     $oldDateFormatted = '';
                     try {
                         $oldDateFormatted = $oldSailing ? (new \DateTime($oldSailing->start))->format('d/m/Y à H:i') : '';
@@ -725,6 +725,7 @@ class BoardingListPage
 
             'ID Commande',
             'Client',
+            'Partenaire',
             'Croisiere',
             'Email',
             'Téléphone',
@@ -746,6 +747,7 @@ class BoardingListPage
             fputcsv($output, [
                 $pax['order_id'],
                 $pax['customer_name'],
+                $pax['partner_name'],
                 get_the_title($sailing->ID),
                 $pax['customer_email'],
                 $pax['phone'],
@@ -820,7 +822,8 @@ class BoardingListPage
                 'order_id' => $order->get_id(),
                 'order_link' => get_edit_post_link($order->get_id()),
                 'edit_booking_url' => admin_url('admin.php?page=navi-boarding-list&action=edit&order_id='.$order->get_id()),
-                'customer_name' => $order->get_formatted_billing_full_name() ?: 'Client Invité',
+                'customer_name' => $this->formatCustomerName($order) ?: 'Client Invité',
+                'partner_name' => $this->getPartnerName($order),
                 'customer_email' => $order->get_billing_email(),
                 'phone' => $order->get_billing_phone(),
                 'country' => $order->get_billing_country(),
@@ -837,6 +840,65 @@ class BoardingListPage
         }
 
         return $list;
+    }
+
+    /**
+     * Formate le nom client en "NOM Prénom" pour la fiche d'embarquement.
+     */
+    private function formatCustomerName($order)
+    {
+        $first = trim((string) $order->get_billing_first_name());
+        $last  = trim((string) $order->get_billing_last_name());
+
+        if (! $first && ! $last) {
+            return '';
+        }
+
+        return trim(strtoupper($last) . ' ' . $first);
+    }
+
+    /**
+     * Récupère le nom du partenaire revendeur (agence) qui a passé la commande
+     * pour le compte du client. Retourne une chaîne vide s'il n'y en a pas.
+     *
+     * Priorité d'affichage :
+     *   1. Société de facturation (billing_company)
+     *   2. NOM Prénom (à partir de first_name / last_name)
+     *   3. display_name
+     *   4. email (dernier recours)
+     */
+    private function getPartnerName($order)
+    {
+        $creatorId = (int) $order->get_meta('_agency_creator_id');
+        if (! $creatorId) {
+            return '';
+        }
+
+        $user = get_user_by('id', $creatorId);
+        if (! $user) {
+            return '';
+        }
+
+        // 1. Société de facturation
+        $company = trim((string) get_user_meta($user->ID, 'billing_company', true));
+        if ($company !== '') {
+            return $company;
+        }
+
+        // 2. NOM Prénom
+        $first = trim((string) $user->first_name);
+        $last  = trim((string) $user->last_name);
+        if ($first || $last) {
+            return trim(strtoupper($last).' '.$first);
+        }
+
+        // 3. Display name
+        if (! empty($user->display_name)) {
+            return $user->display_name;
+        }
+
+        // 4. Email
+        return $user->user_email ?: '';
     }
 
     private function formatPassengers($passengers)
