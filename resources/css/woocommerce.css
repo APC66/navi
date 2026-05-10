@@ -391,5 +391,5 @@ html body.woocommerce-account .woocommerce form .form-row label{
 /* ThankYou */
 
 .woocommerce-checkout .woocommerce-thankyou-order-received{
-  @apply text-center font-medium mb-16;
+  @apply text-center mb-16;
 }
