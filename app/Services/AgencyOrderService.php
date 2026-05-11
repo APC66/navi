@@ -32,9 +32,6 @@ class AgencyOrderService
         // Enregistrement de l'agent créateur dans les meta-données
         add_action('woocommerce_checkout_order_created', [$this, 'trackAgencyCreator'], 10, 1);
 
-        // Sauvegarde de la date de départ sur la commande (pour le tri)
-        add_action('woocommerce_checkout_order_created', [$this, 'saveSailingDateOnOrder'], 10, 1);
-
         // Ajout de colonnes admin dans la liste des commandes
         add_filter('manage_edit-shop_order_columns', [$this, 'customizeOrderColumns'], 20);
         add_action('manage_shop_order_posts_custom_column', [$this, 'displayCustomColumn'], 10, 2);
@@ -43,15 +40,11 @@ class AgencyOrderService
         add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'customizeOrderColumns'], 20);
         add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'displayCustomColumnHPOS'], 10, 2);
 
-        // Colonnes triables
-        add_filter('manage_edit-shop_order_sortable_columns', [$this, 'makeSailingColumnSortable']);
-        add_filter('manage_woocommerce_page_wc-orders_sortable_columns', [$this, 'makeSailingColumnSortable']);
-
-        // Tri par date de départ (legacy)
-        add_filter('request', [$this, 'sortBySailingDate']);
-
-        // Tri par date de départ (HPOS)
-        add_filter('woocommerce_order_query_args', [$this, 'sortBySailingDateHPOS']);
+        // Filtre par sailing
+        add_action('restrict_manage_orders', [$this, 'renderSailingFilter']);
+        add_action('woocommerce_order_list_table_restrict_manage_orders', [$this, 'renderSailingFilter']);
+        add_filter('request', [$this, 'filterOrdersBySailing']);
+        add_filter('woocommerce_order_query_args', [$this, 'filterOrdersBySailingHPOS']);
 
         // Enqueue des scripts pour le checkout
         add_action('wp_enqueue_scripts', [$this, 'enqueueCheckoutScripts']);
@@ -344,25 +337,6 @@ class AgencyOrderService
      * Ré-applique également le customer_id du client final pour garantir qu'il
      * n'a pas été écrasé par WooCommerce entre les deux hooks.
      */
-    /**
-     * Sauvegarde la date de départ du sailing sur la commande pour permettre le tri admin.
-     */
-    public function saveSailingDateOnOrder(\WC_Order $order): void
-    {
-        foreach ($order->get_items() as $item) {
-            $sailingId = $item->get_meta('_sailing_id');
-            if ($sailingId) {
-                $date = get_post_meta((int) $sailingId, 'sailing_config_departure_date', true);
-                if ($date) {
-                    $order->update_meta_data('_navi_sailing_date', $date);
-                    $order->save();
-                }
-
-                break;
-            }
-        }
-    }
-
     public function trackAgencyCreator(\WC_Order $order): void
     {
         if (! $this->currentUserCanPlaceAgencyOrders()) {
@@ -503,43 +477,90 @@ class AgencyOrderService
     }
 
     /**
-     * Déclare la colonne "Croisière(s)" comme triable.
+     * Affiche le dropdown de filtre par sailing dans la liste des commandes admin.
      */
-    public function makeSailingColumnSortable(array $columns): array
+    public function renderSailingFilter(): void
     {
-        $columns['navi_cruise_name'] = ['navi_sailing_date', false];
+        global $wpdb;
 
-        return $columns;
+        // Récupère tous les sailings qui ont au moins une commande, triés par date de départ
+        $rows = $wpdb->get_results("
+            SELECT DISTINCT
+                oim.meta_value AS sailing_id,
+                pm.meta_value  AS departure_date,
+                p.post_title   AS sailing_title
+            FROM {$wpdb->prefix}woocommerce_order_itemmeta oim
+            INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = oim.order_item_id
+            INNER JOIN {$wpdb->posts} p ON p.ID = oim.meta_value
+            LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = oim.meta_value AND pm.meta_key = 'sailing_config_departure_date'
+            WHERE oim.meta_key = '_sailing_id'
+            ORDER BY pm.meta_value DESC
+        ");
+
+        $selected = isset($_GET['_navi_sailing_filter']) ? (int) $_GET['_navi_sailing_filter'] : 0;
+
+        echo '<select name="_navi_sailing_filter" style="float:none;margin-left:4px">';
+        echo '<option value="">— Tous les départs —</option>';
+        foreach ($rows as $row) {
+            $date = $row->departure_date ? date_i18n('d/m/Y H:i', strtotime($row->departure_date)) : '';
+            $label = esc_html($row->sailing_title).($date ? ' ('.$date.')' : '');
+            printf(
+                '<option value="%d"%s>%s</option>',
+                (int) $row->sailing_id,
+                selected($selected, (int) $row->sailing_id, false),
+                $label
+            );
+        }
+        echo '</select>';
     }
 
     /**
-     * Applique le tri par date de départ (legacy CPT orders).
+     * Filtre les commandes par sailing (legacy CPT orders).
      */
-    public function sortBySailingDate(array $vars): array
+    public function filterOrdersBySailing(array $vars): array
     {
-        if (! isset($vars['post_type']) || $vars['post_type'] !== 'shop_order') {
+        if (empty($_GET['_navi_sailing_filter']) || ! isset($vars['post_type']) || $vars['post_type'] !== 'shop_order') {
             return $vars;
         }
 
-        if (isset($vars['orderby']) && $vars['orderby'] === 'navi_sailing_date') {
-            $vars['meta_key'] = '_navi_sailing_date';
-            $vars['orderby'] = 'meta_value';
-        }
+        $sailingId = (int) $_GET['_navi_sailing_filter'];
+        $orderIds = $this->getOrderIdsBySailing($sailingId);
+
+        $vars['post__in'] = empty($orderIds) ? [0] : $orderIds;
 
         return $vars;
     }
 
     /**
-     * Applique le tri par date de départ (HPOS).
+     * Filtre les commandes par sailing (HPOS).
      */
-    public function sortBySailingDateHPOS(array $args): array
+    public function filterOrdersBySailingHPOS(array $args): array
     {
-        if (isset($args['orderby']) && $args['orderby'] === 'navi_sailing_date') {
-            $args['meta_key'] = '_navi_sailing_date';
-            $args['orderby'] = 'meta_value';
+        if (empty($_GET['_navi_sailing_filter'])) {
+            return $args;
         }
 
+        $sailingId = (int) $_GET['_navi_sailing_filter'];
+        $orderIds = $this->getOrderIdsBySailing($sailingId);
+
+        $args['id'] = empty($orderIds) ? [0] : $orderIds;
+
         return $args;
+    }
+
+    /**
+     * Retourne les IDs de commandes ayant un item lié au sailing donné.
+     */
+    private function getOrderIdsBySailing(int $sailingId): array
+    {
+        global $wpdb;
+
+        return $wpdb->get_col($wpdb->prepare("
+            SELECT DISTINCT oi.order_id
+            FROM {$wpdb->prefix}woocommerce_order_items oi
+            INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id
+            WHERE oim.meta_key = '_sailing_id' AND oim.meta_value = %s
+        ", $sailingId));
     }
 
     /**
