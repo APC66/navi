@@ -494,7 +494,7 @@ class AgencyOrderService
             INNER JOIN {$wpdb->posts} p ON p.ID = oim.meta_value
             LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = oim.meta_value AND pm.meta_key = 'sailing_config_departure_date'
             WHERE oim.meta_key = '_sailing_id'
-            ORDER BY pm.meta_value DESC
+            ORDER BY p.post_title DESC
         ");
 
         $selected = isset($_GET['_navi_sailing_filter']) ? (int) $_GET['_navi_sailing_filter'] : 0;
