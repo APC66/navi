@@ -363,6 +363,28 @@ class ThemeServiceProvider extends SageServiceProvider
             exit;
         });
 
+        // Transient trad
+        add_action('save_post', function (int $postId, \WP_Post $post) {
+
+            if (wp_is_post_autosave($postId) || wp_is_post_revision($postId)) {
+                return;
+            }
+            $watchedPostTypes = ['sailing', 'cruise'];
+
+            if (! in_array($post->post_type, $watchedPostTypes, true)) {
+                return;
+            }
+
+            global $wpdb;
+
+            $wpdb->query(
+                "DELETE FROM {$wpdb->options}
+         WHERE option_name LIKE '_transient_planning_%'
+            OR option_name LIKE '_transient_timeout_planning_%'"
+            );
+
+        }, 10, 2);
+
         add_filter('post_row_actions', [$this, 'addDuplicateLink'], 10, 2);
         add_filter('page_row_actions', [$this, 'addDuplicateLink'], 10, 2);
     }
