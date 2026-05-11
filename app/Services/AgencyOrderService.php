@@ -32,6 +32,9 @@ class AgencyOrderService
         // Enregistrement de l'agent créateur dans les meta-données
         add_action('woocommerce_checkout_order_created', [$this, 'trackAgencyCreator'], 10, 1);
 
+        // Sauvegarde de la date de départ sur la commande (pour le tri)
+        add_action('woocommerce_checkout_order_created', [$this, 'saveSailingDateOnOrder'], 10, 1);
+
         // Ajout de colonnes admin dans la liste des commandes
         add_filter('manage_edit-shop_order_columns', [$this, 'customizeOrderColumns'], 20);
         add_action('manage_shop_order_posts_custom_column', [$this, 'displayCustomColumn'], 10, 2);
@@ -39,6 +42,16 @@ class AgencyOrderService
         // Support HPOS (High-Performance Order Storage)
         add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'customizeOrderColumns'], 20);
         add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'displayCustomColumnHPOS'], 10, 2);
+
+        // Colonnes triables
+        add_filter('manage_edit-shop_order_sortable_columns', [$this, 'makeSailingColumnSortable']);
+        add_filter('manage_woocommerce_page_wc-orders_sortable_columns', [$this, 'makeSailingColumnSortable']);
+
+        // Tri par date de départ (legacy)
+        add_filter('request', [$this, 'sortBySailingDate']);
+
+        // Tri par date de départ (HPOS)
+        add_filter('woocommerce_order_query_args', [$this, 'sortBySailingDateHPOS']);
 
         // Enqueue des scripts pour le checkout
         add_action('wp_enqueue_scripts', [$this, 'enqueueCheckoutScripts']);
@@ -331,6 +344,25 @@ class AgencyOrderService
      * Ré-applique également le customer_id du client final pour garantir qu'il
      * n'a pas été écrasé par WooCommerce entre les deux hooks.
      */
+    /**
+     * Sauvegarde la date de départ du sailing sur la commande pour permettre le tri admin.
+     */
+    public function saveSailingDateOnOrder(\WC_Order $order): void
+    {
+        foreach ($order->get_items() as $item) {
+            $sailingId = $item->get_meta('_sailing_id');
+            if ($sailingId) {
+                $date = get_post_meta((int) $sailingId, 'sailing_config_departure_date', true);
+                if ($date) {
+                    $order->update_meta_data('_navi_sailing_date', $date);
+                    $order->save();
+                }
+
+                break;
+            }
+        }
+    }
+
     public function trackAgencyCreator(\WC_Order $order): void
     {
         if (! $this->currentUserCanPlaceAgencyOrders()) {
@@ -435,13 +467,16 @@ class AgencyOrderService
         }
 
         if ($column === 'navi_cruise_name') {
-            $names = [];
+            $lines = [];
             foreach ($order->get_items() as $item) {
-                if ($item->get_meta('_sailing_id')) {
-                    $names[] = esc_html($item->get_name());
+                $sailingId = $item->get_meta('_sailing_id');
+                if ($sailingId) {
+                    $date = get_post_meta((int) $sailingId, 'sailing_config_departure_date', true);
+                    $dateFormatted = $date ? date_i18n('d/m/Y H:i', strtotime($date)) : '';
+                    $lines[] = esc_html($item->get_name()).($dateFormatted ? '<br><small style="color:#666">'.esc_html($dateFormatted).'</small>' : '');
                 }
             }
-            echo $names ? implode('<br>', $names) : '—';
+            echo $lines ? implode('<br>', $lines) : '—';
 
             return;
         }
@@ -465,6 +500,46 @@ class AgencyOrderService
 
             return;
         }
+    }
+
+    /**
+     * Déclare la colonne "Croisière(s)" comme triable.
+     */
+    public function makeSailingColumnSortable(array $columns): array
+    {
+        $columns['navi_cruise_name'] = ['navi_sailing_date', false];
+
+        return $columns;
+    }
+
+    /**
+     * Applique le tri par date de départ (legacy CPT orders).
+     */
+    public function sortBySailingDate(array $vars): array
+    {
+        if (! isset($vars['post_type']) || $vars['post_type'] !== 'shop_order') {
+            return $vars;
+        }
+
+        if (isset($vars['orderby']) && $vars['orderby'] === 'navi_sailing_date') {
+            $vars['meta_key'] = '_navi_sailing_date';
+            $vars['orderby'] = 'meta_value';
+        }
+
+        return $vars;
+    }
+
+    /**
+     * Applique le tri par date de départ (HPOS).
+     */
+    public function sortBySailingDateHPOS(array $args): array
+    {
+        if (isset($args['orderby']) && $args['orderby'] === 'navi_sailing_date') {
+            $args['meta_key'] = '_navi_sailing_date';
+            $args['orderby'] = 'meta_value';
+        }
+
+        return $args;
     }
 
     /**

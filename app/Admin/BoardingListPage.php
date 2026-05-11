@@ -736,6 +736,7 @@ class BoardingListPage
             'Montant Payé (€)',
             'Reste à Payer (€)', // Ajout Balance
             'Statut Paiement',
+            'Commentaire Checkout',
             'Note Client',
             'Note Interne',
         ], ';');
@@ -758,6 +759,7 @@ class BoardingListPage
                 $pax['total_amount'],
                 $pax['balance_due'], // Valeur Balance
                 $pax['status_label'],
+                $pax['customer_note'],
                 $pax['boarding_notes'],
                 $pax['private_note'],
             ], ';');
@@ -836,6 +838,7 @@ class BoardingListPage
                 'balance_due' => $balanceDue,
                 'boarding_notes' => $boardingNotes,
                 'private_note' => $privateNote,
+                'customer_note' => $order->get_customer_note(),
             ];
         }
 
@@ -848,13 +851,13 @@ class BoardingListPage
     private function formatCustomerName($order)
     {
         $first = trim((string) $order->get_billing_first_name());
-        $last  = trim((string) $order->get_billing_last_name());
+        $last = trim((string) $order->get_billing_last_name());
 
         if (! $first && ! $last) {
             return '';
         }
 
-        return trim(strtoupper($last) . ' ' . $first);
+        return trim(strtoupper($last).' '.$first);
     }
 
     /**
@@ -887,7 +890,7 @@ class BoardingListPage
 
         // 2. NOM Prénom
         $first = trim((string) $user->first_name);
-        $last  = trim((string) $user->last_name);
+        $last = trim((string) $user->last_name);
         if ($first || $last) {
             return trim(strtoupper($last).' '.$first);
         }

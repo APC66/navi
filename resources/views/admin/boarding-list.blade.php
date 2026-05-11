@@ -162,6 +162,23 @@
                   <td>{{ $pax['options_summary'] ?: '-' }}</td>
 
                   <td>
+                    @if (! empty($pax['customer_note']))
+                      <div
+                        style="
+                          background: #f3e5f5;
+                          padding: 5px;
+                          border: 1px solid #ce93d8;
+                          border-radius: 3px;
+                          font-size: 0.9em;
+                          color: #6a1b9a;
+                          margin-bottom: 5px;
+                        "
+                        title="Commentaire Checkout"
+                      >
+                        💬 {{ $pax['customer_note'] }}
+                      </div>
+                    @endif
+
                     @if (! empty($pax['boarding_notes']))
                       <div
                         style="
@@ -195,7 +212,7 @@
                       </div>
                     @endif
 
-                    @if (empty($pax['boarding_notes']) && empty($pax['private_note']))
+                    @if (empty($pax['customer_note']) && empty($pax['boarding_notes']) && empty($pax['private_note']))
                       <span style="color: #ccc">-</span>
                     @endif
                   </td>
