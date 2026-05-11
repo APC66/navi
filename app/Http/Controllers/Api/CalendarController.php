@@ -3,11 +3,94 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Sailing;
+use App\Services\LangService;
 use WP_REST_Request;
 
 class CalendarController
 {
-    public function index(WP_REST_Request $request)
+    private const SOURCE_LANG = 'fr';
+
+    private const SUPPORTED_LANGS = ['en', 'de', 'es'];
+
+    private function getApiKey(): string
+    {
+        return defined('DEEPL_API_KEY') ? DEEPL_API_KEY : '';
+    }
+
+    /**
+     * Traduit un tableau de strings via DeepL API.
+     * Envoie toutes les strings en une seule requête.
+     */
+    private function translateBatch(array $texts, string $target): array
+    {
+        $apiKey = $this->getApiKey();
+
+        if (empty($apiKey) || empty($texts)) {
+            return $texts;
+        }
+
+        $targetUpper = strtoupper($target);
+        if ($targetUpper === 'EN') {
+            $targetUpper = 'EN-GB';
+        }
+
+        $toTranslate = array_filter($texts, fn ($t) => ! empty(trim($t)));
+
+        if (empty($toTranslate)) {
+            return $texts;
+        }
+
+        $endpoint = str_ends_with($apiKey, ':fx')
+            ? 'https://api-free.deepl.com/v2/translate'
+            : 'https://api.deepl.com/v2/translate';
+
+        $body = http_build_query([
+            'source_lang' => strtoupper(self::SOURCE_LANG),
+            'target_lang' => $targetUpper,
+        ]);
+        foreach (array_values($toTranslate) as $text) {
+            $body .= '&text='.urlencode($text);
+        }
+
+        $response = wp_remote_post($endpoint, [
+            'headers' => [
+                'Authorization' => 'DeepL-Auth-Key '.$apiKey,
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ],
+            'body' => $body,
+            'timeout' => 10,
+        ]);
+
+        if (is_wp_error($response)) {
+            error_log('DeepL API error (Calendar): '.$response->get_error_message());
+
+            return $texts;
+        }
+
+        $decoded = json_decode(wp_remote_retrieve_body($response), true);
+        $translations = $decoded['translations'] ?? [];
+
+        if (empty($translations)) {
+            error_log('DeepL API (Calendar): réponse vide — '.wp_remote_retrieve_body($response));
+
+            return $texts;
+        }
+
+        $result = $texts;
+        $keys = array_keys($toTranslate);
+        foreach ($translations as $i => $t) {
+            if (isset($keys[$i])) {
+                $result[$keys[$i]] = $t['text'];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * $lang est injecté automatiquement par ApiServiceProvider via réflexion.
+     */
+    public function index(WP_REST_Request $request, string $lang = '')
     {
         $context = $request->get_param('context');
         $is_admin = $context === 'admin' && current_user_can('edit_posts');
@@ -23,7 +106,6 @@ class CalendarController
         }
 
         $post_statuses = ['publish'];
-
         if ($is_admin) {
             $post_statuses = ['publish', 'draft', 'future', 'pending'];
         }
@@ -67,18 +149,33 @@ class CalendarController
             return [];
         }
 
+        // =================================================================
+        // CACHE — uniquement pour les langues étrangères et hors admin
+        // =================================================================
+        $needsTranslation = ! $is_admin && in_array($lang, self::SUPPORTED_LANGS, true);
+        $cacheKey = null;
+
+        if ($needsTranslation) {
+            $cacheKey = 'calendar_'.$cruiseId.'_'.$lang;
+            $cached = get_transient($cacheKey);
+            if ($cached !== false) {
+                return $cached;
+            }
+        }
+
+        // =================================================================
+        // CONSTRUCTION DES EVENTS
+        // =================================================================
         $events = $sailings->map(function ($sailing) use ($is_admin, $portName) {
 
             $quota = $sailing->quota;
             $start = $sailing->start;
             $end = $sailing->end;
-
             $booked = (int) get_post_meta($sailing->ID, 'sailing_config_booked_count', true);
             $remaining = $quota - $booked;
-
             $title = html_entity_decode($sailing->title, ENT_QUOTES);
 
-            // --- RÉCUPÉRATION DONNÉES COMMERCIALES ---
+            // Tarifs
             $fares = $sailing->fares ?: [];
             $formattedFares = array_map(function ($f) {
                 $termId = $f['passenger_type'] ?? 0;
@@ -97,6 +194,7 @@ class CalendarController
                 ];
             }, $fares);
 
+            // Options
             $options = $sailing->options ?: [];
             $formattedOptions = array_map(function ($o) {
                 $termId = $o['option_type'] ?? 0;
@@ -117,41 +215,33 @@ class CalendarController
                 ];
             }, $options);
 
-            // --- LOGIQUE VISUELLE (Front-end / Affichage) ---
-            // On se base sur la taxonomie 'sailing_status' pour déterminer l'aspect et la sélection.
+            // Statut
             $status_terms = wp_get_post_terms($sailing->ID, 'sailing_status', ['fields' => 'names']);
             $status_label = ! empty($status_terms) ? $status_terms[0] : 'Actif';
 
-            $color = '#3788d8'; // Bleu (Actif)
+            $color = '#3788d8';
             $classNames = [];
             $isSelectable = true;
 
-            // 1. Statut "Annulé" (Taxonomie)
             if ($status_label === 'Annulé') {
-                $color = '#718096'; // Gris
+                $color = '#718096';
                 $title = $is_admin ? '❌ ANNULÉ - '.$title : 'Annulé';
-                $remaining = 0; // Visuellement 0
+                $remaining = 0;
                 $classNames[] = 'evt-cancelled';
-                $isSelectable = false; // Bloque le clic en front
-            }
-            // 2. Statut "Reporté" (Taxonomie)
-            elseif ($status_label === 'Reporté') {
-                $color = '#d69e2e'; // Orange
+                $isSelectable = false;
+            } elseif ($status_label === 'Reporté') {
+                $color = '#d69e2e';
                 $title = $is_admin ? '⚠️ REPORTÉ - '.$title : 'Reporté';
                 $remaining = 0;
                 $classNames[] = 'evt-postponed';
                 $isSelectable = false;
-            }
-            // 3. Statut "Complet" (Taxonomie explicite OU Calculé)
-            elseif ($status_label === 'Complet' || $remaining <= 0) {
-                $color = '#dc2626'; // Rouge
+            } elseif ($status_label === 'Complet' || $remaining <= 0) {
+                $color = '#dc2626';
                 $title = $is_admin ? $title.' (Complet)' : 'Complet';
                 $remaining = 0;
                 $classNames[] = 'evt-full';
                 $isSelectable = false;
-            }
-            // 4. Statut "Brouillon" (WP natif - Admin seulement)
-            elseif ($sailing->post_status === 'draft') {
+            } elseif ($sailing->post_status === 'draft') {
                 $color = '#9ca3af';
                 $title .= ' (Brouillon)';
                 $isSelectable = false;
@@ -172,10 +262,10 @@ class CalendarController
                     'booked' => $booked,
                     'available' => $remaining,
                     'cruise_id' => $sailing->parent_cruise_id,
-                    'status' => $status_label, // Info pour le front
+                    'status' => $status_label, // toujours en français — logique JS
                     'fares' => $formattedFares,
                     'options' => $formattedOptions,
-                    'is_selectable' => $isSelectable, // Info critique pour le widget JS
+                    'is_selectable' => $isSelectable,
                 ],
             ];
 
@@ -185,8 +275,53 @@ class CalendarController
             }
 
             return $event;
-        });
+        })->toArray();
 
-        return $events->toArray();
+        // =================================================================
+        // TRADUCTION EN BATCH
+        // =================================================================
+        if ($needsTranslation && ! empty($events)) {
+
+            // Charge les statuts traduits via fichier de langue
+            $statusTranslations = LangService::get('planning', $lang, 'statuses') ?? [];
+
+            // Collecte tous les noms de tarifs et options à traduire via DeepL
+            // (noms de taxonomies custom — pas de traduction statique possible)
+            $textsToTranslate = [];
+            foreach ($events as $event) {
+                foreach ($event['extendedProps']['fares'] as $fare) {
+                    $textsToTranslate[] = $fare['name'];
+                }
+                foreach ($event['extendedProps']['options'] as $option) {
+                    $textsToTranslate[] = $option['name'];
+                }
+            }
+
+            $translated = $this->translateBatch($textsToTranslate, $lang);
+
+            // Réinjecte les traductions
+            $i = 0;
+            foreach ($events as &$event) {
+                foreach ($event['extendedProps']['fares'] as &$fare) {
+                    $fare['name'] = $translated[$i++];
+                }
+                unset($fare);
+
+                foreach ($event['extendedProps']['options'] as &$option) {
+                    $option['name'] = $translated[$i++];
+                }
+                unset($option);
+
+                // Statut via fichier de langue
+                $status = $event['extendedProps']['status'];
+                $event['extendedProps']['status_label'] = $statusTranslations[$status] ?? $status;
+            }
+            unset($event);
+
+            // Cache sans expiration fixe — invalidé à la sauvegarde d'un sailing
+            set_transient($cacheKey, $events, 12 * HOUR_IN_SECONDS);
+        }
+
+        return $events;
     }
 }

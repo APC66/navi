@@ -1,3 +1,12 @@
+// =============================================================================
+// PLANNING WIDGET
+// =============================================================================
+const detectSiteLang = () => {
+  // return 'en'
+  const supportedLangs = ['en', 'de', 'es']
+  const segment = window.location.pathname.split('/').filter(Boolean)[0]
+  return supportedLangs.includes(segment) ? segment : 'fr'
+}
 const globalPlanningData = (nonce) => ({
   loading: true,
   apiNonce: nonce,
@@ -6,7 +15,6 @@ const globalPlanningData = (nonce) => ({
   sailings: [],
   labels: {}, // Labels traduits retournés par l'API
 
-  // Nouveaux états pour le menu unifié
   filterMenuOpen: false,
   filters: {
     types: [],
@@ -14,7 +22,6 @@ const globalPlanningData = (nonce) => ({
     tags: [],
   },
 
-  // État pour savoir quelle carte est dépliée
   expandedSailingId: null,
 
   init() {
@@ -35,34 +42,15 @@ const globalPlanningData = (nonce) => ({
       if (typeof event.target.showPicker === 'function') {
         event.target.showPicker()
       }
-    } catch (e) {
-      // Ignoré silencieusement pour les navigateurs non supportés
-    }
+    } catch (e) {}
   },
 
   formatDateForPicker(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   },
 
-  _detectLang() {
-    // return 'en'
-
-    const supportedLangs = ['en', 'de', 'es'] // doit correspondre à ta config GTranslate
-    const segment = window.location.pathname.split('/').filter(Boolean)[0]
-    return supportedLangs.includes(segment) ? segment : null
-  },
-
-  // Retourne la locale BCP 47 pour Intl (ex: 'fr', 'en', 'de', 'es')
-  _getLocale() {
-    return this._detectLang() || 'fr'
-  },
-
   toggleSailing(id) {
-    if (this.expandedSailingId === id) {
-      this.expandedSailingId = null
-    } else {
-      this.expandedSailingId = id
-    }
+    this.expandedSailingId = this.expandedSailingId === id ? null : id
   },
 
   get activeFiltersCount() {
@@ -86,7 +74,7 @@ const globalPlanningData = (nonce) => ({
   },
 
   get weekRangeLabel() {
-    const locale = this._getLocale()
+    const locale = detectSiteLang()
     const days = this.weekDays
     const start = days[0]
     const end = days[6]
@@ -105,8 +93,7 @@ const globalPlanningData = (nonce) => ({
   },
 
   formatDayHeader(date) {
-    const locale = this._getLocale()
-    // ex: "lun. 11/05" en fr, "Mon 11/05" en en
+    const locale = detectSiteLang()
     const weekday = date.toLocaleDateString(locale, { weekday: 'short' })
     const dayNum = String(date.getDate()).padStart(2, '0')
     const monthNum = String(date.getMonth() + 1).padStart(2, '0')
@@ -171,16 +158,14 @@ const globalPlanningData = (nonce) => ({
     const startStr = this.formatDateForPicker(this.weekDays[0])
     const endStr = this.formatDateForPicker(this.weekDays[6])
 
-    const lang = this._detectLang()
-    const langParam = lang ? `&lang=${lang}` : ''
+    const lang = detectSiteLang()
+    const langParam = lang !== 'fr' ? `&lang=${lang}` : ''
 
     fetch(`/wp-json/radicle/v1/planning/week?start=${startStr}&end=${endStr}${langParam}`, {
       headers: { 'X-WP-Nonce': this.apiNonce },
     })
       .then((res) => res.json())
       .then((data) => {
-        // En langue étrangère : { sailings: [...], labels: {...} }
-        // En français : tableau direct
         if (Array.isArray(data)) {
           this.sailings = data
           this.labels = {}
@@ -227,8 +212,6 @@ const globalPlanningData = (nonce) => ({
   getCardStyle(sailing) {
     const isPast = this.isPastDate(sailing.datetime)
 
-    // sailing.status → toujours en français, utilisé pour la logique (SailingConfig)
-    // sailing.status_label → traduit, utilisé uniquement pour l'affichage
     const config = window.SailingConfig?.[sailing.status] ||
       window.SailingConfig?.['default'] || {
         bg: 'bg-gray-100',

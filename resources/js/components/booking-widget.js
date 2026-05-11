@@ -1,3 +1,12 @@
+// =============================================================================
+// BOOKING WIDGET
+// =============================================================================
+const detectSiteLang = () => {
+  // return 'en'
+  const supportedLangs = ['en', 'de', 'es']
+  const segment = window.location.pathname.split('/').filter(Boolean)[0]
+  return supportedLangs.includes(segment) ? segment : 'fr'
+}
 const bookingWidgetData = (cruiseId, nonce) => ({
   loading: true,
   adding: false,
@@ -11,21 +20,87 @@ const bookingWidgetData = (cruiseId, nonce) => ({
   apiNonce: nonce,
   viewDate: new Date(),
 
+  // Messages traduits par langue
+  _messages: {
+    fr: {
+      addedToCart: 'Ajouté au panier ! Redirection...',
+      unknownError: 'Erreur inconnue',
+      commError: 'Erreur de communication.',
+    },
+    en: {
+      addedToCart: 'Added to cart! Redirecting...',
+      unknownError: 'Unknown error',
+      commError: 'Communication error.',
+    },
+    de: {
+      addedToCart: 'Zum Warenkorb hinzugefügt! Weiterleitung...',
+      unknownError: 'Unbekannter Fehler',
+      commError: 'Kommunikationsfehler.',
+    },
+    es: {
+      addedToCart: '¡Añadido al carrito! Redirigiendo...',
+      unknownError: 'Error desconocido',
+      commError: 'Error de comunicación.',
+    },
+  },
+
+  // Labels de statut traduits par langue
+  _statusLabels: {
+    fr: {
+      Annulé: 'Annulé',
+      Reporté: 'Reporté',
+      Complet: 'Complet',
+      Limité: 'Limité',
+      Dispo: 'Dispo.',
+    },
+    en: {
+      Annulé: 'Cancelled',
+      Reporté: 'Postponed',
+      Complet: 'Full',
+      Limité: 'Limited',
+      Dispo: 'Avail.',
+    },
+    de: {
+      Annulé: 'Abgesagt',
+      Reporté: 'Verschoben',
+      Complet: 'Ausgebucht',
+      Limité: 'Begrenzt',
+      Dispo: 'Verf.',
+    },
+    es: {
+      Annulé: 'Cancelado',
+      Reporté: 'Pospuesto',
+      Complet: 'Completo',
+      Limité: 'Limitado',
+      Dispo: 'Disp.',
+    },
+  },
+
+  _t(key) {
+    const lang = detectSiteLang()
+    return this._messages[lang]?.[key] || this._messages['fr'][key]
+  },
+
+  _statusLabel(status) {
+    const lang = detectSiteLang()
+    return this._statusLabels[lang]?.[status] || status
+  },
+
   init() {
     const today = new Date().toISOString()
     const nextYear = new Date()
     nextYear.setFullYear(nextYear.getFullYear() + 1)
 
+    const lang = detectSiteLang()
+    const langParam = lang !== 'fr' ? `&lang=${lang}` : ''
+
     fetch(
-      `/wp-json/radicle/v1/calendar/events?cruise_id=${cruiseId}&start=${today}&end=${nextYear.toISOString()}`,
-      {
-        headers: { 'X-WP-Nonce': this.apiNonce },
-      },
+      `/wp-json/radicle/v1/calendar/events?cruise_id=${cruiseId}&start=${today}&end=${nextYear.toISOString()}${langParam}`,
+      { headers: { 'X-WP-Nonce': this.apiNonce } },
     )
       .then((res) => res.json())
       .then((data) => {
         this.sailings = data
-        console.log(data);
         this.loading = false
 
         const params = new URLSearchParams(window.location.search)
@@ -42,7 +117,8 @@ const bookingWidgetData = (cruiseId, nonce) => ({
   },
 
   get monthName() {
-    return this.viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+    const locale = detectSiteLang()
+    return this.viewDate.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   },
 
   get calendarGrid() {
@@ -54,11 +130,10 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
     const days = []
 
-    // Date d'aujourd'hui à minuit (pour bloquer les dates passées)
     const todayTimestamp = new Date()
     todayTimestamp.setHours(0, 0, 0, 0)
 
-    // Jours du mois précédent pour combler la première semaine
+    // Jours du mois précédent
     const prevMonthLastDay = new Date(year, month, 0).getDate()
     for (let i = startOffset - 1; i >= 0; i--) {
       days.push({ empty: true, day: prevMonthLastDay - i })
@@ -71,7 +146,6 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
 
-      // Sécurisation de la recherche de date (gère 'YYYY-MM-DDTHH:mm:ss' et 'YYYY-MM-DD HH:mm:ss')
       const sailing = this.sailings.find((s) => {
         if (!s.start) return false
         const startDay = s.start.includes('T') ? s.start.split('T')[0] : s.start.split(' ')[0]
@@ -83,29 +157,28 @@ const bookingWidgetData = (cruiseId, nonce) => ({
       let isSelectable = false
       let available = 0
 
-      // Définition rigoureuse de l'état selon la maquette
       if (sailing && !isPast) {
         available = parseInt(sailing.extendedProps.available)
-        if (isNaN(available)) available = 999 // Fallback de sécurité
+        if (isNaN(available)) available = 999
 
         let apiStatus = sailing.extendedProps.status || 'Actif'
 
         if (apiStatus === 'Annulé') {
           status = 'Annulé'
-          statusLabel = 'Annulé'
+          statusLabel = this._statusLabel('Annulé')
         } else if (apiStatus === 'Reporté') {
           status = 'Reporté'
-          statusLabel = 'Reporté'
+          statusLabel = this._statusLabel('Reporté')
         } else if (apiStatus === 'Complet' || available <= 0) {
           status = 'Complet'
-          statusLabel = 'Complet'
+          statusLabel = this._statusLabel('Complet')
         } else if (available > 0 && available <= 5) {
           status = 'Limité'
-          statusLabel = 'Limité' // Rendu modifiable visuellement
-          isSelectable = true // On peut toujours cliquer
+          statusLabel = this._statusLabel('Limité')
+          isSelectable = true
         } else {
           status = 'Dispo'
-          statusLabel = 'Dispo.'
+          statusLabel = this._statusLabel('Dispo')
           isSelectable = true
         }
       }
@@ -124,7 +197,7 @@ const bookingWidgetData = (cruiseId, nonce) => ({
       })
     }
 
-    // Jours du mois suivant pour compléter la grille
+    // Jours du mois suivant
     const totalCells = days.length
     const remainingCells = Math.ceil(totalCells / 7) * 7 - totalCells
     for (let i = 1; i <= remainingCells; i++) {
@@ -134,7 +207,6 @@ const bookingWidgetData = (cruiseId, nonce) => ({
     return days
   },
 
-  // Gère les classes CSS dynamiques
   getDayClasses(dayObj) {
     let classes = []
 
@@ -146,7 +218,7 @@ const bookingWidgetData = (cruiseId, nonce) => ({
           classes.push('border-[#C5F8A5] bg-[#C5F8A5] text-primary-1000 cursor-pointer')
           break
         case 'Limité':
-          classes.push('border-[#FFA632] bg-[#FFA632] t text-primary-1000 cursor-pointer')
+          classes.push('border-[#FFA632] bg-[#FFA632] text-primary-1000 cursor-pointer')
           break
         case 'Complet':
           classes.push('border-[#C33149] bg-[#C33149] text-white cursor-not-allowed')
@@ -161,13 +233,12 @@ const bookingWidgetData = (cruiseId, nonce) => ({
     }
 
     if (dayObj.isSelected) {
-      classes.push('border-primary-400 cale-105 z-10 shadow-lg')
+      classes.push('border-primary-400 scale-105 z-10 shadow-lg')
     }
 
     return classes.join(' ')
   },
 
-  // Gère le clic sur une date
   handleDayClick(dayObj) {
     if (!dayObj.empty && dayObj.sailing && !dayObj.isPast && dayObj.isSelectable) {
       this.selectDate(dayObj.sailing.id)
@@ -185,7 +256,6 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
     const sailing = this.sailings.find((s) => s.id == sailingId)
 
-    // Vérification de sécurité pour empêcher la sélection d'une date impossible
     if (
       !sailing ||
       sailing.extendedProps.status === 'Annulé' ||
@@ -201,7 +271,6 @@ const bookingWidgetData = (cruiseId, nonce) => ({
 
   updateSelectedSailing() {
     this.currentSailing = this.sailings.find((s) => s.id == this.selectedSailingId)
-    console.log(this.currentSailing);
     this.passengers = {}
     this.selectedOptions = {}
     this.message = ''
@@ -247,37 +316,26 @@ const bookingWidgetData = (cruiseId, nonce) => ({
     return total
   },
 
-  // Format attendu : "MER. 25 FÉVRIER À 07:00"
+  // Format : "MER. 25 FÉVRIER À 07:00" — traduit via Intl
   formatHeaderDate(dateStr) {
     if (!dateStr) return ''
+    const locale = detectSiteLang()
     const date = new Date(dateStr)
-    const days = ['DIM.', 'LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.']
-    const months = [
-      'JANVIER',
-      'FÉVRIER',
-      'MARS',
-      'AVRIL',
-      'MAI',
-      'JUIN',
-      'JUILLET',
-      'AOÛT',
-      'SEPTEMBRE',
-      'OCTOBRE',
-      'NOVEMBRE',
-      'DÉCEMBRE',
-    ]
 
-    const dayName = days[date.getDay()]
-    const dayNum = String(date.getDate()).padStart(2, '0')
-    const monthName = months[date.getMonth()]
-    const time = date
-      .toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-      .replace(':', ':')
+    const weekday = date
+      .toLocaleDateString(locale, { weekday: 'short' })
+      .toUpperCase()
+      .replace('.', '')
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = date.toLocaleDateString(locale, { month: 'long' }).toUpperCase()
+    const time = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 
-    return `${dayName} ${dayNum} ${monthName} À ${time}`
+    // Connecteur "À" / "AT" / "UM" / "A LAS"
+    const at = { fr: 'À', en: 'AT', de: 'UM', es: 'A LAS' }[locale] || 'À'
+
+    return `${weekday}. ${day} ${month} ${at} ${time}`
   },
 
-  // Format attendu : "92.00 €" ou "Gratuit"
   formatPrice(amount) {
     if (amount === undefined || amount === null) return '0,00 €'
     const numAmount = parseFloat(amount)
@@ -306,17 +364,17 @@ const bookingWidgetData = (cruiseId, nonce) => ({
       .then((data) => {
         this.adding = false
         if (data.success) {
-          this.message = 'Ajouté au panier ! Redirection...'
+          this.message = this._t('addedToCart')
           this.messageType = 'success'
           window.location.href = data.data.redirect || '/panier'
         } else {
-          this.message = data.message || 'Erreur inconnue'
+          this.message = data.message || this._t('unknownError')
           this.messageType = 'error'
         }
       })
-      .catch((err) => {
+      .catch(() => {
         this.adding = false
-        this.message = 'Erreur de communication.'
+        this.message = this._t('commError')
         this.messageType = 'error'
       })
   },
