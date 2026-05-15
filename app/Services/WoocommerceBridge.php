@@ -57,10 +57,14 @@ class WoocommerceBridge
             '_gc_options',
             '_gc_amount',
             '_gc_recipient_email',
+            '_gc_recipient_first_name',   // ← AJOUT
+            '_gc_recipient_last_name',    // ← AJOUT
+            '_gc_recipient_phone',        // ← AJOUT
             '_gc_recipient_message',
             '_gc_send_to_self',
             '_gc_mode',
             '_gc_product_title',
+            '_gc_coupon_code',            // ← AJOUT (s'il apparaît aussi à tort)
             '_gc_coupon_expiry',
             '_gc_processed',
         ]);
@@ -81,57 +85,122 @@ class WoocommerceBridge
         $expiry = $item->get_meta('_gc_coupon_expiry');
         $message = $item->get_meta('_gc_recipient_message');
         $email = $item->get_meta('_gc_recipient_email');
+        $firstName = $item->get_meta('_gc_recipient_first_name');
+        $lastName = $item->get_meta('_gc_recipient_last_name');
+        $phone = $item->get_meta('_gc_recipient_phone');
         $sendToSelf = $item->get_meta('_gc_send_to_self') === '1';
 
         $idBase = count($formattedMeta) + 100;
         $inject = [];
 
-        // Type
+        // 1. Type
+        $typeLabel = $mode === 'cruise' ? 'Croisière spécifique' : 'Montant libre';
         $inject[] = (object) [
             'id' => $idBase++,
             'key' => '_gc_display_type',
             'display_key' => 'Type',
-            'value' => $mode === 'cruise' ? 'Croisière spécifique' : 'Montant libre',
-            'display_value' => '<strong>'.($mode === 'cruise' ? 'Croisière spécifique' : 'Montant libre').'</strong>',
+            'value' => $typeLabel,
+            'display_value' => '<strong>'.esc_html($typeLabel).'</strong>',
         ];
 
-        // Croisière
+        // 2. Destinataire (Prénom Nom)
+        $fullName = trim(trim((string) $firstName).' '.trim((string) $lastName));
+        if ($sendToSelf) {
+            $recipientDisplay = 'Envoi à soi-même';
+        } elseif ($fullName !== '') {
+            $recipientDisplay = esc_html($fullName);
+        } else {
+            $recipientDisplay = esc_html((string) $email);
+        }
+        $inject[] = (object) [
+            'id' => $idBase++,
+            'key' => '_gc_display_recipient',
+            'display_key' => 'Destinataire',
+            'value' => $sendToSelf ? 'Envoi à soi-même' : $fullName,
+            'display_value' => $recipientDisplay,
+        ];
+
+        // 3. Téléphone
+        if (! $sendToSelf && $phone) {
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_phone',
+                'display_key' => 'Téléphone',
+                'value' => $phone,
+                'display_value' => esc_html($phone),
+            ];
+        }
+
+        // 4. Email
+        if (! $sendToSelf && $email) {
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_email',
+                'display_key' => 'Email',
+                'value' => $email,
+                'display_value' => esc_html($email),
+            ];
+        }
+
+        // 5. Message
+        if ($message) {
+            $inject[] = (object) [
+                'id' => $idBase++,
+                'key' => '_gc_display_message',
+                'display_key' => 'Message',
+                'value' => $message,
+                'display_value' => nl2br(esc_html($message)),
+            ];
+        }
+
+        // 6. Croisière + Saison + Passagers + Options (uniquement mode "cruise")
         if ($mode === 'cruise') {
             $cruiseId = absint($item->get_meta('_gc_cruise_id'));
             $season = $item->get_meta('_gc_season');
             $noSeasonality = $item->get_meta('_gc_no_seasonality') === '1';
 
             if ($cruiseId) {
+                $cruiseTitle = get_the_title($cruiseId);
                 $inject[] = (object) [
                     'id' => $idBase++,
                     'key' => '_gc_display_cruise',
                     'display_key' => 'Croisière',
-                    'value' => get_the_title($cruiseId),
-                    'display_value' => get_the_title($cruiseId),
+                    'value' => sprintf('%s (#%d)', $cruiseTitle, $cruiseId),
+                    'display_value' => sprintf('%s (#%d)', esc_html($cruiseTitle), $cruiseId),
                 ];
             }
 
-            if (! $noSeasonality) {
-                $inject[] = (object) [
-                    'id' => $idBase++,
-                    'key' => '_gc_display_season',
-                    'display_key' => 'Saison',
-                    'value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
-                    'display_value' => $season === 'high' ? 'Haute Saison' : 'Basse Saison',
-                ];
+            // Saison : affichée uniquement si la croisière a une notion de saisonnalité
+            // et si la valeur est "high" ou "low" (sinon on n'affiche rien)
+            if (! $noSeasonality && $season) {
+                $seasonLabel = match ($season) {
+                    'high' => 'Haute',
+                    'low' => 'Basse',
+                    default => null,
+                };
+                if ($seasonLabel) {
+                    $inject[] = (object) [
+                        'id' => $idBase++,
+                        'key' => '_gc_display_season',
+                        'display_key' => 'Saison',
+                        'value' => $seasonLabel,
+                        'display_value' => esc_html($seasonLabel),
+                    ];
+                }
             }
 
             // Passagers
             $passengersRaw = $item->get_meta('_gc_passengers');
             $passengers = $passengersRaw ? json_decode($passengersRaw, true) : [];
             $passengerLines = [];
-            foreach ($passengers as $typeId => $qty) {
+            foreach ((array) $passengers as $typeId => $qty) {
+                $qty = (int) $qty;
                 if ($qty <= 0) {
                     continue;
                 }
                 $term = get_term(absint($typeId), 'passenger_type');
                 $name = (! is_wp_error($term) && $term) ? $term->name : "Type #{$typeId}";
-                $passengerLines[] = "{$name} × {$qty}";
+                $passengerLines[] = "{$qty} x {$name}";
             }
             if ($passengerLines) {
                 $inject[] = (object) [
@@ -139,7 +208,7 @@ class WoocommerceBridge
                     'key' => '_gc_display_passengers',
                     'display_key' => 'Passagers',
                     'value' => implode(', ', $passengerLines),
-                    'display_value' => implode('<br>', $passengerLines),
+                    'display_value' => esc_html(implode(', ', $passengerLines)),
                 ];
             }
 
@@ -147,13 +216,14 @@ class WoocommerceBridge
             $optionsRaw = $item->get_meta('_gc_options');
             $options = $optionsRaw ? json_decode($optionsRaw, true) : [];
             $optionLines = [];
-            foreach ($options as $typeId => $qty) {
+            foreach ((array) $options as $typeId => $qty) {
+                $qty = (int) $qty;
                 if ($qty <= 0) {
                     continue;
                 }
                 $term = get_term(absint($typeId), 'extra_option_type');
                 $name = (! is_wp_error($term) && $term) ? $term->name : "Option #{$typeId}";
-                $optionLines[] = "{$name} × {$qty}";
+                $optionLines[] = "{$qty} x {$name}";
             }
             if ($optionLines) {
                 $inject[] = (object) [
@@ -161,50 +231,39 @@ class WoocommerceBridge
                     'key' => '_gc_display_options',
                     'display_key' => 'Options',
                     'value' => implode(', ', $optionLines),
-                    'display_value' => implode('<br>', $optionLines),
+                    'display_value' => esc_html(implode(', ', $optionLines)),
                 ];
             }
         }
 
-        // Montant
+        // 7. Valeur (montant)
+        $amountFormatted = number_format($amount, 2, ',', ' ').' €';
         $inject[] = (object) [
             'id' => $idBase++,
             'key' => '_gc_display_amount',
             'display_key' => 'Valeur',
-            'value' => number_format($amount, 2, ',', ' ').' €',
-            'display_value' => '<strong>'.number_format($amount, 2, ',', ' ').' €</strong>',
+            'value' => $amountFormatted,
+            'display_value' => '<strong>'.esc_html($amountFormatted).'</strong>',
         ];
 
-        // Destinataire
-        $recipientDisplay = $sendToSelf ? 'Envoi à soi-même' : esc_html($email);
+        // 8. Code coupon
         $inject[] = (object) [
             'id' => $idBase++,
-            'key' => '_gc_display_recipient',
-            'display_key' => 'Destinataire',
-            'value' => $recipientDisplay,
-            'display_value' => $recipientDisplay,
+            'key' => '_gc_display_coupon_code',
+            'display_key' => 'Code coupon',
+            'value' => $couponCode,
+            'display_value' => '<code>'.esc_html($couponCode).'</code>',
         ];
 
-        // Message
-        if ($message) {
-            $inject[] = (object) [
-                'id' => $idBase++,
-                'key' => '_gc_display_message',
-                'display_key' => 'Message',
-                'value' => $message,
-                'display_value' => esc_html($message),
-            ];
-        }
-
-        // Expiration
+        // 9. Expiration (format français jj/mm/aaaa)
         if ($expiry) {
             $expiryFormatted = \DateTime::createFromFormat('Y-m-d', $expiry)?->format('d/m/Y') ?? $expiry;
             $inject[] = (object) [
                 'id' => $idBase++,
                 'key' => '_gc_display_expiry',
-                'display_key' => 'Expire le',
+                'display_key' => 'Expiration',
                 'value' => $expiryFormatted,
-                'display_value' => $expiryFormatted,
+                'display_value' => esc_html($expiryFormatted),
             ];
         }
 
