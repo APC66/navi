@@ -882,26 +882,7 @@ class BoardingListPage
             return '';
         }
 
-        // 1. Société de facturation
-        $company = trim((string) get_user_meta($user->ID, 'billing_company', true));
-        if ($company !== '') {
-            return $company;
-        }
-
-        // 2. NOM Prénom
-        $first = trim((string) $user->first_name);
-        $last = trim((string) $user->last_name);
-        if ($first || $last) {
-            return trim(strtoupper($last).' '.$first);
-        }
-
-        // 3. Display name
-        if (! empty($user->display_name)) {
-            return $user->display_name;
-        }
-
-        // 4. Email
-        return $user->user_email ?: '';
+        return $user->display_name ?: $user->user_login;
     }
 
     private function formatPassengers($passengers)
