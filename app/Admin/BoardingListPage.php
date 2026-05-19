@@ -723,8 +723,8 @@ class BoardingListPage
 
         fputcsv($output, [
 
-            'ID Commande',
             'Client',
+            'ID Commande',
             'Partenaire',
             'Croisiere',
             'Email',
@@ -746,8 +746,8 @@ class BoardingListPage
             $optionsClean = strip_tags($pax['options_summary']);
 
             fputcsv($output, [
-                $pax['order_id'],
                 $pax['customer_name'],
+                $pax['order_id'],
                 $pax['partner_name'],
                 get_the_title($sailing->ID),
                 $pax['customer_email'],
@@ -821,10 +821,10 @@ class BoardingListPage
             $balanceDue = (float) $order->get_meta('_balance_due', true);
 
             $list[] = [
+                'customer_name' => $this->formatCustomerName($order) ?: 'Client Invité',
                 'order_id' => $order->get_id(),
                 'order_link' => get_edit_post_link($order->get_id()),
                 'edit_booking_url' => admin_url('admin.php?page=navi-boarding-list&action=edit&order_id='.$order->get_id()),
-                'customer_name' => $this->formatCustomerName($order) ?: 'Client Invité',
                 'partner_name' => $this->getPartnerName($order),
                 'customer_email' => $order->get_billing_email(),
                 'phone' => $order->get_billing_phone(),
