@@ -14,6 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Elms+Sans&family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Murecho:wght@100..900&display=swap"
       rel="stylesheet"
     />
+    {!! get_field('header_scripts', 'options') !!}
   </head>
 
   <body @php(body_class())>
