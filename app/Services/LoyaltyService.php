@@ -24,7 +24,9 @@ class LoyaltyService
         add_action('woocommerce_order_status_completed', [$this, 'awardPointsOnOrderComplete'], 10, 1);
 
         // Déduction des points lors d'un remboursement
-        add_action('woocommerce_order_status_refunded', [$this, 'deductPointsOnOrderRefunded'], 10, 1);
+        // add_action('woocommerce_order_status_refunded', [$this, 'deductPointsOnOrderRefunded'], 10, 1);
+        add_action('woocommerce_order_status_processing', [$this, 'attribuerPoints'], 10, 1);
+
 
         // Affichage du solde de points dans le compte client (optionnel)
         add_action('woocommerce_account_dashboard', [$this, 'displayPointsBalance']);
