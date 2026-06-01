@@ -23,7 +23,6 @@ class LoyaltyService
         // Attribution des points lors du passage au statut "validée" (en cours, processing)
         add_action('woocommerce_order_status_processing', [$this, 'awardPointsOnOrderComplete'], 10, 1);
 
-
         // Déduction des points lors d'un remboursement
         add_action('woocommerce_order_status_refunded', [$this, 'deductPointsOnOrderRefunded'], 10, 1);
 

@@ -9,7 +9,7 @@
   <div class="container mx-auto max-w-7xl px-4">
     <div
       class="relative rounded-[30px] bg-[#EBF0F5] p-6 shadow-2xl md:p-10"
-      x-data="globalPlanning('{{ wp_create_nonce('wp_rest') }}')"
+      x-data="globalPlanning()"
     >
 
 

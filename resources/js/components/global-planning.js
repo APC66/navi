@@ -7,9 +7,8 @@ const detectSiteLang = () => {
   const segment = window.location.pathname.split('/').filter(Boolean)[0]
   return supportedLangs.includes(segment) ? segment : 'fr'
 }
-const globalPlanningData = (nonce) => ({
+const globalPlanningData = () => ({
   loading: true,
-  apiNonce: nonce,
   currentDate: new Date(),
   datePickerValue: '',
   sailings: [],
@@ -161,9 +160,7 @@ const globalPlanningData = (nonce) => ({
     const lang = detectSiteLang()
     const langParam = lang !== 'fr' ? `&lang=${lang}` : ''
 
-    fetch(`/wp-json/radicle/v1/planning/week?start=${startStr}&end=${endStr}${langParam}`, {
-      headers: { 'X-WP-Nonce': this.apiNonce },
-    })
+    fetch(`/wp-json/radicle/v1/planning/week?start=${startStr}&end=${endStr}${langParam}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

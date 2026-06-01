@@ -67,7 +67,7 @@ class ApiServiceProvider extends ServiceProvider
                     return current_user_can('edit_posts');
                 }
 
-                return '__return_true';
+                return true;
             },
         ]);
     }
