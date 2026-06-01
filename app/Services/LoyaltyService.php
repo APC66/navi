@@ -259,7 +259,11 @@ class LoyaltyService
         if ($reward_type === 'percent') {
             $reward_display = $reward_value.'%';
         } else {
-            $reward_display = wc_price($reward_value);
+            $reward_display = html_entity_decode(
+                wp_strip_all_tags(wc_price($reward_value)),
+                ENT_QUOTES,
+                'UTF-8'
+            );
         }
 
         // Corps de l'email
