@@ -7,7 +7,7 @@ namespace App\Services;
  *
  * Règles métier :
  * - 1€ dépensé = 1 point de fidélité
- * - Points attribués uniquement sur commandes "Terminées" (wc-completed)
+ * - Points attribués uniquement sur commandes "En cours" (wc-processing)
  * - Points attribués au client final (get_customer_id), jamais à l'agent
  * - Au palier défini (ex: 500 points), génération automatique d'un coupon WooCommerce
  * - Coupon à usage unique, lié à l'email du client

@@ -9,7 +9,7 @@ Le système de fidélité permet de récompenser les clients pour leurs achats e
 ### Attribution des points
 - **1€ dépensé = 1 point de fidélité**
 - Les points sont calculés sur le total de la commande (`$order->get_total()`)
-- Les points sont attribués **uniquement** lorsque la commande passe au statut **"Terminée"** (`wc-completed`)
+- Les points sont attribués **uniquement** lorsque la commande passe au statut **"En cours"** (`wc-processing`)
 - Les points sont **toujours attribués au client final** (`$order->get_customer_id()`), jamais à l'agent qui a passé la commande
 
 ### Retrait des points en cas de remboursement
@@ -79,11 +79,11 @@ La page de réglages affiche également :
 
 ### 1. Attribution automatique des points
 
-Lorsqu'une commande passe au statut "Terminée" :
+Lorsqu'une commande passe au statut "En cours" :
 
 ```php
 // Hook déclenché
-add_action('woocommerce_order_status_completed', [$this, 'awardPointsOnOrderComplete']);
+add_action('woocommerce_order_status_processing', [$this, 'awardPointsOnOrderComplete'], 10, 1);
 
 // Calcul
 $order_total = $order->get_total(); // Ex: 150.00€
@@ -149,8 +149,8 @@ Une colonne "Points de Fidélité" est ajoutée dans la liste des utilisateurs W
 1. **Client passe une commande de 150€**
    - Commande #1234 créée
 
-2. **Commande passe au statut "Terminée"**
-   - Hook `woocommerce_order_status_completed` déclenché
+2. **Commande passe au statut "En cours"**
+   - Hook `woocommerce_order_status_processing` déclenché
    - 150 points attribués au client
    - Solde actuel : 150 points
 
@@ -280,7 +280,7 @@ DELETE FROM wp_usermeta WHERE meta_key = '_loyalty_points_history';
 ### Les points ne sont pas attribués
 
 Vérifiez :
-1. Le statut de la commande est bien `wc-completed`
+1. Le statut de la commande est bien `wc-processing`
 2. La commande a un `customer_id` valide (pas un invité)
 3. Les points n'ont pas déjà été attribués (`_loyalty_points_awarded`)
 
