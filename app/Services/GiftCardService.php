@@ -40,10 +40,8 @@ class GiftCardService
         // Création du coupon WooCommerce
         $coupon = new \WC_Coupon;
         $coupon->set_code($couponCode);
-        $coupon->set_discount_type('fixed_cart');
+        $coupon->set_discount_type('smart_coupon');
         $coupon->set_amount($amount);
-        $coupon->set_usage_limit(1);
-        $coupon->set_usage_limit_per_user(1);
         $coupon->set_individual_use(false);
         $coupon->set_description(
             sprintf(

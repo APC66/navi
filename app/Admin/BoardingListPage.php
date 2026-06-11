@@ -634,10 +634,9 @@ class BoardingListPage
         $expiry_date = strtotime('+18 months');
         $coupon = new WC_Coupon;
         $coupon->set_code($code);
-        $coupon->set_discount_type('fixed_cart');
+        $coupon->set_discount_type('smart_coupon');
         $coupon->set_amount($amount);
         $coupon->set_individual_use(true);
-        $coupon->set_usage_limit(1);
         $coupon->set_date_expires($expiry_date);
         if ($email) {
             $coupon->set_email_restrictions([$email]);
