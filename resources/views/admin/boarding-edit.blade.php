@@ -8,7 +8,17 @@
   <div class="wrap">
     <h1 class="wp-heading-inline">✏️ Modifier la réservation #{{ $order->get_id() }}</h1>
 
-    <div style="margin-top: 20px; max-width: 1000px">
+    <div
+      style="
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        align-items: flex-start;
+        max-width: 1500px;
+      "
+    >
+      <div style="flex: 1 1 640px; min-width: 0">
       <form
         id="edit-booking-form"
         method="POST"
@@ -331,6 +341,157 @@
           </div>
         </div>
       </form>
+      </div>
+
+      <aside
+        style="
+          flex: 1 1 360px;
+          min-width: 320px;
+          max-width: 430px;
+          position: sticky;
+          top: 40px;
+          background: #fff;
+          border: 1px solid #c3c4c7;
+          border-radius: 4px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          padding: 18px 20px;
+          font-size: 13px;
+          line-height: 1.55;
+        "
+      >
+        <h2 style="margin-top: 0; font-size: 1.15em">📖 Guide : reports, avoirs &amp; ajustements</h2>
+
+        <div
+          style="
+            background: #fcf0f1;
+            border-left: 4px solid #d63638;
+            border-radius: 3px;
+            padding: 10px 12px;
+            margin-bottom: 18px;
+          "
+        >
+          <strong>⚠️ Attention :</strong>
+          si un solde existe déjà pour ce client, ce que tu tapes
+          <strong>s'ajoute</strong>
+          au solde existant, il ne le remplace pas (en positif comme en négatif). À garder en tête pour
+          les commandes déjà ajustées, cela peut devenir un vrai casse-tête.
+        </div>
+
+        <div style="margin-bottom: 16px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 1</p>
+          <p style="margin: 0">
+            Les clients veulent changer de date et le tarif ne change pas =&gt;
+            <strong>ce n'est pas ici</strong>, il faut retourner la liste d'embarquement et cliquer sur le
+            bouton «&nbsp;reporter&nbsp;».
+          </p>
+        </div>
+
+        <div style="margin-bottom: 16px; border-top: 1px solid #eee; padding-top: 14px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 2</p>
+          <p style="margin: 0">
+            Les clients veulent avoir un avoir sans choix de nouvelle date =&gt; on modifie sur cette page :
+          </p>
+          <ul style="margin: 6px 0 0; padding-left: 18px">
+            <li>On ne touche pas à la date de départ</li>
+            <li>Dans «&nbsp;passagers à reporter&nbsp;» on met tout à zéro</li>
+            <li>
+              Dans la case «&nbsp;ajustement prix&nbsp;», on met le montant
+              <strong>TOTAL</strong>
+              à générer en avoir, donc le montant doit être
+              <strong>négatif</strong>
+            </li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 16px; border-top: 1px solid #eee; padding-top: 14px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 3</p>
+          <p style="margin: 0">
+            Certains des passagers d'une commande se sont ajoutés mais pas de changement de date =&gt; 2
+            solutions :
+          </p>
+          <ul style="margin: 6px 0 0; padding-left: 18px">
+            <li>
+              La première (solution idéale par rapport au futur système de facturation) : le client fait une
+              nouvelle commande pour les personnes à ajouter, OU tu en fais une pour lui, mais en indiquant
+              bien en commentaire que le montant est dû à l'embarquement
+            </li>
+            <li>
+              La seconde solution =&gt; on modifie sur cette page :
+              <ul style="margin: 4px 0 0; padding-left: 18px">
+                <li>On ne touche pas à la date de départ</li>
+                <li>Dans «&nbsp;passagers à reporter&nbsp;» on met les nouvelles quantités</li>
+                <li>
+                  Dans la case «&nbsp;ajustement prix&nbsp;», on met le montant dû en plus à l'embarquement,
+                  donc le montant doit être
+                  <strong>positif</strong>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 16px; border-top: 1px solid #eee; padding-top: 14px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 4</p>
+          <p style="margin: 0">
+            Certaines des passagers se sont enlevés mais pas de changement de date =&gt; on modifie sur cette
+            page :
+          </p>
+          <ul style="margin: 6px 0 0; padding-left: 18px">
+            <li>On ne touche pas à la date de départ</li>
+            <li>Dans «&nbsp;passagers à reporter&nbsp;» on met les nouvelles quantités</li>
+            <li>
+              Dans la case «&nbsp;ajustement prix&nbsp;», on met le montant à générer en avoir, donc le
+              montant doit être
+              <strong>négatif</strong>
+            </li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom: 16px; border-top: 1px solid #eee; padding-top: 14px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 5</p>
+          <p style="margin: 0">
+            Certains des passagers d'une commande se sont ajoutés et il y a un changement de date =&gt; 2
+            solutions :
+          </p>
+          <ul style="margin: 6px 0 0; padding-left: 18px">
+            <li>
+              La première (solution idéale par rapport au futur système de facturation) : tu fais un report
+              (voir solution 1) pour les passagers déjà sur cette date, ET en parallèle le client fait une
+              nouvelle commande pour les personnes à ajouter, OU tu en fais une pour lui, mais en indiquant
+              bien en commentaire que le montant est dû à l'embarquement
+            </li>
+            <li>
+              La seconde solution =&gt; on modifie sur cette page :
+              <ul style="margin: 4px 0 0; padding-left: 18px">
+                <li>On choisit la nouvelle date de départ</li>
+                <li>Dans «&nbsp;passagers à reporter&nbsp;» on met les nouvelles quantités</li>
+                <li>
+                  Dans la case «&nbsp;ajustement prix&nbsp;», on met le montant dû en plus à l'embarquement,
+                  donc le montant doit être
+                  <strong>positif</strong>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div style="border-top: 1px solid #eee; padding-top: 14px">
+          <p style="margin: 0 0 4px; font-weight: 600">Situation 6</p>
+          <p style="margin: 0">
+            Certaines des passagers se sont enlevés et il y a un changement de date =&gt; on modifie sur cette
+            page :
+          </p>
+          <ul style="margin: 6px 0 0; padding-left: 18px">
+            <li>On choisit la nouvelle date de départ</li>
+            <li>Dans «&nbsp;passagers à reporter&nbsp;» on met les nouvelles quantités</li>
+            <li>
+              Dans la case «&nbsp;ajustement prix&nbsp;», on met le montant à générer en avoir, donc le
+              montant doit être
+              <strong>négatif</strong>
+            </li>
+          </ul>
+        </div>
+      </aside>
     </div>
   </div>
 
