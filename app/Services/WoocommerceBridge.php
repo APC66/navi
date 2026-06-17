@@ -610,9 +610,6 @@ class WoocommerceBridge
 
     public function addCompanyFields($fields): array
     {
-        // Téléphone rendu obligatoire
-        $fields['billing']['billing_phone']['required'] = true;
-
         // Rendre le champ société visible et optionnel
         $fields['billing']['billing_company']['class'] = ['form-row-wide'];
         $fields['billing']['billing_company']['label'] = 'Entreprise';

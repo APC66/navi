@@ -318,12 +318,11 @@ class ThemeServiceProvider extends SageServiceProvider
             $phpmailer->SMTPSecure = '';
         });
 
-        // Phone mandatory
-        add_filter('woocommerce_billing_fields', function ($fields) {
-            $fields['billing_phone']['required'] = true;
-
-            return $fields;
-        });
+        // Téléphone obligatoire au checkout (classique + blocs).
+        // Le "required" du champ téléphone est piloté par l'option woocommerce_checkout_phone_field
+        // (cf. WC_Countries::get_address_fields), qui écrase les filtres de champs.
+        // On force donc l'option à "required".
+        add_filter('option_woocommerce_checkout_phone_field', fn () => 'required');
 
         // Duplicate posts
         add_action('admin_action_duplicate_post', function () {
