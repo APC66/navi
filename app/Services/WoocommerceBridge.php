@@ -444,6 +444,13 @@ class WoocommerceBridge
             }
             if (! empty($data['sailing_id'])) {
                 $item->add_meta_data('_sailing_id', $data['sailing_id']);
+
+                // Lieu de départ (port) récupéré depuis la croisière parente
+                $sailing = \App\Models\Sailing::find($data['sailing_id']);
+                $harbor = $sailing ? optional($sailing->cruise())->harbor : null;
+                if ($harbor && ! empty($harbor->name)) {
+                    $item->add_meta_data('Lieu de départ', $harbor->name);
+                }
             }
             if (! empty($data['details_string'])) {
                 $item->add_meta_data('Détails', $data['details_string']);
@@ -603,6 +610,9 @@ class WoocommerceBridge
 
     public function addCompanyFields($fields): array
     {
+        // Téléphone rendu obligatoire
+        $fields['billing']['billing_phone']['required'] = true;
+
         // Rendre le champ société visible et optionnel
         $fields['billing']['billing_company']['class'] = ['form-row-wide'];
         $fields['billing']['billing_company']['label'] = 'Entreprise';
@@ -622,7 +632,16 @@ class WoocommerceBridge
 
     public function setDefaultField($fields)
     {
-        $optional = ['address_1', 'address_2', 'city', 'state', 'postcode'];
+        // Adresse, code postal et ville rendus obligatoires
+        $required = ['address_1', 'city', 'postcode'];
+        foreach ($required as $key) {
+            if (isset($fields[$key])) {
+                $fields[$key]['required'] = true;
+            }
+        }
+
+        // Complément d'adresse et région laissés facultatifs (région non utilisée en France)
+        $optional = ['address_2', 'state'];
         foreach ($optional as $key) {
             if (isset($fields[$key])) {
                 $fields[$key]['required'] = false;
