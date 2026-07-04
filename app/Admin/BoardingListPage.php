@@ -813,6 +813,11 @@ class BoardingListPage
                 $statusLabel = '💸 Remboursé';
             }
 
+            // Une commande annulée, remboursée ou transformée en avoir ne doit plus
+            // être comptée dans le total des passagers embarqués.
+            $countsInTotal = ! in_array($order->get_status(), ['cancelled', 'refunded'], true)
+                && ! in_array($customStatus, ['credited', 'refunded_manual'], true);
+
             $boardingNotes = $order->get_meta('_boarding_notes');
             $privateNote = $order->get_meta('_private_boarding_note');
 
@@ -833,6 +838,7 @@ class BoardingListPage
                 'passengers_summary' => $this->formatPassengers($passengers),
                 'options_summary' => $this->formatOptions($data['options'] ?? []),
                 'total_seats' => $totalSeats,
+                'counts_in_total' => $countsInTotal,
                 'total_amount' => $order->get_total(),
                 'balance_due' => $balanceDue,
                 'boarding_notes' => $boardingNotes,

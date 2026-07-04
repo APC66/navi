@@ -61,7 +61,7 @@
             <strong>Heure :</strong>
             {{ date('H:i', strtotime($currentSailing->start)) }} |
             <strong>Total Passagers :</strong>
-            {{ collect($passengers)->sum('total_seats') }} / {{ $currentSailing->quota }}
+            {{ collect($passengers)->where('counts_in_total', true)->sum('total_seats') }} / {{ $currentSailing->quota }}
           </p>
         </div>
         <div class="no-print">
