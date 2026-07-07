@@ -57,16 +57,14 @@ const globalPlanningData = () => ({
   },
 
   get weekDays() {
-    const curr = new Date(this.currentDate)
-    curr.setHours(0, 0, 0, 0)
-    const day = curr.getDay()
-    const diff = curr.getDate() - day + (day === 0 ? -6 : 1)
-    const monday = new Date(curr.setDate(diff))
+    // Fenêtre glissante de 7 jours à partir de la date courante (jour J en 1re colonne).
+    const start = new Date(this.currentDate)
+    start.setHours(0, 0, 0, 0)
 
     const days = []
     for (let i = 0; i < 7; i++) {
-      const d = new Date(monday)
-      d.setDate(monday.getDate() + i)
+      const d = new Date(start)
+      d.setDate(start.getDate() + i)
       days.push(d)
     }
     return days
