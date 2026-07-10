@@ -580,7 +580,7 @@ class WoocommerceBridge
             ?>
             <div style="margin-bottom: 12px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px;">
                 <p style="margin: 0 0 6px;">
-                    <strong>Code :</strong> <?php echo esc_html($couponCode ?: '— (non encore généré)'); ?>
+                    <strong>Code :</strong> <?php echo esc_html($couponCode ?: '(non encore généré)'); ?>
                 </p>
                 <p class="form-field form-field-wide" style="margin: 0 0 8px;">
                     <label for="<?php echo esc_attr($fieldId); ?>">Email de réception :</label>

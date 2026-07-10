@@ -285,7 +285,7 @@
                 <span class="text-primary-900 font-bold">M'envoyer la carte à moi-même</span>
               </label>
               <p class="text-primary-400 text-sm mt-1 ml-8" x-show="buyerEmail">
-                La carte sera envoyée à <span class="font-bold" x-text="buyerEmail"></span> — pour l'offrir vous-même ensuite.
+                La carte sera envoyée à <span class="font-bold" x-text="buyerEmail"></span>, pour l'offrir vous-même ensuite.
               </p>
             </div>
           @endif
