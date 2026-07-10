@@ -77,7 +77,7 @@ class GiftCardService
      *
      * @param  \WC_Order_Item_Product  $item
      */
-    public function sendGiftCardEmail(\WC_Order $order, $item): void
+    public function sendGiftCardEmail(\WC_Order $order, $item, ?string $overrideEmail = null): void
     {
         error_log('[GiftCard] sendGiftCardEmail called');
 
@@ -86,10 +86,15 @@ class GiftCardService
             return;
         }
 
-        $sendToSelf = $item->get_meta('_gc_send_to_self') === '1';
-        $recipientEmail = $sendToSelf
-            ? $order->get_billing_email()
-            : sanitize_email($item->get_meta('_gc_recipient_email'));
+        if ($overrideEmail !== null) {
+            // Renvoi manuel depuis l'admin : on force l'email de réception fourni.
+            $recipientEmail = sanitize_email($overrideEmail);
+        } else {
+            $sendToSelf = $item->get_meta('_gc_send_to_self') === '1';
+            $recipientEmail = $sendToSelf
+                ? $order->get_billing_email()
+                : sanitize_email($item->get_meta('_gc_recipient_email'));
+        }
 
         if (! is_email($recipientEmail)) {
             return;

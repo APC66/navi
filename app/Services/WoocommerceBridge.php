@@ -22,6 +22,10 @@ class WoocommerceBridge
         add_action('woocommerce_admin_order_data_after_order_details', [$this, 'addAdminOrderNoteField']);
         add_action('woocommerce_process_shop_order_meta', [$this, 'saveAdminOrderNoteField']);
         add_action('woocommerce_update_order', [$this, 'saveAdminOrderNoteField'], 10, 1);
+
+        // Renvoi / modification de l'email de réception d'une carte cadeau (page commande admin)
+        add_action('woocommerce_admin_order_data_after_order_details', [$this, 'addGiftCardResendField']);
+        add_action('wp_ajax_navi_resend_gift_card', [$this, 'ajaxResendGiftCard']);
         add_filter('woocommerce_cart_id', [$this, 'distinctProductSailing'], 10, 5);
 
         add_filter('woocommerce_cart_item_quantity', [$this, 'set_quantity_to_unique_product'], 10, 3);
@@ -543,6 +547,176 @@ class WoocommerceBridge
         $order->save(); // HPOS + legacy
 
         $this->isSaving = false;
+    }
+
+    /**
+     * Affiche, pour chaque carte cadeau de la commande, un champ email de réception
+     * modifiable + un bouton de renvoi (AJAX) sur la page d'édition de commande.
+     */
+    public function addGiftCardResendField($order): void
+    {
+        $giftItems = [];
+        foreach ($order->get_items() as $itemId => $item) {
+            if ($item->get_meta('_gc_amount')) {
+                $giftItems[$itemId] = $item;
+            }
+        }
+
+        if (empty($giftItems)) {
+            return;
+        }
+
+        $nonce = wp_create_nonce('navi_resend_gift_card');
+        $ajaxUrl = admin_url('admin-ajax.php');
+
+        echo '<br class="clear" />';
+        echo '<h3>🎁 Carte(s) cadeau</h3>';
+
+        foreach ($giftItems as $itemId => $item) {
+            $couponCode = $item->get_meta('_gc_coupon_code');
+            $sendToSelf = $item->get_meta('_gc_send_to_self') === '1';
+            $currentEmail = $sendToSelf ? $order->get_billing_email() : $item->get_meta('_gc_recipient_email');
+            $fieldId = 'gc_recipient_email_'.$itemId;
+            ?>
+            <div style="margin-bottom: 12px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                <p style="margin: 0 0 6px;">
+                    <strong>Code :</strong> <?php echo esc_html($couponCode ?: '— (non encore généré)'); ?>
+                </p>
+                <p class="form-field form-field-wide" style="margin: 0 0 8px;">
+                    <label for="<?php echo esc_attr($fieldId); ?>">Email de réception :</label>
+                    <input
+                        type="email"
+                        id="<?php echo esc_attr($fieldId); ?>"
+                        value="<?php echo esc_attr($currentEmail); ?>"
+                        style="width: 100%;"
+                    />
+                </p>
+                <button
+                    type="button"
+                    class="button navi-gc-resend-btn"
+                    data-order="<?php echo esc_attr($order->get_id()); ?>"
+                    data-item="<?php echo esc_attr($itemId); ?>"
+                    data-target="<?php echo esc_attr($fieldId); ?>"
+                    <?php echo $couponCode ? '' : 'disabled'; ?>
+                >
+                    📧 Renvoyer la carte cadeau
+                </button>
+                <span class="navi-gc-feedback" style="margin-left: 8px;"></span>
+            </div>
+            <?php
+        }
+        ?>
+        <script>
+            (function () {
+                const ajaxUrl = <?php echo wp_json_encode($ajaxUrl); ?>;
+                const nonce = <?php echo wp_json_encode($nonce); ?>;
+
+                document.querySelectorAll('.navi-gc-resend-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const input = document.getElementById(btn.dataset.target);
+                        const feedback = btn.parentElement.querySelector('.navi-gc-feedback');
+                        const email = (input.value || '').trim();
+
+                        if (!email) {
+                            feedback.style.color = '#b32d2e';
+                            feedback.textContent = '⚠️ Merci de renseigner un email.';
+                            return;
+                        }
+
+                        btn.disabled = true;
+                        feedback.style.color = '#666';
+                        feedback.textContent = 'Envoi en cours…';
+
+                        const body = new URLSearchParams({
+                            action: 'navi_resend_gift_card',
+                            _wpnonce: nonce,
+                            order_id: btn.dataset.order,
+                            item_id: btn.dataset.item,
+                            email: email,
+                        });
+
+                        fetch(ajaxUrl, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: body.toString(),
+                        })
+                            .then(function (r) { return r.json(); })
+                            .then(function (res) {
+                                if (res && res.success) {
+                                    feedback.style.color = '#2e7d32';
+                                    feedback.textContent = '✅ ' + (res.data && res.data.message ? res.data.message : 'Carte cadeau renvoyée.');
+                                } else {
+                                    feedback.style.color = '#b32d2e';
+                                    feedback.textContent = '❌ ' + (res.data && res.data.message ? res.data.message : 'Erreur lors du renvoi.');
+                                }
+                            })
+                            .catch(function () {
+                                feedback.style.color = '#b32d2e';
+                                feedback.textContent = '❌ Erreur réseau.';
+                            })
+                            .finally(function () {
+                                btn.disabled = false;
+                            });
+                    });
+                });
+            })();
+        </script>
+        <?php
+    }
+
+    /**
+     * Handler AJAX : met à jour l'email de réception d'une carte cadeau puis la renvoie.
+     */
+    public function ajaxResendGiftCard(): void
+    {
+        if (! check_ajax_referer('navi_resend_gift_card', '_wpnonce', false)) {
+            wp_send_json_error(['message' => 'Jeton de sécurité invalide.']);
+        }
+
+        if (! current_user_can('edit_shop_orders')) {
+            wp_send_json_error(['message' => 'Permissions insuffisantes.']);
+        }
+
+        $orderId = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
+        $itemId = isset($_POST['item_id']) ? absint($_POST['item_id']) : 0;
+        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+
+        if (! is_email($email)) {
+            wp_send_json_error(['message' => 'Adresse email invalide.']);
+        }
+
+        $order = wc_get_order($orderId);
+        if (! $order) {
+            wp_send_json_error(['message' => 'Commande introuvable.']);
+        }
+
+        $item = $order->get_item($itemId);
+        if (! $item || ! $item->get_meta('_gc_amount')) {
+            wp_send_json_error(['message' => 'Carte cadeau introuvable sur cette commande.']);
+        }
+
+        if (! $item->get_meta('_gc_coupon_code')) {
+            wp_send_json_error(['message' => "Le coupon n'a pas encore été généré (commande non finalisée)."]);
+        }
+
+        // Mémoriser le nouvel email de réception sur l'item
+        $item->update_meta_data('_gc_recipient_email', $email);
+        $item->save();
+
+        // Renvoi (PDF régénéré) vers l'email de réception mis à jour
+        (new GiftCardService)->sendGiftCardEmail($order, $item, $email);
+
+        // Traçabilité sur la commande
+        $user = wp_get_current_user();
+        $order->add_order_note(sprintf(
+            '📧 Carte cadeau renvoyée à %s (par %s).',
+            $email,
+            $user && $user->ID ? $user->display_name : 'admin'
+        ));
+        $order->save();
+
+        wp_send_json_success(['message' => 'Carte cadeau renvoyée à '.$email]);
     }
 
     public function distinctProductSailing($cart_id, $product_id, $quantity, $variation_id, $variation)

@@ -272,8 +272,8 @@
           <h2 class="text-primary-900 text-2xl font-bold mb-1">Destinataire & Message</h2>
           <p class="text-primary-400 mb-8">Personnalisez votre carte cadeau.</p>
 
-          {{-- Checkbox "M'envoyer à moi-même" --}}
-          @auth
+          {{-- Checkbox "M'envoyer à moi-même" (visible uniquement si l'acheteur est connecté à WordPress) --}}
+          @if ($buyerEmail)
             <div class="mb-6 p-4 bg-primary-50 rounded-2xl">
               <label class="flex items-center gap-3 cursor-pointer">
                 <input
@@ -282,13 +282,13 @@
                   @change="handleSendToSelf()"
                   class="w-5 h-5 rounded accent-secondary"
                 />
-                <span class="text-primary-900 font-bold">M'envoyer le code à moi-même</span>
+                <span class="text-primary-900 font-bold">M'envoyer la carte à moi-même</span>
               </label>
               <p class="text-primary-400 text-sm mt-1 ml-8" x-show="buyerEmail">
-                Le code sera envoyé à <span class="font-bold" x-text="buyerEmail"></span>
+                La carte sera envoyée à <span class="font-bold" x-text="buyerEmail"></span> — pour l'offrir vous-même ensuite.
               </p>
             </div>
-          @endauth
+          @endif
 
           {{-- Coordonnées du bénéficiaire (toujours visibles) --}}
           <div class="mb-6">
@@ -324,6 +324,15 @@
             </div>
             <div x-show="!sendToSelf">
               <label class="block text-primary-900 font-bold mb-2">Email <span class="text-red-500">*</span></label>
+              @if ($buyerEmail)
+                <p class="text-primary-400 text-sm mb-2">
+                  Le bénéficiaire recevra la carte cadeau directement à cette adresse.
+                </p>
+              @else
+                <p class="text-primary-400 text-sm mb-2">
+                  Indiquez l'email qui recevra la carte : le vôtre si vous souhaitez l'offrir vous-même, ou celui du bénéficiaire pour un envoi direct.
+                </p>
+              @endif
               <input
                 type="email"
                 x-model="recipientEmail"
