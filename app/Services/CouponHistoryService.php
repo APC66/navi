@@ -9,9 +9,15 @@ class CouponHistoryService
      */
     const LOG_META = '_navi_coupon_log';
 
+    /**
+     * État des coupons capturé avant sauvegarde, pour détecter les changements.
+     */
+    private array $snapshots = [];
+
     public function init(): void
     {
         add_action('add_meta_boxes', [$this, 'registerMetabox']);
+        add_action('woocommerce_process_shop_coupon_meta', [$this, 'snapshotBeforeSave'], 1, 1);
         add_action('woocommerce_coupon_options_save', [$this, 'logManualSave'], 20, 2);
     }
 
@@ -48,18 +54,129 @@ class CouponHistoryService
     }
 
     /**
-     * Journalise une sauvegarde manuelle depuis l'écran d'édition du coupon.
+     * Capture l'état du coupon AVANT sauvegarde (priorité 1, avant l'écriture WC).
+     */
+    public function snapshotBeforeSave($postId): void
+    {
+        $this->snapshots[(int) $postId] = $this->captureState(new \WC_Coupon($postId));
+    }
+
+    /**
+     * Journalise une sauvegarde manuelle depuis l'écran d'édition du coupon,
+     * en détaillant précisément les champs modifiés.
      */
     public function logManualSave($postId, $coupon): void
     {
-        $log = get_post_meta($postId, self::LOG_META, true);
-        $isFirst = ! is_array($log) || empty($log);
+        $postId = (int) $postId;
 
-        self::log(
-            (int) $postId,
-            $isFirst ? 'Coupon créé manuellement' : 'Coupon modifié manuellement',
-            false
-        );
+        $existing = get_post_meta($postId, self::LOG_META, true);
+        $hasHistory = is_array($existing) && ! empty($existing);
+
+        // Premier enregistrement : création manuelle (pas de diff à faire).
+        if (! $hasHistory) {
+            self::log($postId, 'Coupon créé manuellement', false);
+
+            return;
+        }
+
+        $before = $this->snapshots[$postId] ?? null;
+        if ($before === null) {
+            self::log($postId, 'Coupon enregistré manuellement', false);
+
+            return;
+        }
+
+        $after = $this->captureState($coupon);
+
+        $changes = [];
+        foreach ($this->fieldLabels() as $key => $label) {
+            $old = $before[$key] ?? null;
+            $new = $after[$key] ?? null;
+            if ($old != $new) {
+                $changes[] = sprintf(
+                    '%s : de « %s » à « %s »',
+                    $label,
+                    $this->fmt($old, $key),
+                    $this->fmt($new, $key)
+                );
+            }
+        }
+
+        // Aucun champ significatif modifié : on ne pollue pas le journal.
+        if (empty($changes)) {
+            return;
+        }
+
+        foreach ($changes as $change) {
+            self::log($postId, $change, false);
+        }
+    }
+
+    /**
+     * Capture les champs du coupon susceptibles d'être modifiés manuellement.
+     */
+    private function captureState(\WC_Coupon $coupon): array
+    {
+        $expires = $coupon->get_date_expires();
+
+        return [
+            'discount_type' => (string) $coupon->get_discount_type(),
+            'amount' => (float) $coupon->get_amount(),
+            'usage_limit' => (int) $coupon->get_usage_limit(),
+            'usage_limit_per_user' => (int) $coupon->get_usage_limit_per_user(),
+            'individual_use' => (bool) $coupon->get_individual_use(),
+            'free_shipping' => (bool) $coupon->get_free_shipping(),
+            'date_expires' => $expires ? $expires->date('Y-m-d') : '',
+            'email_restrictions' => implode(', ', (array) $coupon->get_email_restrictions()),
+            'description' => (string) $coupon->get_description(),
+        ];
+    }
+
+    /**
+     * Libellés lisibles des champs suivis.
+     */
+    private function fieldLabels(): array
+    {
+        return [
+            'discount_type' => 'Type de remise',
+            'amount' => 'Montant',
+            'usage_limit' => "Limite d'utilisation",
+            'usage_limit_per_user' => 'Limite par utilisateur',
+            'individual_use' => 'Usage individuel uniquement',
+            'free_shipping' => 'Livraison gratuite',
+            'date_expires' => "Date d'expiration",
+            'email_restrictions' => 'Emails autorisés',
+            'description' => 'Description',
+        ];
+    }
+
+    /**
+     * Met en forme une valeur de champ pour l'affichage dans le journal.
+     */
+    private function fmt($value, string $key = ''): string
+    {
+        if (in_array($key, ['usage_limit', 'usage_limit_per_user'], true) && (int) $value === 0) {
+            return 'illimité';
+        }
+        if (is_bool($value)) {
+            return $value ? 'Oui' : 'Non';
+        }
+        if ($value === '' || $value === null) {
+            return 'vide';
+        }
+        if (is_string($value)) {
+            $types = [
+                'smart_coupon' => 'Store credit',
+                'fixed_cart' => 'Montant fixe (panier)',
+                'fixed_product' => 'Montant fixe (produit)',
+                'percent' => 'Pourcentage',
+            ];
+            if (isset($types[$value])) {
+                return $types[$value];
+            }
+        }
+
+        return (string) $value;
     }
 
     public function registerMetabox(): void
@@ -70,7 +187,7 @@ class CouponHistoryService
             [$this, 'renderMetabox'],
             'shop_coupon',
             'normal',
-            'high'
+            'low'
         );
     }
 
