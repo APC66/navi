@@ -213,9 +213,9 @@ class CouponHistoryService
         $this->summaryRow('Type de remise', $coupon->get_discount_type() === 'smart_coupon' ? 'Store credit (solde dégressif)' : $coupon->get_discount_type());
         $this->summaryRow('Créé le', $created ? wp_date('d/m/Y à H:i', $created->getTimestamp()) : 'Inconnu');
         $this->summaryRow('Email(s) lié(s)', ! empty($emails) ? esc_html(implode(', ', $emails)) : 'Aucun');
-        $this->summaryRow('Montant initial', wc_price($initial));
-        $this->summaryRow('Déjà utilisé', wc_price($totalUsed));
-        $this->summaryRow('Solde restant', '<strong>'.wc_price($remaining).'</strong>');
+        $this->summaryRow('Montant initial (TTC)', wc_price($initial));
+        $this->summaryRow('Déjà utilisé (TTC)', wc_price($totalUsed));
+        $this->summaryRow('Solde restant (TTC)', '<strong>'.wc_price($remaining).'</strong>');
         $this->summaryRow('Expiration', $expires ? wp_date('d/m/Y', $expires->getTimestamp()) : 'Aucune');
         echo '</tbody></table>';
 
@@ -225,7 +225,7 @@ class CouponHistoryService
             echo '<p style="margin:0 0 18px;color:#666;">Ce coupon n\'a encore été utilisé sur aucune commande.</p>';
         } else {
             echo '<table class="widefat striped" style="margin-bottom:18px;"><thead><tr>';
-            echo '<th>Date</th><th>Commande</th><th>Client</th><th>Montant utilisé</th>';
+            echo '<th>Date</th><th>Commande</th><th>Client</th><th>Montant utilisé (TTC)</th>';
             echo '</tr></thead><tbody>';
             foreach ($usages as $u) {
                 echo '<tr>';
@@ -291,14 +291,19 @@ class CouponHistoryService
 
         $code = strtolower($code);
 
+        // On somme la remise HT (discount_amount) et sa part de taxe
+        // (discount_amount_tax) pour obtenir le montant réellement consommé TTC.
         $rows = $wpdb->get_results($wpdb->prepare("
-            SELECT oi.order_id, oim.meta_value AS discount
+            SELECT oi.order_id,
+                   SUM(CASE WHEN oim.meta_key = 'discount_amount' THEN oim.meta_value ELSE 0 END) AS discount,
+                   SUM(CASE WHEN oim.meta_key = 'discount_amount_tax' THEN oim.meta_value ELSE 0 END) AS discount_tax
             FROM {$wpdb->prefix}woocommerce_order_items oi
             INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta oim
                 ON oi.order_item_id = oim.order_item_id
-                AND oim.meta_key = 'discount_amount'
+                AND oim.meta_key IN ('discount_amount', 'discount_amount_tax')
             WHERE oi.order_item_type = 'coupon'
                 AND LOWER(oi.order_item_name) = %s
+            GROUP BY oi.order_item_id, oi.order_id
             ORDER BY oi.order_id ASC
         ", $code));
 
@@ -317,7 +322,7 @@ class CouponHistoryService
                 'date' => $date ? wp_date('d/m/Y à H:i', $date->getTimestamp()) : '',
                 'customer' => trim($order->get_formatted_billing_full_name()) ?: 'Client',
                 'status' => wc_get_order_status_name($order->get_status()),
-                'amount' => (float) $row->discount,
+                'amount' => (float) $row->discount + (float) $row->discount_tax,
             ];
         }
 
