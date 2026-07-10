@@ -716,6 +716,12 @@ class WoocommerceBridge
         ));
         $order->save();
 
+        // Traçabilité sur le coupon (journal historique)
+        $couponId = wc_get_coupon_id_by_code($item->get_meta('_gc_coupon_code'));
+        if ($couponId) {
+            CouponHistoryService::log($couponId, sprintf('Carte cadeau renvoyée à %s', $email), false);
+        }
+
         wp_send_json_success(['message' => 'Carte cadeau renvoyée à '.$email]);
     }
 

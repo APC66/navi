@@ -7,6 +7,7 @@ use App\Admin\CalendarPage;
 use App\Admin\LoyaltySettingsPage;
 use App\Admin\OrdersExportPage;
 use App\Services\AgencyOrderService;
+use App\Services\CouponHistoryService;
 use App\Services\CruiseManagement;
 use App\Services\LoyaltyService;
 use App\Services\WoocommerceBridge;
@@ -91,6 +92,7 @@ class ThemeServiceProvider extends SageServiceProvider
         (new LoyaltyService)->init();
         (new OrdersExportPage)->init();
         (new LoyaltySettingsPage)->init();
+        (new CouponHistoryService)->init();
 
         add_action('admin_menu', new CalendarPage);
         add_action('admin_menu', new BoardingListPage);

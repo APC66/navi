@@ -642,7 +642,13 @@ class BoardingListPage
             $coupon->set_email_restrictions([$email]);
         }
         $coupon->set_description($description.' (Commande #'.$order->get_id().')');
-        $coupon->save();
+        $couponId = $coupon->save();
+
+        \App\Services\CouponHistoryService::log(
+            (int) $couponId,
+            sprintf('Créé automatiquement (%s, commande #%d)', $description, $order->get_id()),
+            true
+        );
 
         return $code;
     }

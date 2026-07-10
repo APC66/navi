@@ -64,6 +64,12 @@ class GiftCardService
             return null;
         }
 
+        CouponHistoryService::log(
+            $couponId,
+            sprintf('Créé automatiquement (carte cadeau, commande #%d)', $order->get_id()),
+            true
+        );
+
         // Sauvegarde du code en meta sur l'order item
         $item->update_meta_data('_gc_coupon_code', $couponCode);
         $item->update_meta_data('_gc_coupon_expiry', $expiryDate ?? '');
