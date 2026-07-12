@@ -247,6 +247,9 @@ class CalendarController
                 $isSelectable = false;
             }
 
+            // Surbooking : places réservées au-delà du quota (hors annulé / reporté).
+            $overbook = in_array($status_label, ['Annulé', 'Reporté'], true) ? 0 : max(0, $booked - $quota);
+
             $event = [
                 'id' => $sailing->ID,
                 'title' => $is_admin ? "$title [$remaining/$quota]" : 'Disponible',
@@ -261,6 +264,7 @@ class CalendarController
                     'quota' => $quota,
                     'booked' => $booked,
                     'available' => $remaining,
+                    'overbook' => $overbook,
                     'cruise_id' => $sailing->parent_cruise_id,
                     'status' => $status_label, // toujours en français — logique JS
                     'fares' => $formattedFares,

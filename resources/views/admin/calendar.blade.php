@@ -129,4 +129,17 @@
   #event-modal.open {
     display: flex !important;
   }
+
+  /* Alerte surbooking : fond rouge clignotant / texte blanc */
+  @keyframes naviOverbookBlink {
+    0% { background-color: #dc2626; color: #fff; }
+    49% { background-color: #dc2626; color: #fff; }
+    50% { background-color: #fff; color: #dc2626; }
+    99% { background-color: #fff; color: #dc2626; }
+    100% { background-color: #dc2626; color: #fff; }
+  }
+  .navi-overbook-alert {
+    animation: naviOverbookBlink 1s infinite;
+    border: 1px solid #dc2626;
+  }
 </style>

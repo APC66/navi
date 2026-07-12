@@ -201,6 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (percent > 50) barColor = '#facc15'
       if (percent > 90) barColor = '#f87171'
 
+      const overbook = props.overbook || 0
+      const overbookBlock =
+        overbook > 0
+          ? `<div class="navi-overbook-alert" style="margin-top: 3px; padding: 2px 4px; border-radius: 3px; font-size: 0.72em; font-weight: bold; text-align: center;">
+              ⚠️ Attention surbooking de ${overbook} place${overbook > 1 ? 's' : ''}
+            </div>`
+          : ''
+
       return {
         html: `
         <div class="fc-content" style="padding: 2px; width:100%">
@@ -213,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div style="background: rgba(255,255,255,0.3); height: 4px; border-radius: 2px; margin-top: 2px; overflow: hidden;">
             <div style="background: ${barColor}; height: 100%; width: ${percent}%;"></div>
           </div>
+          ${overbookBlock}
         </div>
       `,
       }
