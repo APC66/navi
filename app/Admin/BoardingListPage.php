@@ -253,6 +253,33 @@ class BoardingListPage
         $newOptions = $_POST['options'] ?? $oldOptions;
         $newOptions = array_map('intval', $newOptions);
 
+        // Contrôle du quota AVANT toute modification (anti-surbooking),
+        // à l'image de processReschedule(). Réalisé avant les mutations et la
+        // génération éventuelle d'un avoir, pour ne rien appliquer si ça ne passe pas.
+        $targetSailingIdCheck = ($newSailingId && $newSailingId !== $originalSailingId) ? $newSailingId : $originalSailingId;
+        $dateChangedCheck = ($targetSailingIdCheck !== $originalSailingId);
+        $targetSailingCheck = Sailing::find($targetSailingIdCheck);
+
+        if ($targetSailingCheck) {
+            $targetQuota = (int) $targetSailingCheck->quota;
+            $targetBooked = (int) get_post_meta($targetSailingIdCheck, 'sailing_config_booked_count', true);
+            $available = $targetQuota - $targetBooked;
+
+            // Date changée : toute la réservation arrive sur le nouveau départ.
+            // Même date : seuls les passagers AJOUTÉS sont à réserver.
+            $needed = $dateChangedCheck ? $newTotalPax : max(0, $newTotalPax - $oldTotalPax);
+
+            if ($targetQuota > 0 && $needed > $available) {
+                wp_redirect(admin_url('admin.php?page=navi-boarding-list&sailing_id='.$originalSailingId
+                    .'&msg_type=error&message='.urlencode(sprintf(
+                        'Quota insuffisant sur le départ cible : %d place(s) disponible(s), %d demandée(s). Modification annulée.',
+                        max(0, $available),
+                        $needed
+                    ))));
+                exit;
+            }
+        }
+
         // Mise à jour de la note interne
         $order->update_meta_data('_private_boarding_note', $privateNote);
 
@@ -819,9 +846,10 @@ class BoardingListPage
                 $statusLabel = '💸 Remboursé';
             }
 
-            // Une commande annulée, remboursée ou transformée en avoir ne doit plus
-            // être comptée dans le total des passagers embarqués.
-            $countsInTotal = ! in_array($order->get_status(), ['cancelled', 'refunded'], true)
+            // Une commande non confirmée (annulée, échouée, remboursée, corbeille) ou
+            // transformée en avoir ne doit plus être comptée dans le total des passagers.
+            // Même source de vérité que Sailing::getOrders() pour éviter toute divergence.
+            $countsInTotal = \App\Models\Sailing::isCountableOrderStatus($order->get_status())
                 && ! in_array($customStatus, ['credited', 'refunded_manual'], true);
 
             $boardingNotes = $order->get_meta('_boarding_notes');

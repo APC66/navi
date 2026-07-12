@@ -47,6 +47,21 @@ class Sailing extends Post
     }
 
     /**
+     * Statuts de commande WooCommerce à NE PAS compter dans l'occupation d'un départ
+     * (paiement non confirmé ou commande annulée). Source de vérité unique, partagée
+     * avec la liste d'embarquement pour éviter que les comptages divergent.
+     */
+    const NON_COUNTABLE_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'trash'];
+
+    /**
+     * Indique si une commande à ce statut doit être comptée dans l'occupation d'un départ.
+     */
+    public static function isCountableOrderStatus(string $status): bool
+    {
+        return ! in_array($status, self::NON_COUNTABLE_ORDER_STATUSES, true);
+    }
+
+    /**
      * Récupère les commandes WooCommerce actives liées à ce départ
      *
      * * @return array Liste des commandes formatées
@@ -76,7 +91,7 @@ class Sailing extends Post
 
             $order = wc_get_order($row->order_id);
             // On ignore les commandes qui ne sont pas pertinentes pour l'exploitation
-            if (! $order || in_array($order->get_status(), ['cancelled', 'failed', 'refunded', 'trash'])) {
+            if (! $order || ! self::isCountableOrderStatus($order->get_status())) {
                 continue;
             }
 
