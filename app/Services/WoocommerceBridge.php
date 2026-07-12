@@ -13,11 +13,17 @@ class WoocommerceBridge
         add_filter('woocommerce_get_item_data', [$this, 'displayBookingDataInCart'], 10, 2);
         add_action('woocommerce_checkout_create_order_line_item', [$this, 'addBookingDataToOrder'], 10, 4);
         add_action('woocommerce_check_cart_items', [$this, 'validateCartAvailability'], 10);
+        // Réservation atomique des places dès la CRÉATION de la commande au checkout,
+        // pour empêcher le surbooking (vérifier + réserver en une seule opération).
+        add_action('woocommerce_checkout_order_processed', [$this, 'reserveOrderBooking'], 10, 1);
+
         add_action('woocommerce_order_status_processing', [$this, 'processOrderBooking'], 10, 1);
         add_action('woocommerce_order_status_completed', [$this, 'processOrderBooking'], 10, 1);
         add_action('woocommerce_order_status_processing', [$this, 'processGiftCardItems'], 20, 1);
         add_action('woocommerce_order_status_cancelled', [$this, 'cancelOrderBooking'], 10, 1);
         add_action('woocommerce_order_status_refunded', [$this, 'cancelOrderBooking'], 10, 1);
+        // Libère aussi la place quand une commande échoue (paiement non abouti).
+        add_action('woocommerce_order_status_failed', [$this, 'cancelOrderBooking'], 10, 1);
 
         add_action('woocommerce_admin_order_data_after_order_details', [$this, 'addAdminOrderNoteField']);
         add_action('woocommerce_process_shop_order_meta', [$this, 'saveAdminOrderNoteField']);
@@ -342,6 +348,66 @@ class WoocommerceBridge
         $this->updateBookingCount($order_id, 'decrement');
     }
 
+    /**
+     * Réserve atomiquement les places d'une commande dès sa création au checkout.
+     * Si un départ n'a plus assez de place, on annule (rollback) les réservations
+     * déjà posées pour cette commande et on bloque le checkout via une exception.
+     *
+     * @param  int|\WC_Order  $order_id  ID (checkout classique) ou objet commande
+     *
+     * @throws \Exception
+     */
+    public function reserveOrderBooking($order_id): void
+    {
+        $order = is_a($order_id, 'WC_Order') ? $order_id : wc_get_order($order_id);
+        if (! $order || $order->get_meta('_booking_processed')) {
+            return;
+        }
+
+        $reservedPassengers = []; // sailingId => count (pour rollback)
+        $reservedOptions = [];    // sailingId => options (pour rollback)
+
+        foreach ($order->get_items() as $item) {
+            $sailingId = (int) $item->get_meta('_sailing_id');
+            $rawData = $item->get_meta('_booking_data_raw');
+
+            if (! $sailingId || ! $rawData) {
+                continue;
+            }
+
+            $data = json_decode($rawData, true) ?: [];
+            $count = (int) array_sum($data['passengers'] ?? []);
+            $options = $data['options'] ?? [];
+
+            if ($count > 0) {
+                $sailing = \App\Models\Sailing::find($sailingId);
+                $quota = $sailing ? (int) $sailing->quota : 0;
+
+                if (! $this->atomicReserveSeats($sailingId, $count, $quota)) {
+                    // Plus de place : on relâche ce qui a déjà été réservé pour cette commande
+                    foreach ($reservedPassengers as $sid => $c) {
+                        $this->atomicReleaseSeats($sid, $c);
+                    }
+                    foreach ($reservedOptions as $sid => $opts) {
+                        $this->adjustOptionsCount($sid, $opts, 'decrement');
+                    }
+
+                    throw new \Exception("Désolé, il ne reste plus assez de places sur un des départs sélectionnés. Votre commande n'a pas été validée et aucun paiement n'a été effectué.");
+                }
+
+                $reservedPassengers[$sailingId] = ($reservedPassengers[$sailingId] ?? 0) + $count;
+            }
+
+            if (! empty($options)) {
+                $this->adjustOptionsCount($sailingId, $options, 'increment');
+                $reservedOptions[$sailingId] = $options;
+            }
+        }
+
+        $order->update_meta_data('_booking_processed', '1');
+        $order->save();
+    }
+
     private function updateBookingCount($order_id, $action)
     {
         $order = wc_get_order($order_id);
@@ -358,7 +424,7 @@ class WoocommerceBridge
         }
 
         foreach ($order->get_items() as $item) {
-            $sailingId = $item->get_meta('_sailing_id');
+            $sailingId = (int) $item->get_meta('_sailing_id');
             $rawData = $item->get_meta('_booking_data_raw');
 
             if ($sailingId && $rawData) {
@@ -366,33 +432,18 @@ class WoocommerceBridge
                 $passengers = $data['passengers'] ?? [];
                 $options = $data['options'] ?? []; // Format attendu: ['opt_id' => qty]
 
-                // 1. Mise à jour COMPTEUR PASSAGERS
-                $count = array_sum($passengers);
-                $currentBooked = (int) get_post_meta($sailingId, 'sailing_config_booked_count', true);
-                $newCount = ($action === 'increment') ? $currentBooked + $count : max(0, $currentBooked - $count);
-                update_post_meta($sailingId, 'sailing_config_booked_count', $newCount);
-
-                // 2. Mise à jour COMPTEUR OPTIONS
-                $optionsBooked = get_post_meta($sailingId, 'sailing_options_booked_counts', true) ?: [];
-                if (! is_array($optionsBooked)) {
-                    $optionsBooked = [];
+                // 1. COMPTEUR PASSAGERS (atomique). L'incrément ici concerne les
+                //    commandes non réservées au checkout (ex : admin / agence),
+                //    sans plafond de quota. Le checkout front passe par reserveOrderBooking.
+                $count = (int) array_sum($passengers);
+                if ($action === 'increment') {
+                    $this->atomicReserveSeats($sailingId, $count, 0);
+                } else {
+                    $this->atomicReleaseSeats($sailingId, $count);
                 }
 
-                foreach ($options as $optId => $qtyRequested) {
-                    $qty = (int) $qtyRequested;
-                    if ($qty <= 0) {
-                        continue;
-                    }
-
-                    $currentOptCount = isset($optionsBooked[$optId]) ? (int) $optionsBooked[$optId] : 0;
-
-                    if ($action === 'increment') {
-                        $optionsBooked[$optId] = $currentOptCount + $qty;
-                    } else {
-                        $optionsBooked[$optId] = max(0, $currentOptCount - $qty);
-                    }
-                }
-                update_post_meta($sailingId, 'sailing_options_booked_counts', $optionsBooked);
+                // 2. COMPTEUR OPTIONS
+                $this->adjustOptionsCount($sailingId, $options, $action);
             }
         }
 
@@ -402,6 +453,99 @@ class WoocommerceBridge
             $order->delete_meta_data('_booking_processed');
         }
         $order->save();
+    }
+
+    /**
+     * Réserve $count places sur un départ via un UPDATE SQL atomique et conditionnel.
+     * Retourne false si le quota serait dépassé (aucune écriture effectuée).
+     * $quota <= 0 signifie "pas de plafond" (incrément inconditionnel).
+     */
+    private function atomicReserveSeats(int $sailingId, int $count, int $quota): bool
+    {
+        global $wpdb;
+
+        if ($count <= 0) {
+            return true;
+        }
+
+        // La meta doit exister pour que l'UPDATE conditionnel puisse matcher.
+        if (! metadata_exists('post', $sailingId, 'sailing_config_booked_count')) {
+            add_post_meta($sailingId, 'sailing_config_booked_count', 0, true);
+        }
+
+        if ($quota <= 0) {
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$wpdb->postmeta}
+                 SET meta_value = CAST(meta_value AS SIGNED) + %d
+                 WHERE post_id = %d AND meta_key = 'sailing_config_booked_count'",
+                $count,
+                $sailingId
+            ));
+            wp_cache_delete($sailingId, 'post_meta');
+
+            return true;
+        }
+
+        $affected = $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->postmeta}
+             SET meta_value = CAST(meta_value AS SIGNED) + %d
+             WHERE post_id = %d
+               AND meta_key = 'sailing_config_booked_count'
+               AND CAST(meta_value AS SIGNED) + %d <= %d",
+            $count,
+            $sailingId,
+            $count,
+            $quota
+        ));
+
+        wp_cache_delete($sailingId, 'post_meta');
+
+        return $affected > 0;
+    }
+
+    /**
+     * Libère $count places sur un départ (jamais en dessous de 0), de façon atomique.
+     */
+    private function atomicReleaseSeats(int $sailingId, int $count): void
+    {
+        global $wpdb;
+
+        if ($count <= 0) {
+            return;
+        }
+
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$wpdb->postmeta}
+             SET meta_value = GREATEST(0, CAST(meta_value AS SIGNED) - %d)
+             WHERE post_id = %d AND meta_key = 'sailing_config_booked_count'",
+            $count,
+            $sailingId
+        ));
+
+        wp_cache_delete($sailingId, 'post_meta');
+    }
+
+    /**
+     * Incrémente / décrémente les compteurs d'options d'un départ.
+     */
+    private function adjustOptionsCount($sailingId, array $options, string $action): void
+    {
+        $optionsBooked = get_post_meta($sailingId, 'sailing_options_booked_counts', true) ?: [];
+        if (! is_array($optionsBooked)) {
+            $optionsBooked = [];
+        }
+
+        foreach ($options as $optId => $qtyRequested) {
+            $qty = (int) $qtyRequested;
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $current = isset($optionsBooked[$optId]) ? (int) $optionsBooked[$optId] : 0;
+            $optionsBooked[$optId] = ($action === 'increment') ? $current + $qty : max(0, $current - $qty);
+        }
+
+        update_post_meta($sailingId, 'sailing_options_booked_counts', $optionsBooked);
     }
 
     // ... (Reste des méthodes overrideCartItemPrice, displayBookingDataInCart, etc. inchangées) ...
