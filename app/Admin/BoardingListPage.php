@@ -79,7 +79,9 @@ class BoardingListPage
             'meta_query' => [
                 [
                     'key' => 'sailing_config_departure_date',
-                    'value' => date('Y-m-d H:i:s'),
+                    // Inclut aussi les départs des 7 derniers jours, pour pouvoir
+                    // régulariser un embarquement récent (client venu le mauvais jour).
+                    'value' => date('Y-m-d 00:00:00', strtotime('-7 days')),
                     'compare' => '>=',
                 ],
             ],
@@ -115,7 +117,8 @@ class BoardingListPage
         }
 
         $allSailings = Sailing::fetch(['posts_per_page' => -1, 'meta_key' => 'sailing_config_departure_date', 'orderby' => 'meta_value', 'order' => 'DESC']);
-        $futureSailings = Sailing::fetch(['posts_per_page' => -1, 'meta_query' => [['key' => 'sailing_config_departure_date', 'value' => date('Y-m-d H:i:s'), 'compare' => '>=']], 'orderby' => 'meta_value', 'meta_key' => 'sailing_config_departure_date', 'order' => 'ASC']);
+        // Inclut aussi les départs des 7 derniers jours (régularisation d'un embarquement récent).
+        $futureSailings = Sailing::fetch(['posts_per_page' => -1, 'meta_query' => [['key' => 'sailing_config_departure_date', 'value' => date('Y-m-d 00:00:00', strtotime('-7 days')), 'compare' => '>=']], 'orderby' => 'meta_value', 'meta_key' => 'sailing_config_departure_date', 'order' => 'ASC']);
 
         if (isset($_GET['message'])) {
             echo '<div class="notice notice-'.($_GET['msg_type'] ?? 'success').' is-dismissible"><p>'.esc_html($_GET['message']).'</p></div>';

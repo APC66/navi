@@ -357,8 +357,9 @@
         @if (isset($futureSailings))
           @foreach ($futureSailings as $sailing)
             @if ($sailing->ID != $selectedSailingId)
+              @php $isPast = (new \DateTime($sailing->start)) < (new \DateTime()); @endphp
               <option value="{{ $sailing->ID }}">
-                {{ (new \DateTime($sailing->start))->format('d-m-Y H:i:s') }} - {{ html_entity_decode($sailing->title, ENT_QUOTES) }} ({{ $sailing->quota }} places)
+                {{ $isPast ? '(passé) ' : '' }}{{ (new \DateTime($sailing->start))->format('d-m-Y H:i:s') }} - {{ html_entity_decode($sailing->title, ENT_QUOTES) }} ({{ $sailing->quota }} places)
               </option>
             @endif
           @endforeach
