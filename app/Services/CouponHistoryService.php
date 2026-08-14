@@ -19,6 +19,68 @@ class CouponHistoryService
         add_action('add_meta_boxes', [$this, 'registerMetabox']);
         add_action('woocommerce_process_shop_coupon_meta', [$this, 'snapshotBeforeSave'], 1, 1);
         add_action('woocommerce_coupon_options_save', [$this, 'logManualSave'], 20, 2);
+
+        // Étend la recherche de la liste des codes promos aux emails autorisés.
+        add_filter('posts_join', [$this, 'couponSearchJoin'], 10, 2);
+        add_filter('posts_where', [$this, 'couponSearchWhere'], 10, 2);
+        add_filter('posts_distinct', [$this, 'couponSearchDistinct'], 10, 2);
+    }
+
+    /**
+     * Vrai si on est sur une recherche de la liste admin des codes promos.
+     */
+    private function isCouponSearchQuery($query): bool
+    {
+        return is_admin()
+            && $query instanceof \WP_Query
+            && $query->is_main_query()
+            && $query->get('post_type') === 'shop_coupon'
+            && trim((string) $query->get('s')) !== '';
+    }
+
+    /**
+     * Joint la meta customer_email (emails autorisés) à la requête de recherche.
+     */
+    public function couponSearchJoin($join, $query)
+    {
+        global $wpdb;
+
+        if ($this->isCouponSearchQuery($query)) {
+            $join .= " LEFT JOIN {$wpdb->postmeta} navi_cem ON {$wpdb->posts}.ID = navi_cem.post_id AND navi_cem.meta_key = 'customer_email' ";
+        }
+
+        return $join;
+    }
+
+    /**
+     * Ajoute la condition de recherche sur les emails autorisés, en réutilisant
+     * le terme déjà recherché sur le titre (le code du coupon).
+     */
+    public function couponSearchWhere($where, $query)
+    {
+        global $wpdb;
+
+        if ($this->isCouponSearchQuery($query)) {
+            $where = preg_replace(
+                "/\(\s*{$wpdb->posts}\.post_title\s+LIKE\s*('[^']+')\s*\)/",
+                "({$wpdb->posts}.post_title LIKE $1) OR (navi_cem.meta_value LIKE $1)",
+                $where
+            );
+        }
+
+        return $where;
+    }
+
+    /**
+     * Évite les doublons de lignes introduits par la jointure.
+     */
+    public function couponSearchDistinct($distinct, $query)
+    {
+        if ($this->isCouponSearchQuery($query)) {
+            return 'DISTINCT';
+        }
+
+        return $distinct;
     }
 
     /**
