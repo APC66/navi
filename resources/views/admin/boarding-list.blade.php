@@ -53,7 +53,23 @@
         "
       >
         <div>
-          <h2 style="margin: 0">{{ html_entity_decode($currentSailing->title, ENT_QUOTES)}}</h2>
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+            <span>{{ html_entity_decode($currentSailing->title, ENT_QUOTES) }}</span>
+            @if ($currentStatus)
+              <span
+                style="
+                  background: {{ $currentStatus['bg'] }};
+                  color: {{ $currentStatus['text'] }};
+                  padding: 3px 12px;
+                  border-radius: 4px;
+                  font-size: 13px;
+                  font-weight: 700;
+                  letter-spacing: 0.03em;
+                  white-space: nowrap;
+                "
+              >{{ $currentStatus['label'] }}</span>
+            @endif
+          </h2>
           <p style="margin: 5px 0">
             <strong>Date :</strong>
             {{ date_i18n('l d F Y', strtotime($currentSailing->start)) }} |

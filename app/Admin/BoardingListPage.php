@@ -101,6 +101,28 @@ class BoardingListPage
     }
 
     /**
+     * Retourne le libellé et la couleur du statut d'un départ, alignés sur
+     * les couleurs du planning admin (CalendarController).
+     */
+    private function getSailingStatusBadge(int $sailingId): array
+    {
+        $terms = wp_get_post_terms($sailingId, 'sailing_status', ['fields' => 'names']);
+        $status = (! empty($terms) && ! is_wp_error($terms)) ? $terms[0] : 'Actif';
+
+        $map = [
+            'Actif' => ['label' => 'ACTIF', 'bg' => '#3788d8'],
+            'Reporté' => ['label' => 'REPORTÉ', 'bg' => '#d69e2e'],
+            'Annulé' => ['label' => 'ANNULÉ', 'bg' => '#718096'],
+            'Complet' => ['label' => 'COMPLET', 'bg' => '#dc2626'],
+        ];
+
+        $badge = $map[$status] ?? ['label' => strtoupper($status), 'bg' => '#718096'];
+        $badge['text'] = '#ffffff';
+
+        return $badge;
+    }
+
+    /**
      * Affiche la liste standard
      */
     private function renderList()
@@ -129,6 +151,7 @@ class BoardingListPage
             'futureSailings' => $futureSailings,
             'selectedSailingId' => $selectedSailingId,
             'currentSailing' => $sailing,
+            'currentStatus' => $sailing ? $this->getSailingStatusBadge($selectedSailingId) : null,
             'passengers' => $passengersList,
         ])->render();
     }
