@@ -51,7 +51,7 @@ class Sailing extends Post
      * (paiement non confirmé ou commande annulée). Source de vérité unique, partagée
      * avec la liste d'embarquement pour éviter que les comptages divergent.
      */
-    const NON_COUNTABLE_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'trash'];
+    const NON_COUNTABLE_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'trash', 'checkout-draft'];
 
     /**
      * Indique si une commande à ce statut doit être comptée dans l'occupation d'un départ.

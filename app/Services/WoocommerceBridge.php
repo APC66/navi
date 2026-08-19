@@ -25,6 +25,13 @@ class WoocommerceBridge
         // Libère aussi la place quand une commande échoue (paiement non abouti).
         add_action('woocommerce_order_status_failed', [$this, 'cancelOrderBooking'], 10, 1);
 
+        // Réconciliation planifiée : recompte régulièrement les compteurs à partir
+        // des commandes réelles, pour rattraper toute dérive (filet de sécurité).
+        add_action('navi_recount_seats', [$this, 'recountAllUpcomingSailings']);
+        if (! wp_next_scheduled('navi_recount_seats')) {
+            wp_schedule_event(time() + 300, 'hourly', 'navi_recount_seats');
+        }
+
         add_action('woocommerce_admin_order_data_after_order_details', [$this, 'addAdminOrderNoteField']);
         add_action('woocommerce_process_shop_order_meta', [$this, 'saveAdminOrderNoteField']);
         add_action('woocommerce_update_order', [$this, 'saveAdminOrderNoteField'], 10, 1);
@@ -364,6 +371,13 @@ class WoocommerceBridge
             return;
         }
 
+        // Ne pas (re)réserver une commande déjà terminée sans paiement : sur une
+        // re-tentative de paiement après un échec, le checkout se rejoue mais la
+        // commande est déjà "échouée/annulée", il ne faut pas reprendre une place.
+        if (! \App\Models\Sailing::isCountableOrderStatus($order->get_status())) {
+            return;
+        }
+
         $reservedPassengers = []; // sailingId => count (pour rollback)
         $reservedOptions = [];    // sailingId => options (pour rollback)
 
@@ -546,6 +560,87 @@ class WoocommerceBridge
         }
 
         update_post_meta($sailingId, 'sailing_options_booked_counts', $optionsBooked);
+    }
+
+    /**
+     * Recalcule le compteur de places d'un départ à partir des commandes réelles
+     * (source de vérité), et remet aussi à plat les compteurs d'options.
+     * Corrige les dérives éventuelles du compteur incrémental. Retourne le total.
+     */
+    public function recountSailing(int $sailingId): int
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare("
+            SELECT DISTINCT i.order_id, i.order_item_id
+            FROM {$wpdb->prefix}woocommerce_order_items i
+            INNER JOIN {$wpdb->prefix}woocommerce_order_itemmeta m
+                ON i.order_item_id = m.order_item_id
+                AND m.meta_key IN ('_sailing_id', 'sailing_id')
+                AND m.meta_value = %s
+        ", (string) $sailingId));
+
+        $totalPax = 0;
+        $optionCounts = [];
+
+        foreach ($rows as $row) {
+            $order = wc_get_order($row->order_id);
+            if (! $order) {
+                continue;
+            }
+
+            // On ne compte que les commandes qui tiennent réellement une place.
+            if (! \App\Models\Sailing::isCountableOrderStatus($order->get_status())) {
+                continue;
+            }
+            if (in_array($order->get_meta('_boarding_status'), ['credited', 'refunded_manual'], true)) {
+                continue;
+            }
+
+            $item = $order->get_item($row->order_item_id);
+            if (! $item) {
+                continue;
+            }
+
+            $data = json_decode($item->get_meta('_booking_data_raw'), true) ?: [];
+            $totalPax += (int) array_sum($data['passengers'] ?? []);
+
+            foreach (($data['options'] ?? []) as $optId => $qty) {
+                $optionCounts[$optId] = ($optionCounts[$optId] ?? 0) + (int) $qty;
+            }
+        }
+
+        update_post_meta($sailingId, 'sailing_config_booked_count', $totalPax);
+        update_post_meta($sailingId, 'sailing_options_booked_counts', $optionCounts);
+        wp_cache_delete($sailingId, 'post_meta');
+
+        return $totalPax;
+    }
+
+    /**
+     * Réconciliation planifiée : recompte les départs à venir (et récents) pour
+     * corriger automatiquement toute dérive du compteur. Appelée par le cron.
+     */
+    public function recountAllUpcomingSailings(): void
+    {
+        $sailings = \App\Models\Sailing::fetch([
+            'posts_per_page' => -1,
+            'cache_results' => false,
+            'meta_query' => [
+                [
+                    'key' => 'sailing_config_departure_date',
+                    'value' => date('Y-m-d 00:00:00', strtotime('-2 days')),
+                    'compare' => '>=',
+                ],
+            ],
+            'meta_key' => 'sailing_config_departure_date',
+            'orderby' => 'meta_value',
+            'order' => 'ASC',
+        ]);
+
+        foreach ($sailings as $sailing) {
+            $this->recountSailing((int) $sailing->ID);
+        }
     }
 
     // ... (Reste des méthodes overrideCartItemPrice, displayBookingDataInCart, etc. inchangées) ...

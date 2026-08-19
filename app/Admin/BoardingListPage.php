@@ -134,6 +134,10 @@ class BoardingListPage
         if ($selectedSailingId) {
             $sailing = Sailing::find($selectedSailingId);
             if ($sailing) {
+                // Réconciliation à la volée du départ consulté : le compteur est
+                // recalculé automatiquement à partir des commandes réelles, en plus
+                // du cron horaire. Aucune action manuelle nécessaire.
+                (new \App\Services\WoocommerceBridge)->recountSailing($selectedSailingId);
                 $passengersList = $this->getPassengersForSailing($selectedSailingId);
             }
         }
