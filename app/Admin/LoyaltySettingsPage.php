@@ -33,6 +33,51 @@ class LoyaltySettingsPage
         // Afficher les points sur la fiche client dans l'admin
         add_action('show_user_profile', [$this, 'displayPointsOnUserProfile']);
         add_action('edit_user_profile', [$this, 'displayPointsOnUserProfile']);
+
+        // Enregistrer l'ajustement manuel des points depuis la fiche client
+        add_action('personal_options_update', [$this, 'saveUserProfilePoints']);
+        add_action('edit_user_profile_update', [$this, 'saveUserProfilePoints']);
+    }
+
+    /**
+     * Applique un ajustement manuel des points de fidélité depuis la fiche client,
+     * et le journalise dans l'historique.
+     */
+    public function saveUserProfilePoints(int $user_id): void
+    {
+        if (empty($_POST['loyalty_points_adjust'])) {
+            return;
+        }
+        if (! current_user_can('edit_users')) {
+            return;
+        }
+        if (! isset($_POST['loyalty_adjust_nonce'])
+            || ! wp_verify_nonce($_POST['loyalty_adjust_nonce'], 'loyalty_adjust_'.$user_id)) {
+            return;
+        }
+
+        $delta = (int) $_POST['loyalty_points_adjust'];
+        if ($delta === 0) {
+            return;
+        }
+
+        $current = (int) (get_user_meta($user_id, '_loyalty_points', true) ?: 0);
+        $newTotal = max(0, $current + $delta);
+        update_user_meta($user_id, '_loyalty_points', $newTotal);
+
+        // Journalisation dans l'historique (même format que le gain automatique)
+        $history = get_user_meta($user_id, '_loyalty_points_history', true);
+        if (! is_array($history)) {
+            $history = [];
+        }
+        $history[] = [
+            'date' => current_time('mysql'),
+            'points' => $delta,
+            'type' => 'manual',
+            'order_id' => 0,
+            'reason' => sanitize_text_field($_POST['loyalty_points_adjust_reason'] ?? ''),
+        ];
+        update_user_meta($user_id, '_loyalty_points_history', $history);
     }
 
     /**
@@ -203,6 +248,30 @@ class LoyaltySettingsPage
                     </p>
                 </td>
             </tr>
+            <tr>
+                <th><label for="loyalty_points_adjust">Ajuster les points</label></th>
+                <td>
+                    <?php wp_nonce_field('loyalty_adjust_'.$user->ID, 'loyalty_adjust_nonce'); ?>
+                    <input
+                        type="number"
+                        name="loyalty_points_adjust"
+                        id="loyalty_points_adjust"
+                        value="0"
+                        step="1"
+                        style="width: 100px;"
+                    />
+                    <input
+                        type="text"
+                        name="loyalty_points_adjust_reason"
+                        placeholder="Motif (facultatif)"
+                        style="width: 260px; margin-left: 8px;"
+                    />
+                    <p class="description">
+                        Nombre de points à ajouter (ex : 100) ou à retirer (ex : -50). Laissez 0 pour ne rien changer.
+                        L'ajustement est enregistré dans l'historique ci-dessous.
+                    </p>
+                </td>
+            </tr>
             <?php if (! empty($history)) { ?>
             <tr>
                 <th><label>Historique récent</label></th>
@@ -222,6 +291,7 @@ class LoyaltySettingsPage
                                     'earned' => '<span style="color:#2e7d32;">Gagné</span>',
                                     'redeemed' => '<span style="color:#b71c1c;">Utilisé</span>',
                                     'refunded' => '<span style="color:#e65100;">Remboursé</span>',
+                                    'manual' => '<span style="color:#2271b1;">Ajustement manuel</span>',
                                 ];
                                 $label = $type_labels[$entry['type']] ?? esc_html($entry['type']);
                                 $sign = $entry['points'] > 0 ? '+' : '';
