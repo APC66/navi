@@ -1,0 +1,212 @@
+/* APC Popup : écran d'administration. */
+
+.apc-popup-admin [hidden] {
+  display: none !important;
+}
+
+.apc-popup-admin__intro {
+  margin: 4px 0 8px;
+  color: #50575e;
+}
+
+.apc-popup-admin__heading {
+  margin: 24px 0 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #dcdcde;
+  font-size: 14px;
+}
+
+.apc-popup-admin__heading:first-of-type {
+  margin-top: 12px;
+}
+
+.apc-popup-admin .form-table th {
+  width: 190px;
+}
+
+.apc-popup-admin .notice.inline {
+  margin: 12px 0 4px;
+}
+
+/* Préfixe .form-table : passe devant les règles de WordPress sur fieldset label. */
+.apc-popup-admin .form-table .apc-popup-admin__line {
+  display: block;
+  margin: 0 0 6px !important;
+}
+
+.apc-popup-admin .form-table .apc-popup-admin__inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 18px 6px 0 !important;
+}
+
+.apc-popup-admin__date-label {
+  display: inline-block;
+  min-width: 48px;
+}
+
+.apc-popup-admin__colors input[type='color'] {
+  width: 44px;
+  height: 30px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.apc-popup-admin__color-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 6px;
+}
+
+.apc-popup-admin__color-state {
+  min-width: 80px;
+  margin: 0 12px 6px 0;
+  font-weight: 600;
+}
+
+.apc-popup-admin__cta-preview-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Aperçu du bouton, mêmes formes que sur le site. */
+.apc-popup-admin__cta-preview {
+  display: inline-block;
+  padding: 12px 26px;
+  border: var(--cta-border-width) solid var(--cta-border);
+  border-radius: var(--cta-radius);
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: default;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.apc-popup-admin__cta-preview:hover {
+  border-color: var(--cta-hover-border);
+  background: var(--cta-hover-bg);
+  color: var(--cta-hover-text);
+}
+
+.apc-popup-admin--side h4 {
+  margin: 16px 0 6px;
+}
+
+/* Sélecteurs avec recherche */
+
+.apc-picker__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.apc-picker__chips:not(:empty) {
+  margin-bottom: 8px;
+}
+
+.apc-picker__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 2px 4px 2px 10px;
+  border: 1px solid #c3c4c7;
+  border-radius: 999px;
+  background: #f6f7f7;
+  line-height: 1.6;
+}
+
+.apc-picker__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #50575e;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.apc-picker__remove:hover,
+.apc-picker__remove:focus {
+  background: #dcdcde;
+  color: #b32d2e;
+}
+
+.apc-picker__field {
+  position: relative;
+  max-width: 25em;
+}
+
+.apc-picker__input {
+  width: 100%;
+}
+
+.apc-picker__results {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 100;
+  max-height: 260px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  border: 1px solid #8c8f94;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  list-style: none;
+}
+
+.apc-picker__option {
+  margin: 0;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.apc-picker__option:hover,
+.apc-picker__option[aria-selected='true'] {
+  background: #2271b1;
+  color: #fff;
+}
+
+.apc-picker__message {
+  margin: 4px 0 0;
+  color: #646970;
+  font-style: italic;
+}
+
+/* Liste des popups */
+
+.post-type-apc_popup .column-apc_priority {
+  width: 70px;
+}
+
+.post-type-apc_popup .column-apc_status {
+  width: 18%;
+}
+
+@media screen and (max-width: 782px) {
+  .apc-popup-admin .form-table th {
+    width: auto;
+  }
+
+  .apc-picker__field {
+    max-width: none;
+  }
+}

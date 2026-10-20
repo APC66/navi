@@ -1,7 +1,7 @@
 # Application
 public/content/plugins/*
-public/content/plugins
 !public/content/plugins/.gitkeep
+!public/content/plugins/apc-popup/
 public/content/mu-plugins/*/
 !public/content/mu-plugins/editor/
 public/content/upgrade

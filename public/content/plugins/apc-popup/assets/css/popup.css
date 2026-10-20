@@ -1,0 +1,351 @@
+/* APC Popup : styles autonomes, indépendants du thème. */
+
+.apc-popup[hidden] {
+  display: none !important;
+}
+
+.apc-popup {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999999;
+  display: flex;
+  padding: 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.apc-popup *,
+.apc-popup *::before,
+.apc-popup *::after {
+  box-sizing: border-box;
+}
+
+.apc-popup--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.apc-popup--bottom-right {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.apc-popup--bottom-left {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+/* Fond assombri (popups centrées uniquement) */
+.apc-popup__overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, var(--apc-popup-overlay, 0.6));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: auto;
+}
+
+/*
+ * La fenêtre ne défile pas : seul son contenu (__body) défile, la croix de
+ * fermeture reste donc toujours visible. max-height en % : hauteur réellement
+ * visible de l'écran (barres du navigateur mobile comprises), marges déduites.
+ */
+.apc-popup__dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  max-height: 100%;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 14px;
+  background: var(--apc-popup-bg, #fff);
+  color: var(--apc-popup-text, #1f2937);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  font-size: 16px;
+  line-height: 1.55;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: auto;
+}
+
+.apc-popup__dialog:focus {
+  outline: none;
+}
+
+.apc-popup__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 32px 28px 28px;
+}
+
+.apc-popup__body:focus {
+  outline: none;
+}
+
+/* Sans titre : le contenu commence sous la croix de fermeture. */
+.apc-popup--no-title .apc-popup__body {
+  padding-top: 56px;
+}
+
+.apc-popup--small .apc-popup__dialog {
+  max-width: 420px;
+}
+
+.apc-popup--medium .apc-popup__dialog {
+  max-width: 600px;
+}
+
+.apc-popup--large .apc-popup__dialog {
+  max-width: 820px;
+}
+
+/* 1280 px de contenu + 2 x 28 px de marges intérieures. */
+.apc-popup--xlarge .apc-popup__dialog {
+  max-width: 1336px;
+}
+
+.apc-popup.is-open .apc-popup__overlay {
+  opacity: 1;
+}
+
+.apc-popup.is-open .apc-popup__dialog {
+  opacity: 1;
+  transform: none;
+}
+
+/* Bouton de fermeture */
+.apc-popup__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--apc-popup-bg, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.apc-popup__close:hover {
+  box-shadow: 0 0 0 2px currentColor inset;
+}
+
+.apc-popup__close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Zone d'annonce pour les lecteurs d'écran (popups discrètes) */
+.apc-popup-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Titre et contenu (rétablit une typographie lisible même après un reset CSS) */
+.apc-popup__title {
+  margin: 0 36px 14px 0;
+  color: inherit;
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.apc-popup__content > :first-child {
+  margin-top: 0;
+}
+
+.apc-popup__content > :last-child {
+  margin-bottom: 0;
+}
+
+.apc-popup__content p,
+.apc-popup__content ul,
+.apc-popup__content ol {
+  margin: 0 0 1em;
+}
+
+.apc-popup__content ul,
+.apc-popup__content ol {
+  padding-left: 1.4em;
+}
+
+.apc-popup__content ul {
+  list-style: disc;
+}
+
+.apc-popup__content ol {
+  list-style: decimal;
+}
+
+.apc-popup__content h3,
+.apc-popup__content h4 {
+  margin: 1.2em 0 0.5em;
+  color: inherit;
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.apc-popup__content a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.apc-popup__content strong,
+.apc-popup__content b {
+  font-weight: 700;
+}
+
+.apc-popup__content em,
+.apc-popup__content i {
+  font-style: italic;
+}
+
+.apc-popup__content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 1em;
+  border-radius: 8px;
+}
+
+/* Vidéos et contenus intégrés : jamais plus larges que la popup. */
+.apc-popup__content iframe,
+.apc-popup__content video,
+.apc-popup__content embed,
+.apc-popup__content object,
+.apc-popup__content .wp-video {
+  max-width: 100%;
+}
+
+.apc-popup__content video {
+  height: auto;
+}
+
+.apc-popup__content iframe[src*='youtube.com'],
+.apc-popup__content iframe[src*='youtube-nocookie.com'],
+.apc-popup__content iframe[src*='youtu.be'],
+.apc-popup__content iframe[src*='vimeo.com'] {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.apc-popup__content .alignleft {
+  float: left;
+  margin: 0 1em 1em 0;
+}
+
+.apc-popup__content .alignright {
+  float: right;
+  margin: 0 0 1em 1em;
+}
+
+.apc-popup__content .aligncenter {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.apc-popup__content::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* Bouton d'action */
+.apc-popup__actions {
+  margin: 24px 0 0;
+  text-align: center;
+}
+
+.apc-popup__cta {
+  display: inline-block;
+  padding: 12px 26px;
+  border: var(--apc-popup-cta-border-width, 0) solid var(--apc-popup-cta-border, transparent);
+  border-radius: var(--apc-popup-cta-radius, 999px);
+  background: var(--apc-popup-cta-bg, #1d4ed8);
+  color: var(--apc-popup-cta-text, #fff);
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Survol (souris) et focus clavier : couleurs « au survol » choisies dans la popup. */
+.apc-popup__cta:hover,
+.apc-popup__cta:focus-visible {
+  border-color: var(--apc-popup-cta-hover-border, transparent);
+  background: var(--apc-popup-cta-hover-bg, #1e3a8a);
+  color: var(--apc-popup-cta-hover-text, #fff);
+  text-decoration: none;
+}
+
+.apc-popup__cta:focus-visible {
+  outline: 2px solid var(--apc-popup-cta-bg, #1d4ed8);
+  outline-offset: 3px;
+}
+
+/* Défilement de la page bloqué pendant une popup centrée */
+html.apc-popup-lock,
+html.apc-popup-lock body {
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .apc-popup {
+    padding: 12px;
+  }
+
+  .apc-popup__body {
+    padding: 28px 20px 22px;
+  }
+
+  .apc-popup--bottom-right,
+  .apc-popup--bottom-left {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apc-popup__overlay,
+  .apc-popup__dialog,
+  .apc-popup__close,
+  .apc-popup__cta {
+    transition: none;
+  }
+
+  .apc-popup__dialog {
+    transform: none;
+  }
+}
