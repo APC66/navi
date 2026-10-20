@@ -140,6 +140,7 @@ class ThemeServiceProvider extends SageServiceProvider
             return [
                 'acf/hero-video',
                 'acf/cruise-carousel',
+                'acf/carousel-actu',
                 'acf/reassurance',
                 'acf/text-images-cards',
                 'acf/text-image',
@@ -159,7 +160,8 @@ class ThemeServiceProvider extends SageServiceProvider
             return $args;
         });
 
-        // Active guttenberg que pour le template specifique et la page accueil
+        // Active guttenberg que pour le template specifique et la page accueil.
+        // Les articles de blog (post) utilisent l'éditeur classique.
         add_filter('use_block_editor_for_post', function ($use_block_editor, $post) {
             if ($post->post_type === 'page') {
                 if ((int) get_option('page_on_front') === $post->ID) {
@@ -170,6 +172,11 @@ class ThemeServiceProvider extends SageServiceProvider
                     return true;
                 }
 
+                return false;
+            }
+
+            // Désactive Gutenberg sur les articles de blog (éditeur classique).
+            if ($post->post_type === 'post') {
                 return false;
             }
 

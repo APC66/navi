@@ -18,6 +18,7 @@ export default defineConfig({
         'resources/js/admin/calendar.js',
 
         'resources/js/blocks/cruise-carousel.js',
+        'resources/js/blocks/carousel-actu.js',
         'resources/js/blocks/image-carousel.js',
 
         'resources/js/components/booking-widget.js',

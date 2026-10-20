@@ -11,6 +11,7 @@ Object.assign(window, { Alpine: alpine }).Alpine.start();
 
 const blocks = {
   'cruise-swiper': () => import('./blocks/cruise-carousel').then(m => m.initCruiseCarousel),
+  'actu-swiper': () => import('./blocks/carousel-actu').then(m => m.initActuCarousel),
   'image-carousel': () => import('./blocks/image-carousel').then(m => m.initImageCarousel),
 };
 
