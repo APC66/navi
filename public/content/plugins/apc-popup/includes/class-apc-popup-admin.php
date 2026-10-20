@@ -100,6 +100,16 @@ final class APC_Popup_Admin
                         <input type="checkbox" name="apc_popup[show_title]" value="1" <?php checked($s['show_title']); ?>>
                         <?php esc_html_e('Afficher le titre dans la popup', 'apc-popup'); ?>
                     </label>
+                    <p data-apc-show="show_title=1">
+                        <label>
+                            <?php esc_html_e('Alignement du titre :', 'apc-popup'); ?>
+                            <select name="apc_popup[title_align]">
+                                <option value="left" <?php selected($s['title_align'], 'left'); ?>><?php esc_html_e('À gauche', 'apc-popup'); ?></option>
+                                <option value="center" <?php selected($s['title_align'], 'center'); ?>><?php esc_html_e('Centré', 'apc-popup'); ?></option>
+                                <option value="right" <?php selected($s['title_align'], 'right'); ?>><?php esc_html_e('À droite', 'apc-popup'); ?></option>
+                            </select>
+                        </label>
+                    </p>
                 </td>
             </tr>
             <tr>

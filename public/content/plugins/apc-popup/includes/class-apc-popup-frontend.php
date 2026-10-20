@@ -290,7 +290,7 @@ final class APC_Popup_Frontend
         </button>
         <div class="apc-popup__body" tabindex="-1">
             <?php if ($has_title) { ?>
-                <h2 class="apc-popup__title" id="<?php echo esc_attr($dom_id.'-title'); ?>"><?php echo esc_html($title); ?></h2>
+                <h2 class="apc-popup__title apc-popup__title--<?php echo esc_attr($s['title_align']); ?>" id="<?php echo esc_attr($dom_id.'-title'); ?>"><?php echo esc_html($title); ?></h2>
             <?php } ?>
             <div class="apc-popup__content">
                 <?php echo $this->content_html($post); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

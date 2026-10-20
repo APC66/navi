@@ -179,6 +179,17 @@
   font-size: 1.5em;
   font-weight: 700;
   line-height: 1.25;
+  text-align: left;
+}
+
+/* Centré : même marge des deux côtés, pour rester centré malgré la croix. */
+.apc-popup__title--center {
+  margin-left: 36px;
+  text-align: center;
+}
+
+.apc-popup__title--right {
+  text-align: right;
 }
 
 .apc-popup__content > :first-child {

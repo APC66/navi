@@ -29,6 +29,8 @@ final class APC_Popup_Settings
 
     const AUDIENCES = ['all', 'logged_in', 'logged_out'];
 
+    const TITLE_ALIGNS = ['left', 'center', 'right'];
+
     const DEVICES = ['desktop', 'mobile'];
 
     const DATE_FORMAT = 'Y-m-d\TH:i';
@@ -37,6 +39,7 @@ final class APC_Popup_Settings
     {
         return [
             'show_title' => true,
+            'title_align' => 'left',
             'priority' => 10,
 
             // Ciblage
@@ -191,6 +194,7 @@ final class APC_Popup_Settings
             $clean[$key] = ! empty($raw[$key]);
         }
 
+        $clean['title_align'] = self::one_of($raw['title_align'] ?? '', self::TITLE_ALIGNS, $defaults['title_align']);
         $clean['priority'] = self::int_between($raw['priority'] ?? $defaults['priority'], -999, 999);
 
         $clean['display_mode'] = self::one_of($raw['display_mode'] ?? '', ['all', 'include'], $defaults['display_mode']);
