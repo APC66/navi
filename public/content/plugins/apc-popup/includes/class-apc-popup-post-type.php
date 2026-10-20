@@ -14,6 +14,19 @@ final class APC_Popup_Post_Type
     {
         // La purge du cache des pages après modification est gérée par APC_Popup_Cache.
         add_action('init', [$this, 'register']);
+        add_filter('ure_set_cpt_own_caps', [$this, 'keep_page_capabilities'], 10, 2);
+    }
+
+    /**
+     * User Role Editor Pro (option « Force custom post types to use their own
+     * capabilities ») remplace les droits des types de contenu personnalisés
+     * par des droits dédiés (edit_apc_popups...) qu'aucun rôle ne possède :
+     * la liste des popups devenait inaccessible. Les popups gardent les droits
+     * des pages : qui gère les pages gère les popups.
+     */
+    public function keep_page_capabilities($do_it, $post_type)
+    {
+        return $post_type === APC_Popup_Settings::POST_TYPE ? false : $do_it;
     }
 
     public function register(): void
