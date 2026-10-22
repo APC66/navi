@@ -18,6 +18,10 @@ class PageHeader extends Component
 
     public $showTitle;
 
+    public $parentTitle;
+
+    public $parentUrl;
+
     public function __construct(
         $image = null,
         $title = '',
@@ -26,6 +30,8 @@ class PageHeader extends Component
         $subtitle = '',
         $group = [],
         $showTitle = false,
+        $parentTitle = '',
+        $parentUrl = '',
     ) {
         $group = is_array($group) ? $group : [];
 
@@ -59,6 +65,9 @@ class PageHeader extends Component
         $this->highlightColor = $highlightColor;
         $this->subtitle = $subtitle;
         $this->showTitle = $showTitle;
+        // Niveau intermédiaire du fil d'Ariane (ex. Accueil / Actualités / Catégorie)
+        $this->parentTitle = $parentTitle;
+        $this->parentUrl = $parentUrl;
     }
 
     public function render()

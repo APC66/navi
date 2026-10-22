@@ -19,6 +19,11 @@ AOS.init({
   duration: 800,
 })
 
+// Positions recalculées une fois les polices et les images chargées : mesurées
+// trop tôt, les éléments bas de page (longs articles) s'animaient en retard.
+document.fonts?.ready.then(() => AOS.refresh())
+window.addEventListener('load', () => AOS.refresh())
+
 
 Object.entries(blocks).forEach(([selector, loader]) => {
   if (document.querySelector(`.${selector}`)) {

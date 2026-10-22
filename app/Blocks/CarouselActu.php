@@ -43,7 +43,8 @@ class CarouselActu extends Block
 
         $posts = collect($query->posts)->map(function ($p) {
             return [
-                'title' => get_the_title($p),
+                // Texte brut : les entités (&#8217;...) sont échappées par Blade dans la vue.
+                'title' => html_entity_decode(get_the_title($p), ENT_QUOTES, 'UTF-8'),
                 'permalink' => get_permalink($p),
                 'thumbnail_url' => get_the_post_thumbnail_url($p, 'large') ?: '',
                 'date' => get_the_date('', $p),
@@ -57,11 +58,40 @@ class CarouselActu extends Block
             'title_group' => get_field('title_group'),
             'posts' => $posts,
             'background' => get_field('background_style'),
-            'cta' => get_field('cta_group'),
+            'cta' => $this->cta(),
             'bg_image' => get_field('bg_image'),
             'block_id' => 'carousel-actu-'.$this->block->id,
             'has_enough' => $publishedCount >= 3,
             'is_preview' => ! empty($this->block->is_preview),
+        ];
+    }
+
+    /**
+     * Bouton sous le carousel : celui saisi dans le bloc s'il y en a un, sinon
+     * « Voir toutes nos actus » vers la page des actualités (Réglages > Lecture),
+     * sauf si la case « Bouton vers toutes les actualités » est décochée.
+     */
+    protected function cta(): array
+    {
+        $cta = get_field('cta_group');
+        if (is_array($cta) && ! empty($cta['title']) && ! empty($cta['url'])) {
+            return $cta;
+        }
+
+        // Champ jamais enregistré (blocs déjà en place) : bouton affiché par défaut.
+        $showAllLink = get_field('show_all_link');
+        $postsPageId = (int) get_option('page_for_posts');
+
+        if ($showAllLink === false || $showAllLink === 0 || $showAllLink === '0' || ! $postsPageId) {
+            return [];
+        }
+
+        return [
+            'title' => 'Voir toutes nos actus',
+            'url' => get_permalink($postsPageId),
+            'target' => '_self',
+            'variant' => 'secondary',
+            'align' => 'center',
         ];
     }
 
@@ -91,6 +121,13 @@ class CarouselActu extends Block
             ])
 
             ->addNumber('count', ['label' => 'Nombre', 'default_value' => 6])
+
+            ->addTrueFalse('show_all_link', [
+                'label' => 'Bouton vers toutes les actualités',
+                'instructions' => 'Affiche « Voir toutes nos actus » sous le carousel, vers la page des articles (Réglages > Lecture). Ignoré si un bouton d\'action est renseigné ci-dessous.',
+                'default_value' => 1,
+                'ui' => 1,
+            ])
 
             ->addGroup('cta_group', ['label' => 'Bouton d\'action'])
             ->addFields(app(ButtonFields::class)->fields())

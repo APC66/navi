@@ -225,6 +225,60 @@ class ThemeServiceProvider extends SageServiceProvider
             return $allcaps;
         }, 999, 4);
 
+        // Actualités (page des articles et catégories) : 12 par page, soit 4 rangées
+        // de 3 cartes ; les articles épinglés ne s'ajoutent pas en plus en tête ;
+        // articles publiés uniquement, comme les compteurs du filtre (même pour
+        // un éditeur connecté, qui verrait sinon aussi les articles privés).
+        add_action('pre_get_posts', function ($query) {
+            if (! is_admin() && $query->is_main_query() && ! $query->is_feed() && ($query->is_home() || $query->is_category())) {
+                $query->set('posts_per_page', 12);
+                $query->set('ignore_sticky_posts', true);
+                $query->set('post_status', 'publish');
+            }
+        });
+
+        // WP Rocket : chaque page de catégorie affiche le filtre avec les nombres
+        // d'actualités de toutes les catégories. Quand une actualité change, on
+        // vide donc le cache de toutes les pages de catégorie (pas seulement
+        // celles de l'actualité modifiée).
+        add_filter('rocket_post_purge_urls', function ($urls, $post) {
+            if (! $post instanceof \WP_Post || $post->post_type !== 'post') {
+                return $urls;
+            }
+
+            $terms = get_terms(['taxonomy' => 'category', 'hide_empty' => false]);
+            foreach (is_wp_error($terms) ? [] : $terms as $term) {
+                $link = get_term_link($term);
+                if (! is_wp_error($link)) {
+                    $urls[] = $link;
+                }
+            }
+
+            // Chaque article affiche aussi « Nos autres actualités » : on vide
+            // donc toutes les pages d'article publiées.
+            $others = get_posts([
+                'post_type' => 'post',
+                'post_status' => 'publish',
+                'numberposts' => -1,
+                'fields' => 'ids',
+                'post__not_in' => [$post->ID],
+                'no_found_rows' => true,
+            ]);
+            foreach ($others as $id) {
+                $urls[] = get_permalink($id);
+            }
+
+            return array_values(array_unique((array) $urls));
+        }, 10, 2);
+
+        // Actualités : pas de commentaires (la page article ne les affiche pas).
+        add_filter('comments_open', function ($open, $postId) {
+            return get_post_type($postId) === 'post' ? false : $open;
+        }, 10, 2);
+        add_filter('pings_open', function ($open, $postId) {
+            return get_post_type($postId) === 'post' ? false : $open;
+        }, 10, 2);
+
         add_action('pre_get_posts', function ($query) {
             if (! is_admin() && $query->is_main_query() && is_post_type_archive('cruise')) {
                 $search = sanitize_text_field($_GET['cruise_search'] ?? '');

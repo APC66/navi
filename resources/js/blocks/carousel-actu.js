@@ -22,6 +22,8 @@ export const initActuCarousel = () => {
       spaceBetween: 20,
       loop: false,
       autoplay: false,
+      // Peu de cartes (moins que la largeur disponible) : elles sont centrées.
+      centerInsufficientSlides: true,
       pagination: {
         el: pagination,
         clickable: true,

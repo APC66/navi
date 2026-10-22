@@ -2,9 +2,8 @@
 <section class="{{ $block->classes }} {{ $background }} group/section relative overflow-hidden py-12 md:py-20">
   @if ($bg_image)
     <div class="absolute inset-0 z-0">
-      <img decoding="sync"
-           fetchpriority="high"
-           loading="eager"
+      {{-- Image prioritaire, sauf si le carousel est en bas de page (articles : bg_lazy) --}}
+      <img @if (! empty($bg_lazy)) loading="lazy" decoding="async" @else decoding="sync" fetchpriority="high" loading="eager" @endif
            src="{{ $bg_image }}"
            alt=""
            class="h-full w-full object-cover" />
@@ -27,17 +26,21 @@
       data-aos-delay="150"
     >
       <button
+        type="button"
+        aria-label="Actualités précédentes"
         class="swiper-button-prev-custom text-primary-1000 bg-secondary absolute top-1/2 -left-4 z-20 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-white disabled:invisible disabled:opacity-0 md:-left-6 lg:-left-12"
       >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
 
       <button
+        type="button"
+        aria-label="Actualités suivantes"
         class="swiper-button-next-custom text-primary-1000 bg-secondary absolute top-1/2 -right-4 z-20 flex h-12 w-12 -translate-y-1/2 transform items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-white disabled:invisible disabled:opacity-0 md:-right-6 lg:-right-12"
       >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
       </button>
@@ -54,15 +57,18 @@
                 <article
                   class="group/card relative h-[470px] w-full overflow-hidden rounded-3xl shadow-lg transition-all duration-300 hover:shadow-2xl"
                 >
-                  <a href="{{ $post['permalink'] }}" class="absolute inset-0 z-10">
+                  {{-- Contour de focus dessiné à l'intérieur (la carte rogne l'extérieur) --}}
+                  <a href="{{ $post['permalink'] }}" class="focus-visible:outline-secondary absolute inset-0 z-10 rounded-3xl focus-visible:outline-4 focus-visible:-outline-offset-4">
                     <span class="sr-only">Lire l'actualité {{ $post['title'] }}</span>
                   </a>
 
                   @if ($post['thumbnail_url'])
                     <img
                       src="{{ $post['thumbnail_url'] }}"
-                      alt="{{ $post['title'] }}"
-                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-110 group-focus-within/card:scale-110"
                     />
                   @else
                     <div class="bg-primary-800 absolute inset-0 flex items-center justify-center">
@@ -73,11 +79,11 @@
                   @endif
 
                   <div
-                    class="from-primary-900 via-primary-1000/90 absolute inset-0 bg-gradient-to-t to-transparent opacity-90 transition-opacity duration-300 group-hover/card:opacity-0"
+                    class="from-primary-900 via-primary-1000/90 absolute inset-0 bg-gradient-to-t to-transparent opacity-90 transition-opacity duration-300 group-hover/card:opacity-0 group-focus-within/card:opacity-0"
                   ></div>
 
                   <div
-                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center transition group-hover/card:opacity-0"
+                    class="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-full flex-col items-center justify-end p-6 text-center transition group-hover/card:opacity-0 group-focus-within/card:opacity-0"
                   >
                     <h3
                       class="font-heading mb-2 text-xl leading-tight font-bold tracking-wide text-white uppercase drop-shadow-md"
@@ -98,7 +104,8 @@
           @endif
         </div>
       </div>
-      <div class="swiper-pagination relative !bottom-0 mt-8 flex justify-center md:hidden"></div>
+      {{-- !relative : le CSS de Swiper impose position:absolute ; puces aux couleurs du site --}}
+      <div class="swiper-pagination !relative !bottom-0 mt-8 flex justify-center md:hidden [--swiper-pagination-bullet-inactive-color:#fff] [--swiper-pagination-color:var(--color-secondary)]"></div>
     </div>
 
     @if (! empty($cta['title']))
