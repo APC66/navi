@@ -12,6 +12,11 @@ public/content/db.php
 AI*.md
 docs
 
+# Facturation APC : dossiers privés (fichiers temporaires, archives des envois mensuels)
+/apc-billing-tmp/
+/apc-billing-archives/
+public/apc-billing-archives/
+
 # Asset build
 public/build/*
 public/hot

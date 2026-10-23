@@ -707,7 +707,212 @@ class BoardingListPage
             true
         );
 
+        if ($couponId) {
+            $this->createVoucherRefund($order, (float) $amount, $code);
+        }
+
         return $code;
+    }
+
+    /**
+     * Remboursement comptable d'un avoir AV- (avoir partiel, report avec ajustement
+     * négatif, avoir pour annulation).
+     *
+     * L'avoir du thème est un bon d'achat : le client n'est pas remboursé sur sa
+     * carte. Il faut pourtant annuler la part correspondante de la facture d'origine,
+     * sinon la TVA est déclarée deux fois (sur cette commande, puis sur la commande
+     * réglée plus tard avec le bon). On crée donc un remboursement WooCommerce SANS
+     * remboursement bancaire ni remise en stock : le plugin de facturation en tire une
+     * facture d'avoir (TVA ventilée au prorata de la commande).
+     *
+     * - montant : celui de l'avoir, plafonné au montant encore remboursable ;
+     *   rien si ce montant vaut 0 ;
+     * - WooCommerce ne rembourse pas au-delà de ce que la passerelle a encaissé : la
+     *   part réglée par carte cadeau ou avoir (crédits Smart Coupons, appliqués après
+     *   les taxes) ne peut pas être reprise. Quand la facture d'origine porte quelque
+     *   chose à annuler (TVA ou crédit Smart Coupons), une note « ⚠️ AVOIR » le dit
+     *   sur la commande (aucune facture d'avoir possible, ou facture d'avoir
+     *   incomplète, à signaler au comptable), le journal WooCommerce le trace (source
+     *   navi-voucher-refund) et la méta _navi_voucher_refund_missing cumule le montant
+     *   non repris (enregistrée par l'appelant avec $order->save()) ;
+     * - la commande garde son statut même si elle devient entièrement remboursée
+     *   (sinon elle passerait en « Remboursée » et libérerait les places) ;
+     * - pas d'e-mail WooCommerce « Commande remboursée » (le client n'est pas remboursé
+     *   sur sa carte) : la facture d'avoir n'est donc pas envoyée au client, elle part
+     *   au comptable avec l'envoi mensuel (avoirs cochés) et se télécharge depuis la
+     *   commande (bouton « Avoir PDF ») ; le code AV- est communiqué par l'e-mail du thème, sauf pour
+     *   l'action groupée « Générer un avoir », qui n'envoie rien ;
+     * - une erreur est notée sur la commande sans empêcher la création du bon.
+     *
+     * @param  \WC_Order  $order  Commande d'origine.
+     * @param  float  $amount  Montant de l'avoir (TTC).
+     * @param  string  $code  Code du bon d'achat AV-.
+     */
+    private function createVoucherRefund($order, float $amount, string $code): void
+    {
+        if (! $order instanceof \WC_Order || ! function_exists('wc_create_refund')) {
+            return;
+        }
+
+        $decimals = wc_get_price_decimals();
+        $orderId = $order->get_id();
+
+        // Montant encore remboursable lu sur une instance fraîche : celle de l'appelant
+        // peut porter des modifications non enregistrées.
+        $fresh = wc_get_order($orderId);
+        $source = $fresh instanceof \WC_Order ? $fresh : $order;
+        $refundable = max(0.0, (float) $source->get_remaining_refund_amount());
+        $asked = round($amount, $decimals);
+        $refundAmount = round(min($asked, $refundable), $decimals);
+        $missing = round($asked - max(0.0, $refundAmount), $decimals);
+
+        if ($refundAmount <= 0) {
+            // Rien n'est plus remboursable dans WooCommerce : aucune facture d'avoir ne
+            // peut reprendre cet avoir.
+            if ($missing > 0.004 && $this->invoiceHasCreditablePart($source)) {
+                $this->reportVoucherRefundGap($order, $code, sprintf(
+                    "⚠️ AVOIR %s : aucune facture d'avoir possible, à signaler au comptable. La commande n'a plus rien de remboursable dans WooCommerce (réglée par carte cadeau ou avoir, ou déjà remboursée) : les %s € de cet avoir ne sont repris par aucun remboursement comptable et la TVA correspondante reste déclarée sur la facture d'origine.",
+                    $code,
+                    $this->money($asked, $decimals)
+                ), $missing, $decimals);
+            }
+
+            return;
+        }
+
+        $currentStatus = $source->get_status();
+        $reason = sprintf('Avoir %s : bon d\'achat, sans remboursement bancaire', $code);
+
+        // Filtres posés uniquement pendant l'appel à wc_create_refund().
+        $keepStatus = static function ($status, $refundedOrderId = 0) use ($orderId, $currentStatus) {
+            return ((int) $refundedOrderId === $orderId && $currentStatus !== '') ? $currentStatus : $status;
+        };
+        $muteEmail = static function () {
+            return false;
+        };
+        // WooCommerce change l'identifiant de l'e-mail pour un remboursement partiel.
+        $emailFilters = [
+            'woocommerce_email_enabled_customer_refunded_order',
+            'woocommerce_email_enabled_customer_partially_refunded_order',
+        ];
+
+        add_filter('woocommerce_order_fully_refunded_status', $keepStatus, PHP_INT_MAX, 3);
+        foreach ($emailFilters as $hook) {
+            add_filter($hook, $muteEmail, PHP_INT_MAX);
+        }
+
+        try {
+            $refund = wc_create_refund([
+                'order_id' => $orderId,
+                'amount' => wc_format_decimal($refundAmount, $decimals),
+                'reason' => $reason,
+                'line_items' => [],
+                'refund_payment' => false,
+                'restock_items' => false,
+            ]);
+        } catch (\Throwable $e) {
+            $refund = new \WP_Error('navi_voucher_refund', $e->getMessage());
+        } finally {
+            remove_filter('woocommerce_order_fully_refunded_status', $keepStatus, PHP_INT_MAX);
+            foreach ($emailFilters as $hook) {
+                remove_filter($hook, $muteEmail, PHP_INT_MAX);
+            }
+        }
+
+        if (is_wp_error($refund) || ! $refund) {
+            $error = is_wp_error($refund) ? $refund->get_error_message() : 'erreur inconnue';
+            // Aucun remboursement créé : tout le montant de l'avoir reste sans facture d'avoir.
+            $this->reportVoucherRefundGap($order, $code, sprintf(
+                "⚠️ AVOIR %s : remboursement comptable (facture d'avoir) non créé, à signaler au comptable. Motif : %s. Le bon d'achat reste valable.",
+                $code,
+                $error
+            ), $asked, $decimals);
+
+            return;
+        }
+
+        $note = sprintf(
+            "🧾 AVOIR %s : remboursement comptable de %s € créé (remboursement #%d), sans remboursement bancaire. Il sert à émettre la facture d'avoir.",
+            $code,
+            $this->money($refundAmount, $decimals),
+            $refund->get_id()
+        );
+        $gap = $missing > 0.004 && $this->invoiceHasCreditablePart($source);
+        if ($missing > 0.004 && ! $gap) {
+            // Rien à reprendre sur la part non remboursable (ni TVA ni crédit Smart
+            // Coupons) : simple mention, sans alerte.
+            $note .= sprintf(
+                ' Montant plafonné au montant encore remboursable de la commande (avoir de %s €).',
+                $this->money($asked, $decimals)
+            );
+        }
+        $order->add_order_note($note);
+
+        if ($gap) {
+            $this->reportVoucherRefundGap($order, $code, sprintf(
+                "⚠️ AVOIR %s : facture d'avoir incomplète, à signaler au comptable. Seuls %s € sur %s € sont repris en remboursement comptable (montant encore remboursable de la commande) : les %s € restants (part réglée par carte cadeau ou avoir) ne sont repris par aucune facture d'avoir et restent facturés, TVA comprise, sur la facture d'origine.",
+                $code,
+                $this->money($refundAmount, $decimals),
+                $this->money($asked, $decimals),
+                $this->money($missing, $decimals)
+            ), $missing, $decimals);
+        }
+    }
+
+    /**
+     * La facture d'origine porte-t-elle une part qu'un avoir devrait annuler ?
+     * Oui si la commande porte de la TVA, ou si elle a été réglée par un crédit Smart
+     * Coupons appliqué après les taxes (méta smart_coupons_contribution) : la facture
+     * imprime alors la vente réelle. Non pour une commande à 0 € sans TVA (coupon
+     * promotionnel à 100 %, ancien crédit appliqué avant les taxes) : une alerte n'y
+     * serait que du bruit.
+     *
+     * @param  \WC_Order  $order  Commande d'origine.
+     */
+    private function invoiceHasCreditablePart($order): bool
+    {
+        if ((float) $order->get_total_tax() > 0) {
+            return true;
+        }
+
+        $credits = $order->get_meta('smart_coupons_contribution', true);
+
+        return is_array($credits) && array_filter(array_map('floatval', $credits)) !== [];
+    }
+
+    /**
+     * Signale une part d'avoir AV- sans facture d'avoir : note de commande, journal
+     * WooCommerce (source navi-voucher-refund) et méta _navi_voucher_refund_missing
+     * (montant cumulé non repris). La méta est posée sur l'instance de l'appelant, qui
+     * l'enregistre ensuite avec $order->save().
+     *
+     * @param  \WC_Order  $order  Commande d'origine (instance de l'appelant).
+     * @param  string  $code  Code du bon d'achat AV-.
+     * @param  string  $message  Texte de la note.
+     * @param  float  $missing  Montant TTC non repris.
+     * @param  int  $decimals  Décimales des prix.
+     */
+    private function reportVoucherRefundGap($order, string $code, string $message, float $missing, int $decimals): void
+    {
+        $order->add_order_note($message);
+
+        $previous = (float) $order->get_meta('_navi_voucher_refund_missing', true);
+        $order->update_meta_data('_navi_voucher_refund_missing', wc_format_decimal($previous + $missing, $decimals));
+
+        if (function_exists('wc_get_logger')) {
+            wc_get_logger()->warning(
+                sprintf('Commande #%d : %s', $order->get_id(), $message),
+                ['source' => 'navi-voucher-refund', 'order_id' => $order->get_id(), 'code' => $code]
+            );
+        }
+    }
+
+    /**
+     * Montant affiché dans les notes (format local, sans symbole).
+     */
+    private function money(float $value, int $decimals): string
+    {
+        return wc_format_localized_price(wc_format_decimal($value, $decimals));
     }
 
     private function processRefund($orderIds)
