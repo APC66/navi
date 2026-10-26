@@ -86,6 +86,7 @@ class AgencyOrderService
         add_filter('apc_billing_prefill_from_account', [$this, 'disableProFieldsPrefillForAgency'], 10, 3);
         add_filter('apc_billing_save_to_account', [$this, 'keepProDataOffAgencyAccounts'], 10, 3);
         add_filter('woocommerce_billing_fields', [$this, 'relabelCustomerTypeForAgency'], 20, 1);
+        add_filter('woocommerce_form_field_radio', [$this, 'addCustomerTypeHintForAgency'], 10, 2);
         add_filter('woocommerce_checkout_posted_data', [$this, 'dropHiddenCompanyForAgency'], 20, 1);
         add_filter('gettext_apc-billing', [$this, 'relabelCustomerTypeErrorForAgency'], 10, 3);
     }
@@ -871,6 +872,8 @@ class AgencyOrderService
      * le choix « Vous êtes » s'adresse au client final quand un agent commande pour lui. Seul le
      * texte change : le champ n'est JAMAIS retiré, la validation du plugin le rendrait
      * obligatoire sans le montrer. Mon compte (adresse de l'agent) garde le libellé du plugin.
+     * La mention en rouge à côté du libellé est ajoutée par addCustomerTypeHintForAgency()
+     * (pas de description WooCommerce : elle s'affiche en bulle par-dessus les choix).
      *
      * @param  mixed  $fields
      * @return mixed
@@ -886,9 +889,40 @@ class AgencyOrderService
         }
 
         $fields['apc_customer_type']['label'] = 'Le client est';
-        $fields['apc_customer_type']['description'] = 'Statut du client final, pas celui de l\'agence';
+        $classes = $fields['apc_customer_type']['class'] ?? [];
+        $classes = is_array($classes) ? $classes : [];
+        $classes[] = 'navi-agency-type';
+        $fields['apc_customer_type']['class'] = $classes;
 
         return $fields;
+    }
+
+    /**
+     * Filtre woocommerce_form_field_radio : pour un agent au paiement, mention en rouge juste
+     * après le libellé « Le client est » (règle CSS .navi-agency-type-hint de woocommerce.css),
+     * reliée aux deux boutons par aria-describedby.
+     *
+     * @param  mixed  $field  HTML du champ.
+     * @param  mixed  $key  Nom du champ.
+     * @return mixed
+     */
+    public function addCustomerTypeHintForAgency($field, $key = '')
+    {
+        if ('apc_customer_type' !== $key || ! is_string($field) || ! str_contains($field, '</label>')) {
+            return $field;
+        }
+
+        if (! $this->currentUserCanPlaceAgencyOrders() || ! $this->isCheckoutPage()) {
+            return $field;
+        }
+
+        $hint = '<span class="navi-agency-type-hint" id="apc_customer_type-hint">'
+            .esc_html('Statut du client final, pas celui de l\'agent qui est en train de faire la réservation')
+            .'</span>';
+        $pos = strpos($field, '</label>') + strlen('</label>');
+        $field = substr($field, 0, $pos).$hint.substr($field, $pos);
+
+        return str_replace('name="apc_customer_type"', 'name="apc_customer_type" aria-describedby="apc_customer_type-hint"', $field);
     }
 
     /**

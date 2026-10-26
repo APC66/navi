@@ -286,8 +286,31 @@ html body ul.woocommerce-error {
   @apply bg-white border-primary-200 text-primary-900;
 }
 
+/* Commande d'agence : « Le client est » suivi d'une mention en rouge sur la même ligne
+   (AgencyOrderService::addCustomerTypeHintForAgency), puis les choix en dessous. */
+html body .woocommerce form .apc-customer-type.navi-agency-type {
+  line-height: 1.4;
+}
+html body .woocommerce form .apc-customer-type.navi-agency-type > label:first-child {
+  display: inline !important;
+  margin: 0 0.5em 0 0;
+}
+html body .woocommerce form .apc-customer-type.navi-agency-type .navi-agency-type-hint {
+  display: inline;
+  color: #b32d2e;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: normal;
+}
+html body .woocommerce form .apc-customer-type.navi-agency-type .woocommerce-input-wrapper {
+  display: block;
+  margin-top: 0.4em;
+}
+
 /* Description d'un champ (bulle de WooCommerce, blanc sur #1e85be : contraste 4,07) : fond plus
-   foncé, contraste AA largement atteint. Par exemple « Statut du client final » pour un agent. */
+   foncé, contraste AA largement atteint. */
 html body .woocommerce form .form-row .woocommerce-input-wrapper .description {
   @apply bg-primary-600;
 }
