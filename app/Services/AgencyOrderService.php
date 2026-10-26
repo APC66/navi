@@ -13,6 +13,18 @@ namespace App\Services;
 class AgencyOrderService
 {
     /**
+     * Message du plugin apc-billing quand le type de client n'est pas choisi (texte source,
+     * domaine apc-billing), remplacé pour les agents au paiement.
+     */
+    protected const APC_TYPE_REQUIRED = 'Merci d\'indiquer si vous êtes un particulier ou un professionnel.';
+
+    /**
+     * Action du nonce des deux points AJAX agence (recherche de clients, données d'un client),
+     * transmis au script par wp_localize_script (agencyOrderData.nonce).
+     */
+    protected const AJAX_NONCE_ACTION = 'agency_search_customers';
+
+    /**
      * Initialise les hooks WooCommerce pour la fonctionnalité agence.
      */
     public function init(): void
@@ -63,6 +75,19 @@ class AgencyOrderService
 
         // Bypass de la vérification d'identité WooCommerce pour les agents créateurs
         add_filter('woocommerce_order_received_verify_known_shoppers', [$this, 'bypassOrderReceivedVerificationForAgency'], 10, 1);
+
+        // Le compte de l'agent n'est plus réécrit avec les coordonnées du client pour lequel il
+        // commande (nom, adresse, e-mail, Société, Numéro SIRET du thème).
+        add_filter('woocommerce_checkout_update_customer_data', [$this, 'keepAgencyAccountUnchanged'], 10, 1);
+
+        // Champs pro du plugin de facturation apc-billing. Ces filtres ne sont appelés que par
+        // le plugin, ou n'agissent que si son champ « Vous êtes » est présent : sans effet si
+        // le plugin est absent ou si ses champs sont désactivés ou masqués (mode test).
+        add_filter('apc_billing_prefill_from_account', [$this, 'disableProFieldsPrefillForAgency'], 10, 3);
+        add_filter('apc_billing_save_to_account', [$this, 'keepProDataOffAgencyAccounts'], 10, 3);
+        add_filter('woocommerce_billing_fields', [$this, 'relabelCustomerTypeForAgency'], 20, 1);
+        add_filter('woocommerce_checkout_posted_data', [$this, 'dropHiddenCompanyForAgency'], 20, 1);
+        add_filter('gettext_apc-billing', [$this, 'relabelCustomerTypeErrorForAgency'], 10, 3);
     }
 
     /**
@@ -354,6 +379,13 @@ class AgencyOrderService
         if ($current_user_id > 0) {
             $order->update_meta_data('_agency_creator_id', $current_user_id);
             $order->save();
+
+            // Le compte de l'agent n'est plus réécrit (keepAgencyAccountUnchanged), mais sa
+            // session WooCommerce garde les coordonnées du client. Renouveler last_update rend
+            // cette copie périmée : le paiement suivant repart du compte de l'agent.
+            if (function_exists('wc_set_user_last_update_time')) {
+                wc_set_user_last_update_time($current_user_id);
+            }
         }
     }
 
@@ -599,6 +631,8 @@ class AgencyOrderService
             wp_send_json_error(['message' => 'Accès non autorisé.'], 403);
         }
 
+        $this->checkAgencyAjaxNonce();
+
         $search_term = sanitize_text_field($_GET['term'] ?? '');
 
         if (strlen($search_term) < 2) {
@@ -639,7 +673,11 @@ class AgencyOrderService
         $customers = [];
         foreach ($results as $user) {
             $full_name = trim(($user->first_name ?? '').' '.($user->last_name ?? ''));
-            $display_name = ! empty($full_name) ? $full_name : ($user->display_name ?: $user->user_login);
+            // Nom affiché : WordPress l'enregistre avec & < > en entités ; décodé ici, car le
+            // script l'insère comme texte (jamais comme HTML).
+            $display_name = ! empty($full_name)
+                ? $full_name
+                : wp_specialchars_decode((string) ($user->display_name ?: $user->user_login), ENT_QUOTES);
 
             $customers[] = [
                 'id' => (int) $user->ID,
@@ -660,6 +698,8 @@ class AgencyOrderService
         if (! $this->currentUserCanPlaceAgencyOrders()) {
             wp_send_json_error(['message' => 'Accès non autorisé.'], 403);
         }
+
+        $this->checkAgencyAjaxNonce();
 
         $customer_id = (int) ($_GET['customer_id'] ?? 0);
 
@@ -686,9 +726,199 @@ class AgencyOrderService
             'billing_state' => get_user_meta($customer_id, 'billing_state', true),
             'billing_phone' => get_user_meta($customer_id, 'billing_phone', true),
             'billing_email' => $user->user_email,
+            // Champ « Numéro SIRET » du thème : renvoyé même vide, pour remplacer la valeur
+            // préremplie depuis le compte de l'agent tant que ce champ existe.
+            'billing_siret' => $this->userMetaText($customer_id, 'billing_siret'),
+        ];
+
+        // Champs pro du plugin apc-billing enregistrés sur le compte du client : sous-clé à part,
+        // jamais au premier niveau. Le script agence coche le bouton du type (prop('checked')) :
+        // la boucle générique field.val(valeur) réécrirait la valeur des deux boutons radio et le
+        // formulaire posterait toujours « pro ». Chaînes vides si rien n'est enregistré.
+        $type = $this->userMetaText($customer_id, 'apc_customer_type');
+        $billing_data['pro'] = [
+            'type' => in_array($type, ['particulier', 'pro'], true) ? $type : '',
+            'siret' => $this->userMetaText($customer_id, 'apc_siret'),
+            'vat' => $this->userMetaText($customer_id, 'apc_vat'),
         ];
 
         wp_send_json_success($billing_data);
+    }
+
+    /**
+     * Contrôle le nonce des points AJAX agence (paramètre « nonce », envoyé par le script).
+     * Sans nonce valide (page ouverte depuis plus d'un jour, requête venue d'ailleurs) :
+     * réponse 403 avec un message, aucune donnée.
+     */
+    protected function checkAgencyAjaxNonce(): void
+    {
+        if (! check_ajax_referer(self::AJAX_NONCE_ACTION, 'nonce', false)) {
+            wp_send_json_error(['message' => 'Session expirée : rechargez la page.'], 403);
+        }
+    }
+
+    /**
+     * Méta texte d'un utilisateur ('' si elle est absente ou n'est pas un texte).
+     */
+    protected function userMetaText(int $user_id, string $key): string
+    {
+        $value = get_user_meta($user_id, $key, true);
+
+        return is_scalar($value) ? trim((string) $value) : '';
+    }
+
+    /**
+     * Filtre woocommerce_checkout_update_customer_data : un agent qui commande pour un client
+     * ne voit plus son propre compte réécrit avec les données de facturation du client. La
+     * commande est rattachée au client choisi (assignOrderToClient, trackAgencyCreator), jamais
+     * à l'agent.
+     *
+     * @param  mixed  $update
+     * @return mixed
+     */
+    public function keepAgencyAccountUnchanged($update)
+    {
+        return $this->currentUserCanPlaceAgencyOrders() ? false : $update;
+    }
+
+    /**
+     * Filtre apc_billing_prefill_from_account : pas de préremplissage des champs pro depuis le
+     * compte de l'agent (son agence n'est pas le client). Le type par défaut du plugin pour une
+     * commande passée pour un client (réglage default_customer_type_on, case checkout_others)
+     * s'applique alors, puis le script agence reprend le type du client choisi.
+     *
+     * @param  mixed  $prefill
+     * @param  mixed  $input  Champ concerné (apc_customer_type, apc_siret, apc_vat, apc_no_siret).
+     * @param  mixed  $user_id  Utilisateur connecté.
+     * @return mixed
+     */
+    public function disableProFieldsPrefillForAgency($prefill, $input = '', $user_id = 0)
+    {
+        return $this->currentUserCanPlaceAgencyOrders() ? false : $prefill;
+    }
+
+    /**
+     * Filtre apc_billing_save_to_account : jamais de type, de SIRET ni de N° TVA enregistré par
+     * le paiement sur un compte d'agent (le client de la commande a lui-même la capacité
+     * place_agency_orders, par exemple si le rattachement au client final a échoué).
+     *
+     * Commande d'agence en « particulier » pour un client qui n'a aucun type enregistré : rien
+     * n'est écrit non plus. Ce type est le plus souvent celui coché d'avance pour l'agent
+     * (réglage « checkout_others » du plugin), pas un choix du client ; l'enregistrer le
+     * cocherait d'avance sur la page de commande publique, où le client choisit lui-même. Un
+     * choix « pro », ou un changement de type d'un compte déjà typé, reste enregistré.
+     *
+     * @param  mixed  $save
+     * @param  mixed  $order
+     * @param  mixed  $customer_id  Client de la commande.
+     * @return mixed
+     */
+    public function keepProDataOffAgencyAccounts($save, $order = null, $customer_id = 0)
+    {
+        $customer_id = is_numeric($customer_id) ? (int) $customer_id : 0;
+        if ($customer_id <= 0 && $order instanceof \WC_Order) {
+            $customer_id = (int) $order->get_customer_id();
+        }
+
+        if ($customer_id > 0 && user_can($customer_id, 'place_agency_orders')) {
+            return false;
+        }
+
+        if (
+            $customer_id > 0
+            && $order instanceof \WC_Order
+            && $this->currentUserCanPlaceAgencyOrders()
+            && 'particulier' === (string) $order->get_meta('_apc_customer_type')
+            && '' === $this->userMetaText($customer_id, 'apc_customer_type')
+        ) {
+            return false;
+        }
+
+        return $save;
+    }
+
+    /**
+     * Filtre woocommerce_checkout_posted_data (avant la validation, la mise à jour du compte et
+     * la création de la commande) : commande d'agence pour un client « particulier », la
+     * Société n'est pas reprise sur la commande ni sur sa facture. Avec les champs pro du
+     * plugin apc-billing, ce champ fait partie du bloc pro, masqué pour un particulier mais
+     * toujours posté : la valeur vient alors du compte du client (préremplissage du script
+     * agence) et l'agent ne la voit pas. Le compte du client garde sa Société
+     * (updateExistingCustomerBilling() ignore une valeur vide). Sans le champ « Vous êtes »
+     * du plugin (plugin absent, champs désactivés ou masqués), rien ne change.
+     *
+     * @param  mixed  $data  Données postées du paiement.
+     * @return mixed
+     */
+    public function dropHiddenCompanyForAgency($data)
+    {
+        if (! is_array($data) || ! isset($data['billing_company']) || ! is_scalar($data['billing_company']) || '' === (string) $data['billing_company']) {
+            return $data;
+        }
+
+        $type = $data['apc_customer_type'] ?? '';
+        if (! is_scalar($type) || 'particulier' !== (string) $type || ! $this->currentUserCanPlaceAgencyOrders()) {
+            return $data;
+        }
+
+        $data['billing_company'] = '';
+
+        return $data;
+    }
+
+    /**
+     * Filtre woocommerce_billing_fields (priorité 20, après le plugin apc-billing) : au paiement,
+     * le choix « Vous êtes » s'adresse au client final quand un agent commande pour lui. Seul le
+     * texte change : le champ n'est JAMAIS retiré, la validation du plugin le rendrait
+     * obligatoire sans le montrer. Mon compte (adresse de l'agent) garde le libellé du plugin.
+     *
+     * @param  mixed  $fields
+     * @return mixed
+     */
+    public function relabelCustomerTypeForAgency($fields)
+    {
+        if (! is_array($fields) || ! isset($fields['apc_customer_type']) || ! is_array($fields['apc_customer_type'])) {
+            return $fields;
+        }
+
+        if (! $this->currentUserCanPlaceAgencyOrders() || ! $this->isCheckoutPage()) {
+            return $fields;
+        }
+
+        $fields['apc_customer_type']['label'] = 'Le client est';
+        $fields['apc_customer_type']['description'] = 'Statut du client final, pas celui de l\'agence';
+
+        return $fields;
+    }
+
+    /**
+     * Filtre gettext_apc-billing : message du type de client non choisi, adressé à l'agent au
+     * paiement (même condition que relabelCustomerTypeForAgency()).
+     *
+     * @param  mixed  $translation
+     * @param  mixed  $text  Texte source.
+     * @param  mixed  $domain
+     * @return mixed
+     */
+    public function relabelCustomerTypeErrorForAgency($translation, $text = '', $domain = '')
+    {
+        if ($text !== self::APC_TYPE_REQUIRED) {
+            return $translation;
+        }
+
+        if (! $this->currentUserCanPlaceAgencyOrders() || ! $this->isCheckoutPage()) {
+            return $translation;
+        }
+
+        return 'Indiquez si le client est un particulier ou un professionnel.';
+    }
+
+    /**
+     * Page de commande (affichage, mise à jour et validation par wc-ajax), pas Mon compte.
+     */
+    protected function isCheckoutPage(): bool
+    {
+        return function_exists('is_checkout') && is_checkout();
     }
 
     /**
@@ -713,7 +943,10 @@ class AgencyOrderService
 
         wp_localize_script('agency-order-checkout', 'agencyOrderData', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('agency_search_customers'),
+            'nonce' => wp_create_nonce(self::AJAX_NONCE_ACTION),
+            // Pays remis par « Nouveau client » (et pour un client sans pays) : celui de la
+            // boutique, pour que les champs SIRET / N° TVA puissent s'afficher sans autre choix.
+            'defaultCountry' => (function_exists('WC') && WC()->countries) ? (string) WC()->countries->get_base_country() : '',
         ]);
     }
 

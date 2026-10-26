@@ -40,8 +40,10 @@
 .woocommerce form .form-row {
   @apply mb-5;
 }
+/* Libellés en blanc seulement sur les pages Mon compte déconnectées (connexion, inscription,
+   mot de passe perdu) ; une fois connecté, la règle générale des libellés s'applique. */
 .woocommerce-checkout form #order_review_heading,
-html body.woocommerce-account .woocommerce form .form-row label{
+html body.woocommerce-account:not(.logged-in) .woocommerce form .form-row label{
   @apply text-white
 }
 
@@ -131,6 +133,17 @@ html body.woocommerce-account .woocommerce form .form-row label{
 }
 .woocommerce-error li {
   @apply ml-0 mb-0;
+}
+/* Plusieurs erreurs : une par ligne (le bandeau est en flex : elles se suivraient côte à côte) */
+html body ul.woocommerce-error {
+  @apply flex-col items-start gap-1;
+}
+/* Erreurs du paiement : WooCommerce fait défiler la page jusqu'à 100 px au-dessus du bandeau.
+   Sur ordinateur, le logo fixe de l'en-tête (159 px de haut, au centre) en recouvrirait le haut :
+   le bandeau commence donc plus bas dans son groupe. */
+.woocommerce-NoticeGroup-checkout,
+.woocommerce-NoticeGroup-updateOrderReview {
+  @apply md:pt-[4.5rem];
 }
 
 .woocommerce-message a.button,
@@ -271,6 +284,26 @@ html body.woocommerce-account .woocommerce form .form-row label{
 .woocommerce-checkout .woocommerce form .form-row select,
 .woocommerce-checkout .woocommerce form .form-row textarea {
   @apply bg-white border-primary-200 text-primary-900;
+}
+
+/* Description d'un champ (bulle de WooCommerce, blanc sur #1e85be : contraste 4,07) : fond plus
+   foncé, contraste AA largement atteint. Par exemple « Statut du client final » pour un agent. */
+html body .woocommerce form .form-row .woocommerce-input-wrapper .description {
+  @apply bg-primary-600;
+}
+html body .woocommerce form .form-row .woocommerce-input-wrapper .description::before {
+  border-top-color: var(--color-primary-600);
+}
+
+/* Champs pro (plugin APC Billing) : messages de vérification SIRET / TVA lisibles sur fond clair */
+.woocommerce .apc-siret-error {
+  color: #b32d2e;
+}
+
+.woocommerce-checkout #customer_details .apc-siret-result,
+.woocommerce-checkout #customer_details .apc-vies-result,
+.woocommerce .apc-lookup-suggestion {
+  @apply text-primary-900;
 }
 
 /* Récapitulatif commande */

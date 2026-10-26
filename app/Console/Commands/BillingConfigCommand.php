@@ -37,13 +37,25 @@ use Illuminate\Console\Command;
  * par WP Overnight doivent être facturées par le plugin (onglet Anciennes commandes),
  * sauf les commandes « Remboursée » (décision du client : ventes annulées, non facturées).
  *
+ * Champs pro du plugin (« Vous êtes », SIRET, N° TVA au paiement et dans Mon compte) : leur
+ * activation (enable_fields) est le choix du client, dans l'onglet Champs pro, avec le mode
+ * test des champs (test_mode, test_users), que la commande ne gère jamais. Le type de client
+ * coché d'avance (default_customer_type, default_customer_type_on, lus à partir
+ * d'apc-billing 2.77) est recommandé à « particulier » dans Mon compte et pour les commandes
+ * qu'un agent passe pour un client, pas sur la page de commande publique, et le compte du
+ * client (save_type_to_account) à « yes ». « Émettre les
+ * factures pour » (invoicing_for) est recommandé à « both ». Les rappels signalent, sans rien
+ * écrire, un mode test sans administrateur de test, un mode test resté actif, une
+ * facturation limitée aux particuliers ou aux pros et des séries pro séparées.
+ *
  * --appliquer : enregistre les réglages recommandés ABSENTS de l'option. Un réglage
  * déjà enregistré (choix validé par le comptable, site déjà basculé) n'est remplacé
- * qu'avec --forcer. « Facturation activée » (enable_invoicing) et « Mode test
- * facturation » (invoicing_test_mode) ne sont posés que s'ils sont absents et ne sont
- * jamais remplacés, même avec --forcer : une facturation déjà activée n'est jamais
- * coupée par la commande. Sur un site neuf, la facturation reste donc désactivée et en
- * mode test : son activation se fait ensuite à la main.
+ * qu'avec --forcer. « Facturation activée » (enable_invoicing), « Mode test
+ * facturation » (invoicing_test_mode) et « Champs pro du plugin » (enable_fields) ne sont
+ * posés que s'ils sont absents et ne sont jamais remplacés, même avec --forcer : une
+ * facturation déjà activée n'est jamais coupée par la commande, ni des champs pro ouverts
+ * par le client. Sur un site neuf, la facturation reste donc désactivée et en mode test,
+ * et les champs pro désactivés : leur activation se fait ensuite à la main.
  *
  * --compteur : règle le compteur de la série unique (part_all) sur le dernier
  * numéro de facture WP Overnight lu en base, seulement si aucun compteur du plugin
@@ -53,8 +65,8 @@ use Illuminate\Console\Command;
  * de la bascule : WP Overnight coupé, juste avant l'activation de la facturation.
  *
  * --forcer : avec --appliquer, remplace aussi les réglages enregistrés qui diffèrent
- * de la recommandation (jamais enable_invoicing ni invoicing_test_mode) ; avec
- * --compteur, passe outre WP Overnight actif.
+ * de la recommandation (jamais enable_invoicing, invoicing_test_mode ni enable_fields) ;
+ * avec --compteur, passe outre WP Overnight actif.
  *
  * Utilisation : wp acorn navi:facturation-config [--appliquer] [--compteur] [--forcer]
  */
@@ -63,7 +75,7 @@ class BillingConfigCommand extends Command
     protected $signature = 'navi:facturation-config
         {--appliquer : Enregistre les réglages recommandés absents (un réglage déjà enregistré n\'est remplacé qu\'avec --forcer)}
         {--compteur : Règle le compteur part_all sur le dernier numéro WPO (WP Overnight coupé, juste avant l\'activation de la facturation), si aucun compteur APC n\'existe}
-        {--forcer : Avec --appliquer, remplace aussi les réglages enregistrés qui diffèrent (jamais enable_invoicing ni invoicing_test_mode) ; avec --compteur, passe outre WP Overnight actif}';
+        {--forcer : Avec --appliquer, remplace aussi les réglages enregistrés qui diffèrent (jamais enable_invoicing, invoicing_test_mode ni enable_fields) ; avec --compteur, passe outre WP Overnight actif}';
 
     protected $description = 'Affiche (et applique sur demande) la configuration recommandée du plugin de facturation apc-billing';
 
@@ -81,9 +93,13 @@ class BillingConfigCommand extends Command
 
     /**
      * Réglages posés seulement s'ils sont absents, jamais remplacés (même avec --forcer) :
-     * une facturation activée ou sortie du mode test n'est jamais coupée par la commande.
+     * une facturation activée ou sortie du mode test n'est jamais coupée par la commande, et
+     * l'onglet « Champs pro » (choix du client) n'est jamais décoché ni coché par elle.
      */
-    protected const NEVER_REPLACED = ['enable_invoicing', 'invoicing_test_mode'];
+    protected const NEVER_REPLACED = ['enable_invoicing', 'invoicing_test_mode', 'enable_fields'];
+
+    /** Version d'apc-billing qui lit le type de client par défaut. */
+    protected const DEFAULT_TYPE_VERSION = '2.77';
 
     /** Ordre de la bascule (rappels et refus de --compteur). */
     protected const SWITCH_ORDER = 'Ordre de la bascule : 1) couper WP Overnight (le désactiver ; ou, pour garder ses anciens PDF consultables, vider « Joindre à » et ne plus créer de facture WPO à la main) ; 2) lancer --compteur en production (avec --forcer si WP Overnight reste actif) ; 3) aussitôt après, activer la facturation et quitter le mode test dans le plugin ; 4) facturer les commandes de mai 2026 jamais facturées par WP Overnight (onglet Anciennes commandes, voir les rappels).';
@@ -252,6 +268,12 @@ class BillingConfigCommand extends Command
             if ($version !== '' && version_compare($version, '2.75', '<')) {
                 $this->warn('Les réglages de la version 2.75 (accès, notes du nom, infos d\'articles masquées, ancien plugin, e-mail « Nouvelle commande », recherche, cartes cadeaux, mode de règlement imprimé) ne sont lus qu\'à partir de la version 2.75.');
             }
+            if ($version !== '' && version_compare($version, self::DEFAULT_TYPE_VERSION, '<')) {
+                $this->warn(sprintf(
+                    'Le type de client coché d\'avance (default_customer_type, default_customer_type_on) et le compte du client (save_type_to_account) ne sont lus qu\'à partir de la version %s : enregistrés avant, ils restent sans effet.',
+                    self::DEFAULT_TYPE_VERSION
+                ));
+            }
         }
 
         $wpoActive = is_plugin_active(self::WPO_PLUGIN);
@@ -343,10 +365,31 @@ class BillingConfigCommand extends Command
         $settings['invoice_reset_part'] = 'no';
         $settings['invoice_number_separate'] = 'no';
         $settings['invoice_statuses'] = ['wc-processing', 'wc-completed'];
+        // Commandes des professionnels et des particuliers numérotées automatiquement.
+        $settings['invoicing_for'] = 'both';
+        $notes['invoicing_for'] = 'pros et particuliers';
+
+        // Champs pro du plugin : activation choisie par le client dans l'onglet Champs pro,
+        // avec le mode test des champs (test_mode, test_users), jamais géré ici. « no » n'est
+        // posé que si le réglage est absent (NEVER_REPLACED) : sur un site neuf, le formulaire
+        // du thème (Entreprise, Numéro SIRET) reste en place jusqu'à l'activation manuelle.
+        $settings['enable_fields'] = 'no';
+        $notes['enable_fields'] = 'choix du client (onglet Champs pro) ; jamais remplacé';
+
+        // Type de client coché d'avance (apc-billing 2.77), modifiable et contrôlé à la
+        // validation : « Particulier » dans Mon compte tant que le client n'a rien enregistré,
+        // et pour les commandes qu'un agent passe pour un client (préremplissage depuis le
+        // compte coupé par le thème). La page de commande publique garde le choix obligatoire.
+        $settings['default_customer_type'] = 'particulier';
+        $settings['default_customer_type_on'] = ['account', 'checkout_others'];
+        $notes['default_customer_type'] = 'décision du client ; lu à partir de la '.self::DEFAULT_TYPE_VERSION;
+        $notes['default_customer_type_on'] = 'Mon compte et commandes d\'agents ; pas la page publique';
+        // Type, SIRET et N° TVA de chaque commande enregistrés sur le compte du client de la
+        // commande (apc-billing 2.77), jamais sur celui de l'agent (filtre du thème).
+        $settings['save_type_to_account'] = 'yes';
+        $notes['save_type_to_account'] = 'repris au paiement suivant ; lu à partir de la '.self::DEFAULT_TYPE_VERSION;
 
         // Contenu de la facture.
-        $settings['enable_fields'] = 'no';
-        $notes['enable_fields'] = 'le thème gère déjà Société et SIRET';
         $settings['inv_show_note'] = 'no';
         $settings['hide_name_notes'] = 'yes';
         $notes['hide_name_notes'] = 'ex. « (doit 18€) » dans le nom';
@@ -1027,6 +1070,10 @@ class BillingConfigCommand extends Command
 
         $this->line('  - Factures d\'avoir des AV- : jamais envoyées au client (l\'e-mail WooCommerce « Commande remboursée » est coupé), elles partent au comptable avec l\'envoi mensuel quand les avoirs y sont cochés et se téléchargent depuis la commande (bouton « Avoir PDF »).');
 
+        // Champs pro et périmètre de la facturation (lecture seule).
+        $this->proFieldsReminder($settings);
+        $this->scopeReminder($settings);
+
         // Mises à jour du plugin depuis GitHub : dépôt, jeton du dépôt privé (état
         // seulement, valeur jamais affichée) et DISALLOW_FILE_MODS.
         $this->loadUpdater();
@@ -1042,7 +1089,139 @@ class BillingConfigCommand extends Command
         ));
 
         $this->line('  - '.self::SWITCH_ORDER);
-        $this->line('  - --appliquer n\'écrit que les réglages absents : un choix déjà enregistré n\'est remplacé qu\'avec --forcer, et « Facturation activée » ou « Mode test facturation » ne le sont jamais.');
+        $this->line('  - --appliquer n\'écrit que les réglages absents : un choix déjà enregistré n\'est remplacé qu\'avec --forcer, et « Facturation activée », « Mode test facturation » ou « Champs pro du plugin » ne le sont jamais. Le mode test des champs pro et ses administrateurs de test ne sont jamais écrits par la commande.');
+    }
+
+    /**
+     * Rappel des champs pro du plugin (« Vous êtes », SIRET, N° TVA), lus comme le plugin
+     * (Settings::fields_enabled() et fields_visible() : réglage absent = activés, mode test
+     * actif). Lecture seule : l'activation et le mode test se règlent dans l'onglet Champs pro.
+     * - désactivés : le paiement garde le formulaire du thème ;
+     * - activés en mode test sans administrateur de test : le plugin les montre à tous les
+     *   comptes manage_options ou manage_woocommerce, y compris ceux qui commandent pour des
+     *   clients (vraies réservations) : choisir un administrateur de test ;
+     * - activés en mode test : penser à l'ouvrir à tous après la recette ;
+     * - activés hors mode test : ouverts à tous.
+     */
+    protected function proFieldsReminder(array $settings): void
+    {
+        $where = 'Champs pro du plugin (onglet Champs pro : « Vous êtes », SIRET et N° TVA au paiement et dans Mon compte)';
+
+        if ('yes' !== ($settings['enable_fields'] ?? 'yes')) {
+            $this->line(sprintf(
+                '  - %s : désactivés (enable_fields = no), le paiement garde le formulaire du thème (Entreprise, Numéro SIRET). L\'activation est le choix du client : dans l\'onglet Champs pro, avec le mode test et un administrateur de test, jamais par cette commande.',
+                $where
+            ));
+
+            return;
+        }
+
+        if ('yes' !== ($settings['test_mode'] ?? 'yes')) {
+            $this->line(sprintf('  - %s : activés et ouverts à tous (mode test désactivé).', $where));
+
+            return;
+        }
+
+        // Liste des administrateurs de test, lue comme le plugin.
+        $raw = $settings['test_users'] ?? [];
+        $testUsers = is_array($raw) ? array_map('intval', $raw) : [];
+
+        if (! $testUsers) {
+            [$agents, $others] = $this->fieldsTestAudience();
+            $all = array_merge($agents, $others);
+            sort($all);
+            $this->warn(sprintf(
+                '  - %s : ACTIVÉS EN MODE TEST SANS ADMINISTRATEUR DE TEST (test_users vide) : le plugin les montre alors à tous les comptes manage_options ou manage_woocommerce (%s)%s. Choisissez un administrateur de test dans l\'onglet Champs pro, %s. Rien n\'est modifié par cette commande.',
+                $where,
+                $this->idList($all),
+                $agents ? sprintf(', dont %d qui commandent pour des clients (place_agency_orders, vraies réservations) : %s', count($agents), $this->idList($agents)) : '',
+                $others ? 'par exemple test_users = ['.implode(', ', $others).'] (sans place_agency_orders)' : 'un compte sans réservation réelle'
+            ));
+        } else {
+            $agents = array_values(array_filter($testUsers, fn ($id) => $id > 0 && user_can($id, 'place_agency_orders')));
+            $this->line(sprintf(
+                '  - %s : activés en mode test, visibles seulement par les administrateurs de test %s ; les clients, les invités et les autres comptes gardent le formulaire du thème.',
+                $where,
+                $this->idList($testUsers)
+            ));
+            if ($agents) {
+                $this->warn(sprintf(
+                    '    Administrateur(s) de test qui commandent pour des clients (place_agency_orders) : %s. Ils verront les champs sur de vraies réservations.',
+                    $this->idList($agents)
+                ));
+            }
+        }
+
+        $this->line('    Mode test des champs pro encore actif : après la recette et l\'information des agents, décochez « Mode test » dans l\'onglet Champs pro pour les ouvrir à tous (jamais par cette commande).');
+    }
+
+    /**
+     * Rappel du périmètre de la facturation, lu comme le plugin (lecture seule) :
+     * « Émettre les factures pour » (invoicing_for) différent de both, séries pro séparées
+     * (invoice_number_separate = yes).
+     */
+    protected function scopeReminder(array $settings): void
+    {
+        $for = $settings['invoicing_for'] ?? 'both';
+        $for = is_scalar($for) ? (string) $for : 'both';
+        if ($for !== 'both') {
+            $this->warn(sprintf(
+                '  - « Émettre les factures pour » (invoicing_for, onglet Facturation) vaut « %s » : %s. Recommandé : both (« Les professionnels et les particuliers »). Un réglage enregistré n\'est remplacé qu\'avec --appliquer --forcer.',
+                $for,
+                match ($for) {
+                    'particuliers' => 'les commandes « pro » ne sont plus numérotées automatiquement (seulement à la main)',
+                    'pros' => 'les commandes de particuliers et celles sans type ne sont plus numérotées automatiquement',
+                    default => 'valeur inconnue du plugin, traitée comme both',
+                }
+            ));
+        }
+
+        if ('yes' === ($settings['invoice_number_separate'] ?? 'no')) {
+            $this->warn('  - « Séries pro séparées » (invoice_number_separate, onglet Facturation) vaut yes : les commandes « pro » prennent un compteur et une série d\'avoirs à part, hors de la série NAVI unique. Recommandé : no. Un réglage enregistré n\'est remplacé qu\'avec --appliquer --forcer.');
+        }
+    }
+
+    /**
+     * Comptes qui voient les champs pro en mode test sans administrateur de test (règle du
+     * plugin : manage_woocommerce ou manage_options), séparés selon qu'ils commandent pour des
+     * clients (place_agency_orders) ou non. Lecture seule.
+     *
+     * @return array{0: int[], 1: int[]} comptes avec place_agency_orders, autres comptes
+     */
+    protected function fieldsTestAudience(): array
+    {
+        $ids = get_users([
+            'capability__in' => ['manage_woocommerce', 'manage_options'],
+            'fields' => 'ID',
+            'orderby' => 'ID',
+            'order' => 'ASC',
+        ]);
+
+        $agents = [];
+        $others = [];
+        foreach ((array) $ids as $id) {
+            $id = (int) $id;
+            if (! user_can($id, 'manage_woocommerce') && ! user_can($id, 'manage_options')) {
+                continue;
+            }
+            if (user_can($id, 'place_agency_orders')) {
+                $agents[] = $id;
+            } else {
+                $others[] = $id;
+            }
+        }
+
+        return [$agents, $others];
+    }
+
+    /**
+     * Liste d'identifiants de comptes (« #1, #2 ») ; « aucun » si elle est vide.
+     *
+     * @param  int[]  $ids
+     */
+    protected function idList(array $ids): string
+    {
+        return $ids ? implode(', ', array_map(fn ($id) => '#'.(int) $id, $ids)) : 'aucun';
     }
 
     /**
@@ -1867,7 +2046,12 @@ class BillingConfigCommand extends Command
             'invoice_reset_part' => 'yes',
             'invoice_number_separate' => 'no',
             'invoice_statuses' => ['wc-processing', 'wc-completed'],
+            'invoicing_for' => 'both',
             'enable_fields' => 'yes',
+            // Aucun type coché d'avance : le client choisit (comportement d'avant la 2.77).
+            'default_customer_type' => '',
+            'default_customer_type_on' => [],
+            'save_type_to_account' => 'no',
             'inv_show_note' => 'yes',
             'hide_name_notes' => 'no',
             'hidden_item_meta' => '',
@@ -1910,7 +2094,11 @@ class BillingConfigCommand extends Command
             'invoice_reset_part' => 'Remise à zéro annuelle',
             'invoice_number_separate' => 'Séries pro séparées',
             'invoice_statuses' => 'Statuts déclencheurs',
+            'invoicing_for' => 'Émettre les factures pour',
             'enable_fields' => 'Champs pro du plugin',
+            'default_customer_type' => 'Type de client par défaut',
+            'default_customer_type_on' => 'Type par défaut coché sur',
+            'save_type_to_account' => 'Compte du client',
             'inv_show_note' => 'Note client imprimée',
             'hide_name_notes' => 'Notes du nom masquées',
             'hidden_item_meta' => 'Infos d\'articles masquées',

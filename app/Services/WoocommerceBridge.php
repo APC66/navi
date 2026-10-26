@@ -1027,8 +1027,45 @@ class WoocommerceBridge
         return '<span class="cart-item-qty">'.$qty.'</span>';
     }
 
+    /**
+     * Les champs pro du plugin de facturation apc-billing (type de client, SIRET, N° TVA)
+     * sont-ils affichés à l'utilisateur courant ? Faux si le plugin est absent, si l'onglet
+     * « Champs pro » est décoché (enable_fields = no) ou, en mode test, pour un compte hors
+     * de la liste des administrateurs de test : le formulaire du thème reste alors inchangé.
+     */
+    private function apcProFieldsShown(): bool
+    {
+        return $this->apcFieldsEnabled()
+            && method_exists(\APC\Billing\Settings::class, 'fields_visible')
+            && \APC\Billing\Settings::fields_visible();
+    }
+
+    /**
+     * L'onglet « Champs pro » d'apc-billing est-il coché (enable_fields = yes), quel que soit
+     * le mode test ? Le bloc « Informations professionnelles » de la fiche commande est alors
+     * affiché à tout le back-office. Faux si le plugin est absent.
+     */
+    private function apcFieldsEnabled(): bool
+    {
+        return class_exists(\APC\Billing\Settings::class)
+            && method_exists(\APC\Billing\Settings::class, 'fields_enabled')
+            && \APC\Billing\Settings::fields_enabled();
+    }
+
     public function addCompanyFields($fields): array
     {
+        // Champs pro d'apc-billing affichés : le plugin range Entreprise dans son bloc pro
+        // (classe et priorité, à ne pas toucher) et demande lui-même le SIRET. On garde
+        // seulement le libellé « Entreprise » et on ne déclare plus billing_siret : un seul
+        // champ SIRET, plus de _billing_siret posé sur la commande ni recopié dans le compte.
+        if ($this->apcProFieldsShown()) {
+            if (isset($fields['billing']['billing_company'])) {
+                $fields['billing']['billing_company']['label'] = 'Entreprise';
+            }
+
+            return $fields;
+        }
+
         // Rendre le champ société visible et optionnel
         $fields['billing']['billing_company']['class'] = ['form-row-wide'];
         $fields['billing']['billing_company']['label'] = 'Entreprise';
@@ -1069,6 +1106,13 @@ class WoocommerceBridge
 
     public function saveCompanyFields($order, $data): void
     {
+        // Champs pro d'apc-billing affichés : billing_siret n'est plus un champ du formulaire.
+        // Une page ouverte avant le changement (ou servie depuis un cache) pourrait encore le
+        // poster : il serait enregistré, puis imprimé sur la facture par le repli du plugin.
+        if ($this->apcProFieldsShown()) {
+            return;
+        }
+
         if (! empty($_POST['billing_siret'])) {
             $order->update_meta_data('_billing_siret', sanitize_text_field($_POST['billing_siret']));
         }
@@ -1076,8 +1120,25 @@ class WoocommerceBridge
 
     public function displayCompanyFieldsInAdmin($order): void
     {
-        $siret = $order->get_meta('_billing_siret');
+        $siret = (string) $order->get_meta('_billing_siret');
         $company = $order->get_billing_company();
+        $siretLabel = 'SIRET';
+
+        // Champs pro d'apc-billing activés (même en mode test : leur bloc de la fiche commande
+        // est affiché à tout le back-office). Un ancien SIRET valide y est déjà montré : on ne
+        // le répète pas. Une autre saisie (souvent un téléphone) n'est jamais imprimée par le
+        // plugin : on la garde visible, sous un libellé qui le dit.
+        if (
+            $siret !== ''
+            && $this->apcFieldsEnabled()
+            && method_exists(\APC\Billing\Customer_Type::class, 'is_siret_like')
+        ) {
+            if (\APC\Billing\Customer_Type::is_siret_like($siret)) {
+                $siret = '';
+            } else {
+                $siretLabel = 'Ancien champ SIRET (non imprimé)';
+            }
+        }
 
         if ($company || $siret) {
             echo '<div style="margin-top: 12px;">';
@@ -1085,7 +1146,7 @@ class WoocommerceBridge
                 echo '<p><strong>Société :</strong> '.esc_html($company).'</p>';
             }
             if ($siret) {
-                echo '<p><strong>SIRET :</strong> '.esc_html($siret).'</p>';
+                echo '<p><strong>'.esc_html($siretLabel).' :</strong> '.esc_html($siret).'</p>';
             }
             echo '</div>';
         }

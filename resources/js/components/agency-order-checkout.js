@@ -10,7 +10,98 @@
 jQuery(document).ready(function($) {
     var searchTimeout = null;
     var selectedClientId = null;
-    console.log('vjios');
+
+    /**
+     * Type de client (particulier ou pro) coché par le serveur au chargement de la page :
+     * pour un agent, c'est le type par défaut du plugin APC Billing. Mémorisé AVANT toute
+     * remise à zéro, pour être recoché quand le client choisi n'a pas de type enregistré.
+     * Vide si rien n'est coché ou si les champs pro ne sont pas affichés.
+     */
+    var defaultCustomerType = $('input[name="apc_customer_type"]:checked').val() || '';
+
+    /**
+     * Pays proposés pour un nouveau client ou un client sans pays : celui de la boutique
+     * (agencyOrderData.defaultCountry), sinon celui affiché au chargement. Un pays vide
+     * masquerait les champs SIRET et N° TVA tant qu'aucun pays n'est choisi.
+     */
+    var loadedCountry = String($('#billing_country').val() || '');
+
+    function defaultBillingCountry() {
+        var $country = $('#billing_country');
+        var shopCountry = (window.agencyOrderData && agencyOrderData.defaultCountry) ? String(agencyOrderData.defaultCountry) : '';
+        var candidates = [shopCountry, loadedCountry];
+        for (var i = 0; i < candidates.length; i++) {
+            var code = candidates[i];
+            if (code === '') {
+                continue;
+            }
+            // Liste déroulante : seulement un pays qu'elle propose (vente limitée à certains pays).
+            if ($country.is('select') && !$country.find('option').filter(function() { return this.value === code; }).length) {
+                continue;
+            }
+            return code;
+        }
+        return '';
+    }
+
+    /**
+     * Message d'erreur renvoyé par le serveur (wp_send_json_error), sinon le message donné.
+     *
+     * @param {Object} jqXHR - Requête jQuery
+     * @param {string} fallback - Message par défaut
+     * @return {string}
+     */
+    function serverMessage(jqXHR, fallback) {
+        var res = jqXHR && jqXHR.responseJSON;
+        return (res && res.data && res.data.message) ? String(res.data.message) : fallback;
+    }
+
+    /**
+     * Applique les données pro d'un client au bloc « Le client est » (plugin APC Billing).
+     *
+     * Coche le type enregistré sur le compte du client, sinon le type mémorisé au chargement,
+     * sinon aucun choix. Les boutons radio sont cochés avec .prop('checked') : un .val(valeur)
+     * sur le groupe réécrirait l'attribut value des deux boutons et le formulaire posterait
+     * toujours la même valeur. SIRET et N° TVA prennent les valeurs du client, vides sinon,
+     * pour ne jamais garder celles du client précédent. Sans champs pro sur la page (plugin
+     * absent, champs désactivés ou mode test), ne fait rien.
+     *
+     * @param {Object} pro - Données pro du client ({ type, siret, vat }), vide pour un nouveau client
+     */
+    function applyProFields(pro) {
+        pro = (pro && typeof pro === 'object') ? pro : {};
+        var $types = $('input[name="apc_customer_type"]');
+
+        // Décocher « Je n'ai pas de SIRET » AVANT de changer le type : cocher cette case
+        // déclenche une alerte du plugin. Aucun événement ici, la case est seulement décochée.
+        $('#apc_no_siret').prop('checked', false);
+
+        if ($types.length) {
+            var wanted = String(pro.type || '');
+            var $target = $types.filter(function() {
+                return wanted !== '' && this.value === wanted;
+            });
+            if (!$target.length && defaultCustomerType !== '') {
+                $target = $types.filter(function() {
+                    return this.value === defaultCustomerType;
+                });
+            }
+
+            $types.prop('checked', false);
+            if ($target.length) {
+                $target.first().prop('checked', true).trigger('change');
+            } else {
+                // Aucun choix : le plugin masque le bloc pro sur cet événement.
+                $types.first().trigger('change');
+            }
+        }
+
+        // Résultats de vérification SIRET / TVA du client précédent.
+        $('#apc_siret_field .apc-siret-result, #apc_vat_field .apc-vies-result').empty();
+
+        $('#apc_siret').val(String(pro.siret || '')).trigger('input').trigger('change');
+        $('#apc_vat').val(String(pro.vat || '')).trigger('input').trigger('change');
+    }
 
     /**
      * Bascule l'affichage entre les champs "client existant" et "nouveau client".
@@ -60,25 +151,36 @@ jQuery(document).ready(function($) {
             type: 'GET',
             data: {
                 action: 'agency_search_customers',
+                nonce: agencyOrderData.nonce,
                 term: term
             },
             success: function(response) {
-                if (response.success && response.data.length > 0) {
-                    var html = '<ul class="divide-y divide-gray-200">';
+                var $results = $('#agency-client-results').removeClass('hidden').empty();
+                if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
+                    // Nom et e-mail saisis par les clients : insérés comme texte et attributs,
+                    // jamais comme HTML (un guillemet ou une balise ne peut rien exécuter).
+                    var $list = $('<ul class="divide-y divide-gray-200"></ul>');
                     response.data.forEach(function(customer) {
-                        html += '<li class="p-3 hover:bg-blue-50 cursor-pointer customer-result" data-id="' + customer.id + '" data-name="' + customer.name + '" data-email="' + customer.email + '">';
-                        html += '<div class="font-medium text-gray-900">' + customer.name + '</div>';
-                        html += '<div class="text-sm text-gray-600">' + customer.email + '</div>';
-                        html += '</li>';
+                        var name = String(customer.name || '');
+                        var email = String(customer.email || '');
+                        $('<li class="p-3 hover:bg-blue-50 cursor-pointer customer-result"></li>')
+                            .attr({
+                                'data-id': String(parseInt(customer.id, 10) || ''),
+                                'data-name': name,
+                                'data-email': email
+                            })
+                            .append($('<div class="font-medium text-gray-900"></div>').text(name))
+                            .append($('<div class="text-sm text-gray-600"></div>').text(email))
+                            .appendTo($list);
                     });
-                    html += '</ul>';
-                    $('#agency-client-results').removeClass('hidden').html(html);
+                    $results.append($list);
                 } else {
-                    $('#agency-client-results').removeClass('hidden').html('<div class="p-3 text-gray-500 text-center">Aucun client trouvé</div>');
+                    $results.append($('<div class="p-3 text-gray-500 text-center"></div>').text('Aucun client trouvé'));
                 }
             },
-            error: function() {
-                $('#agency-client-results').removeClass('hidden').html('<div class="p-3 text-red-500 text-center">Erreur de recherche</div>');
+            error: function(jqXHR) {
+                $('#agency-client-results').removeClass('hidden').empty()
+                    .append($('<div class="p-3 text-red-500 text-center"></div>').text(serverMessage(jqXHR, 'Erreur de recherche')));
             }
         });
     }
@@ -96,15 +198,15 @@ jQuery(document).ready(function($) {
         $('#agency_existing_client_search').val('');
         $('#agency-client-results').addClass('hidden').html('');
 
-        var html = '<div class="flex items-center justify-between">';
-        html += '<div>';
-        html += '<div class="font-medium text-gray-900">✓ Client sélectionné : ' + name + '</div>';
-        html += '<div class="text-sm text-gray-600">' + email + '</div>';
-        html += '</div>';
-        html += '<button type="button" class="text-red-600 hover:text-red-800 font-medium" id="clear-client-selection">✕ Changer</button>';
-        html += '</div>';
+        // Nom et e-mail insérés comme texte, jamais comme HTML.
+        var $info = $('<div></div>')
+            .append($('<div class="font-medium text-gray-900"></div>').text('✓ Client sélectionné : ' + String(name || '')))
+            .append($('<div class="text-sm text-gray-600"></div>').text(String(email || '')));
+        var $row = $('<div class="flex items-center justify-between"></div>')
+            .append($info)
+            .append('<button type="button" class="text-red-600 hover:text-red-800 font-medium" id="clear-client-selection">✕ Changer</button>');
 
-        $('#agency-selected-client').removeClass('hidden').html(html);
+        $('#agency-selected-client').removeClass('hidden').empty().append($row);
 
         // Charger les données de facturation du client
         loadCustomerBillingData(id);
@@ -121,14 +223,37 @@ jQuery(document).ready(function($) {
             type: 'GET',
             data: {
                 action: 'agency_get_customer_billing',
+                nonce: agencyOrderData.nonce,
                 customer_id: customerId
             },
             success: function(response) {
+                // Réponse d'un client qui n'est plus celui sélectionné (changement rapide de
+                // client ou sélection annulée) : ne rien appliquer.
+                if (customerId !== selectedClientId) {
+                    return;
+                }
+
                 if (response.success && response.data) {
                     var billingData = response.data;
 
+                    // Le SIRET du thème ne doit jamais rester celui du client précédent :
+                    // vidé si la réponse ne le fournit pas.
+                    if (!Object.prototype.hasOwnProperty.call(billingData, 'billing_siret')) {
+                        billingData.billing_siret = '';
+                    }
+
                     // Préremplir tous les champs de facturation
                     $.each(billingData, function(key, value) {
+                        // Champs pro du plugin APC Billing traités à part (applyProFields) :
+                        // jamais de .val() sur le groupe de boutons radio.
+                        if (key === 'pro' || key.indexOf('apc_') === 0) {
+                            return;
+                        }
+                        // Client sans pays enregistré : pays par défaut, pas un pays vide.
+                        if (key === 'billing_country' && !value) {
+                            value = defaultBillingCountry();
+                        }
+
                         var field = $('[name="' + key + '"]');
                         if (!field.length) {
                             field = $('#' + key);
@@ -138,12 +263,20 @@ jQuery(document).ready(function($) {
                         }
                     });
 
+                    // Type, SIRET et N° TVA du client, après le pays (déjà appliqué ci-dessus)
+                    applyProFields(billingData.pro);
+
                     // Déclencher l'événement update_checkout pour recalculer les frais
                     $('body').trigger('update_checkout');
                 }
             },
-            error: function() {
+            error: function(jqXHR) {
+                if (customerId !== selectedClientId) {
+                    return;
+                }
                 console.error('Erreur lors du chargement des données de facturation');
+                $('#agency-selected-client')
+                    .append($('<div class="text-sm text-red-600 mt-1"></div>').text(serverMessage(jqXHR, 'Données du client indisponibles.')));
             }
         });
     }
@@ -164,7 +297,8 @@ jQuery(document).ready(function($) {
             'billing_country',
             'billing_state',
             'billing_phone',
-            'billing_email'
+            'billing_email',
+            'billing_siret'
         ];
 
         billingFields.forEach(function(fieldName) {
@@ -173,9 +307,13 @@ jQuery(document).ready(function($) {
                 field = $('#' + fieldName);
             }
             if (field.length) {
-                field.val('').trigger('input').trigger('change');
+                // Pays : celui de la boutique plutôt qu'un pays vide (champs SIRET et N° TVA).
+                field.val(fieldName === 'billing_country' ? defaultBillingCountry() : '').trigger('input').trigger('change');
             }
         });
+
+        // Bloc pro : type mémorisé au chargement, SIRET et N° TVA vides
+        applyProFields({});
 
         // Déclencher l'événement update_checkout
         $('body').trigger('update_checkout');
@@ -201,8 +339,9 @@ jQuery(document).ready(function($) {
     // Sélection d'un client
     $(document).on('click', '.customer-result', function() {
         var id = $(this).data('id');
-        var name = $(this).data('name');
-        var email = $(this).data('email');
+        // attr() et non data() : texte brut, sans conversion (nombre, JSON) par jQuery.
+        var name = $(this).attr('data-name') || '';
+        var email = $(this).attr('data-email') || '';
         selectCustomer(id, name, email);
     });
 
