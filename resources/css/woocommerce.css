@@ -286,27 +286,23 @@ html body ul.woocommerce-error {
   @apply bg-white border-primary-200 text-primary-900;
 }
 
-/* Commande d'agence : « Le client est » suivi d'une mention en rouge sur la même ligne
-   (AgencyOrderService::addCustomerTypeHintForAgency), puis les choix en dessous. */
-html body .woocommerce form .apc-customer-type.navi-agency-type {
-  line-height: 1.4;
-}
+/* Commande d'agence : « Le client est », puis sur la ligne suivante une mention en rouge entre
+   parenthèses (AgencyOrderService::addCustomerTypeHintForAgency), puis les choix. */
 html body .woocommerce form .apc-customer-type.navi-agency-type > label:first-child {
-  display: inline !important;
-  margin: 0 0.5em 0 0;
+  margin-bottom: 0.15em;
 }
 html body .woocommerce form .apc-customer-type.navi-agency-type .navi-agency-type-hint {
-  display: inline;
+  display: block;
+  margin-bottom: 0.5em;
   color: #b32d2e;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.35;
   text-transform: none;
   letter-spacing: normal;
 }
 html body .woocommerce form .apc-customer-type.navi-agency-type .woocommerce-input-wrapper {
   display: block;
-  margin-top: 0.4em;
 }
 
 /* Description d'un champ (bulle de WooCommerce, blanc sur #1e85be : contraste 4,07) : fond plus

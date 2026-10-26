@@ -898,8 +898,8 @@ class AgencyOrderService
     }
 
     /**
-     * Filtre woocommerce_form_field_radio : pour un agent au paiement, mention en rouge juste
-     * après le libellé « Le client est » (règle CSS .navi-agency-type-hint de woocommerce.css),
+     * Filtre woocommerce_form_field_radio : pour un agent au paiement, mention en rouge entre
+     * parenthèses, sur sa propre ligne sous le libellé « Le client est » (règle CSS .navi-agency-type-hint de woocommerce.css),
      * reliée aux deux boutons par aria-describedby.
      *
      * @param  mixed  $field  HTML du champ.
@@ -917,7 +917,7 @@ class AgencyOrderService
         }
 
         $hint = '<span class="navi-agency-type-hint" id="apc_customer_type-hint">'
-            .esc_html('Statut du client final, pas celui de l\'agent qui est en train de faire la réservation')
+            .esc_html('(Statut du client final, pas celui de l\'agent qui est en train de faire la réservation)')
             .'</span>';
         $pos = strpos($field, '</label>') + strlen('</label>');
         $field = substr($field, 0, $pos).$hint.substr($field, $pos);
